@@ -1,20 +1,41 @@
+import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/providers/app_database_provider.dart';
+import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/html_card_editor.dart';
+import 'package:beaver_learning/src/widgets/card/card_list.dart';
+import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class CardEditorScreen extends StatefulWidget {
+class CardEditorScreen extends ConsumerStatefulWidget {
   CardEditorScreen({super.key});
 
   final String title = "My Learning App";
   static const routeName = '/cardEditorScreen';
 
+  late List<DropDownItem<int>> groupItems;
+
   final TextEditingController cardTypeController = TextEditingController();
-  final TextEditingController groupController = TextEditingController();
+  CustomDropdownMenu<int>? groupDropdown;
+  bool isInitialized = false;
+
+  Future<void> init(WidgetRef ref, BuildContext context) async {
+    if (!isInitialized) {
+      var groups = await ref.read(appDatabaseProvider.notifier).getAllGroups();
+      groupItems = groups.map<DropDownItem<int>>(
+        (GroupData gData) {
+          return DropDownItem<int>(gData.title, gData.id);
+        },
+      ).toList();
+      isInitialized = true;
+    }
+  }
 
   @override
-  State<CardEditorScreen> createState() => _CardEditorScreenState();
+  ConsumerState<CardEditorScreen> createState() => _CardEditorScreenState();
 }
 
 List<DropDownItem> items = [
@@ -22,33 +43,62 @@ List<DropDownItem> items = [
   const DropDownItem("item2", "ITEM 2")
 ];
 
-class _CardEditorScreenState extends State<CardEditorScreen> {
+class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
+  Widget getDropDowns(WidgetRef ref, BuildContext context) {
+    List<Widget> getDropDowns2() {
+      widget.groupDropdown = CustomDropdownMenu(
+        items: widget.groupItems,
+        label: "Group",
+        width: MediaQuery.of(context).size.width,
+      );
+
+      return [
+        Container(
+            margin: const EdgeInsets.all(4),
+            child: CustomDropdownMenu(
+              items: items,
+              label: "Card Type",
+              width: MediaQuery.of(context).size.width,
+            )),
+        Container(margin: const EdgeInsets.all(4), child: widget.groupDropdown)
+      ];
+    }
+
+    if (!widget.isInitialized) {
+      return FutureBuilder(
+          future: widget.init(ref, context),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else {
+              return Column(children: getDropDowns2());
+            }
+          });
+    } else {
+      return Column(children: getDropDowns2());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget editorToRender = HtmlCardEditor();
+    CardEditorInterface editorToRender = HtmlCardEditor();
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: CustomAppBar(
+        title: widget.title,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check_circle),
+            onPressed: () async {
+              int groupId = widget.groupDropdown!.getValue()!.value;
+              await editorToRender.createCard(groupId);
+              Navigator.pushNamed(context, CardList.routeName);
+            },
+          )
+        ],
+      ),
       body: Center(
-        child: Column(children: [
-          Container(
-              margin: const EdgeInsets.all(4),
-              child: CustomDropdown(
-                items: items,
-                label: "Card Type",
-                dpController: widget.cardTypeController,
-                width: MediaQuery.of(context).size.width,
-              )),
-          Container(
-              margin: const EdgeInsets.all(4),
-              child: CustomDropdown(
-                items: items,
-                label: "Group",
-                dpController: widget.groupController,
-                width: MediaQuery.of(context).size.width,
-              )),
-          editorToRender
-        ]),
+        child: Column(children: [getDropDowns(ref, context), editorToRender]),
       ),
       drawer: const AppDrawer(),
       persistentFooterButtons: [

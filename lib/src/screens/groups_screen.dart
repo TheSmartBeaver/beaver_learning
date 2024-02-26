@@ -1,22 +1,34 @@
+import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
+import 'package:beaver_learning/src/models/db/groupTable.dart';
+import 'package:beaver_learning/src/widgets/group/group_editor.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
+//import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 
-class GroupEditorScreen extends StatefulWidget {
-  const GroupEditorScreen({super.key});
+class GroupScreen extends StatefulWidget {
+  const GroupScreen({super.key});
 
   final String title = "My Learning App";
-  static const routeName = '/groupEditorScreen';
+  static const routeName = '/groupScreen';
 
   @override
-  State<GroupEditorScreen> createState() => _GroupEditorScreenState();
+  State<GroupScreen> createState() => _GroupScreenState();
 }
 
-class _GroupEditorScreenState extends State<GroupEditorScreen> {
+class _GroupScreenState extends State<GroupScreen> {
   List<DropDownItem> items = [
     const DropDownItem("item1", "ITEM 1"),
     const DropDownItem("item2", "ITEM 2")
   ];
+
+  late List<GroupData> groups;
+
+  init() async {
+    final database = MyDatabaseInstance.getInstance();
+    groups = await database.select(database.group).get();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +37,7 @@ class _GroupEditorScreenState extends State<GroupEditorScreen> {
         body: Center(
             child: Column(
           children: [
-            CustomDropdown(
+            CustomDropdownMenu(
               items: items,
               label: "Tags",
               width: MediaQuery.of(context).size.width / 2,
@@ -40,50 +52,64 @@ class _GroupEditorScreenState extends State<GroupEditorScreen> {
                     labelText: 'Words',
                   ),
                 )),
-            GridView.builder(
-                padding: const EdgeInsets.all(8.0),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 2 / 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: courses.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: Column(
-                      children: [
-                        Expanded(
-                            child: Column(
-                          children: [
-                            Text(courses[index].name),
-                          ],
-                        )),
-                        Container(
-                          margin: const EdgeInsets.all(4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Icon(
-                                Icons.remove_red_eye_sharp,
-                                color: Colors.deepOrange,
-                              ),
-                              Text('${courses[index].price} €',
-                                  style: const TextStyle(
-                                      color: Colors.purpleAccent,
-                                      fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  );
-                })
+            FutureBuilder(
+                future: init(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    // Affichez un indicateur de chargement ou une vue de chargement tant que les opérations asynchrones ne sont pas terminées.
+                    return const CircularProgressIndicator();
+                  } else {
+                    return Expanded(
+                        child: GridView.builder(
+                            padding: const EdgeInsets.all(8.0),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              childAspectRatio: 2 / 3,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                            ),
+                            itemCount: groups.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                        child: Column(
+                                      children: [
+                                        Text(groups[index].title),
+                                        Text(
+                                            'parent ${groups[index].parentId}'),
+                                      ],
+                                    )),
+                                    Container(
+                                      margin: const EdgeInsets.all(4),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Icon(
+                                            Icons.remove_red_eye_sharp,
+                                            color: Colors.deepOrange,
+                                          ),
+                                          Text('${groups[index].tags}',
+                                              style: const TextStyle(
+                                                  color: Colors.purpleAccent,
+                                                  fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              );
+                            }));
+                  }
+                }),
           ],
         )),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.pushNamed(context, GroupEditorScreen.routeName);
+            Navigator.pushNamed(context, GroupEditor.routeName);
           },
           foregroundColor: Colors.white,
           backgroundColor: Colors.green,

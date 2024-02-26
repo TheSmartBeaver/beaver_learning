@@ -3,6 +3,259 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GroupTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
+  @override
+  late final GeneratedColumn<String> tags = GeneratedColumn<String>(
+      'body', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _parentIdMeta =
+      const VerificationMeta('parentId');
+  @override
+  late final GeneratedColumn<int> parentId = GeneratedColumn<int>(
+      'parent_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES "group" (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [id, title, tags, parentId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'group';
+  @override
+  VerificationContext validateIntegrity(Insertable<GroupData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+          _tagsMeta, tags.isAcceptableOrUnknown(data['body']!, _tagsMeta));
+    } else if (isInserting) {
+      context.missing(_tagsMeta);
+    }
+    if (data.containsKey('parent_id')) {
+      context.handle(_parentIdMeta,
+          parentId.isAcceptableOrUnknown(data['parent_id']!, _parentIdMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GroupData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroupData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      tags: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
+      parentId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}parent_id']),
+    );
+  }
+
+  @override
+  $GroupTable createAlias(String alias) {
+    return $GroupTable(attachedDatabase, alias);
+  }
+}
+
+class GroupData extends DataClass implements Insertable<GroupData> {
+  final int id;
+  final String title;
+  final String tags;
+  final int? parentId;
+  const GroupData(
+      {required this.id,
+      required this.title,
+      required this.tags,
+      this.parentId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['title'] = Variable<String>(title);
+    map['body'] = Variable<String>(tags);
+    if (!nullToAbsent || parentId != null) {
+      map['parent_id'] = Variable<int>(parentId);
+    }
+    return map;
+  }
+
+  GroupCompanion toCompanion(bool nullToAbsent) {
+    return GroupCompanion(
+      id: Value(id),
+      title: Value(title),
+      tags: Value(tags),
+      parentId: parentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentId),
+    );
+  }
+
+  factory GroupData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GroupData(
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      tags: serializer.fromJson<String>(json['tags']),
+      parentId: serializer.fromJson<int?>(json['parentId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String>(title),
+      'tags': serializer.toJson<String>(tags),
+      'parentId': serializer.toJson<int?>(parentId),
+    };
+  }
+
+  GroupData copyWith(
+          {int? id,
+          String? title,
+          String? tags,
+          Value<int?> parentId = const Value.absent()}) =>
+      GroupData(
+        id: id ?? this.id,
+        title: title ?? this.title,
+        tags: tags ?? this.tags,
+        parentId: parentId.present ? parentId.value : this.parentId,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('GroupData(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('tags: $tags, ')
+          ..write('parentId: $parentId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, title, tags, parentId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GroupData &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.tags == this.tags &&
+          other.parentId == this.parentId);
+}
+
+class GroupCompanion extends UpdateCompanion<GroupData> {
+  final Value<int> id;
+  final Value<String> title;
+  final Value<String> tags;
+  final Value<int?> parentId;
+  const GroupCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.tags = const Value.absent(),
+    this.parentId = const Value.absent(),
+  });
+  GroupCompanion.insert({
+    this.id = const Value.absent(),
+    required String title,
+    required String tags,
+    this.parentId = const Value.absent(),
+  })  : title = Value(title),
+        tags = Value(tags);
+  static Insertable<GroupData> custom({
+    Expression<int>? id,
+    Expression<String>? title,
+    Expression<String>? tags,
+    Expression<int>? parentId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (tags != null) 'body': tags,
+      if (parentId != null) 'parent_id': parentId,
+    });
+  }
+
+  GroupCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? title,
+      Value<String>? tags,
+      Value<int?>? parentId}) {
+    return GroupCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      tags: tags ?? this.tags,
+      parentId: parentId ?? this.parentId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (tags.present) {
+      map['body'] = Variable<String>(tags.value);
+    }
+    if (parentId.present) {
+      map['parent_id'] = Variable<int>(parentId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroupCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('tags: $tags, ')
+          ..write('parentId: $parentId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ReviseCardsTable extends ReviseCards
     with TableInfo<$ReviseCardsTable, ReviseCard> {
   @override
@@ -18,34 +271,32 @@ class $ReviseCardsTable extends ReviseCards
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  static const VerificationMeta _groupIdMeta =
+      const VerificationMeta('groupId');
   @override
-  late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
+  late final GeneratedColumn<int> groupId = GeneratedColumn<int>(
+      'group_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES "group" (id)'));
+  static const VerificationMeta _rectoMeta = const VerificationMeta('recto');
+  @override
+  late final GeneratedColumn<String> recto = GeneratedColumn<String>(
+      'recto', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
+  static const VerificationMeta _versoMeta = const VerificationMeta('verso');
   @override
-  late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+  late final GeneratedColumn<String> verso = GeneratedColumn<String>(
+      'verso', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
   @override
   late final GeneratedColumn<String> tags = GeneratedColumn<String>(
       'body', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _generatedTextMeta =
-      const VerificationMeta('generatedText');
   @override
-  late final GeneratedColumn<String> generatedText = GeneratedColumn<String>(
-      'generated_text', aliasedName, true,
-      generatedAs: GeneratedAs(
-          title + const Constant(' (') + content + const Constant(')'), false),
-      type: DriftSqlType.string,
-      requiredDuringInsert: false);
-  @override
-  List<GeneratedColumn> get $columns =>
-      [id, title, content, tags, generatedText];
+  List<GeneratedColumn> get $columns => [id, groupId, recto, verso, tags];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -59,27 +310,29 @@ class $ReviseCardsTable extends ReviseCards
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('title')) {
-      context.handle(
-          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    if (data.containsKey('group_id')) {
+      context.handle(_groupIdMeta,
+          groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta));
     } else if (isInserting) {
-      context.missing(_titleMeta);
+      context.missing(_groupIdMeta);
     }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    if (data.containsKey('recto')) {
+      context.handle(
+          _rectoMeta, recto.isAcceptableOrUnknown(data['recto']!, _rectoMeta));
+    } else if (isInserting) {
+      context.missing(_rectoMeta);
+    }
+    if (data.containsKey('verso')) {
+      context.handle(
+          _versoMeta, verso.isAcceptableOrUnknown(data['verso']!, _versoMeta));
+    } else if (isInserting) {
+      context.missing(_versoMeta);
     }
     if (data.containsKey('body')) {
       context.handle(
           _tagsMeta, tags.isAcceptableOrUnknown(data['body']!, _tagsMeta));
     } else if (isInserting) {
       context.missing(_tagsMeta);
-    }
-    if (data.containsKey('generated_text')) {
-      context.handle(
-          _generatedTextMeta,
-          generatedText.isAcceptableOrUnknown(
-              data['generated_text']!, _generatedTextMeta));
     }
     return context;
   }
@@ -92,14 +345,14 @@ class $ReviseCardsTable extends ReviseCards
     return ReviseCard(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content']),
+      groupId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}group_id'])!,
+      recto: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}recto'])!,
+      verso: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}verso'])!,
       tags: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
-      generatedText: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}generated_text']),
     );
   }
 
@@ -111,24 +364,23 @@ class $ReviseCardsTable extends ReviseCards
 
 class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final int id;
-  final String title;
-  final String? content;
+  final int groupId;
+  final String recto;
+  final String verso;
   final String tags;
-  final String? generatedText;
   const ReviseCard(
       {required this.id,
-      required this.title,
-      this.content,
-      required this.tags,
-      this.generatedText});
+      required this.groupId,
+      required this.recto,
+      required this.verso,
+      required this.tags});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['title'] = Variable<String>(title);
-    if (!nullToAbsent || content != null) {
-      map['content'] = Variable<String>(content);
-    }
+    map['group_id'] = Variable<int>(groupId);
+    map['recto'] = Variable<String>(recto);
+    map['verso'] = Variable<String>(verso);
     map['body'] = Variable<String>(tags);
     return map;
   }
@@ -136,10 +388,9 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   ReviseCardsCompanion toCompanion(bool nullToAbsent) {
     return ReviseCardsCompanion(
       id: Value(id),
-      title: Value(title),
-      content: content == null && nullToAbsent
-          ? const Value.absent()
-          : Value(content),
+      groupId: Value(groupId),
+      recto: Value(recto),
+      verso: Value(verso),
       tags: Value(tags),
     );
   }
@@ -149,10 +400,10 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ReviseCard(
       id: serializer.fromJson<int>(json['id']),
-      title: serializer.fromJson<String>(json['title']),
-      content: serializer.fromJson<String?>(json['content']),
+      groupId: serializer.fromJson<int>(json['groupId']),
+      recto: serializer.fromJson<String>(json['recto']),
+      verso: serializer.fromJson<String>(json['verso']),
       tags: serializer.fromJson<String>(json['tags']),
-      generatedText: serializer.fromJson<String?>(json['generatedText']),
     );
   }
   @override
@@ -160,93 +411,101 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'title': serializer.toJson<String>(title),
-      'content': serializer.toJson<String?>(content),
+      'groupId': serializer.toJson<int>(groupId),
+      'recto': serializer.toJson<String>(recto),
+      'verso': serializer.toJson<String>(verso),
       'tags': serializer.toJson<String>(tags),
-      'generatedText': serializer.toJson<String?>(generatedText),
     };
   }
 
   ReviseCard copyWith(
           {int? id,
-          String? title,
-          Value<String?> content = const Value.absent(),
-          String? tags,
-          Value<String?> generatedText = const Value.absent()}) =>
+          int? groupId,
+          String? recto,
+          String? verso,
+          String? tags}) =>
       ReviseCard(
         id: id ?? this.id,
-        title: title ?? this.title,
-        content: content.present ? content.value : this.content,
+        groupId: groupId ?? this.groupId,
+        recto: recto ?? this.recto,
+        verso: verso ?? this.verso,
         tags: tags ?? this.tags,
-        generatedText:
-            generatedText.present ? generatedText.value : this.generatedText,
       );
   @override
   String toString() {
     return (StringBuffer('ReviseCard(')
           ..write('id: $id, ')
-          ..write('title: $title, ')
-          ..write('content: $content, ')
-          ..write('tags: $tags, ')
-          ..write('generatedText: $generatedText')
+          ..write('groupId: $groupId, ')
+          ..write('recto: $recto, ')
+          ..write('verso: $verso, ')
+          ..write('tags: $tags')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, content, tags, generatedText);
+  int get hashCode => Object.hash(id, groupId, recto, verso, tags);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ReviseCard &&
           other.id == this.id &&
-          other.title == this.title &&
-          other.content == this.content &&
-          other.tags == this.tags &&
-          other.generatedText == this.generatedText);
+          other.groupId == this.groupId &&
+          other.recto == this.recto &&
+          other.verso == this.verso &&
+          other.tags == this.tags);
 }
 
 class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<int> id;
-  final Value<String> title;
-  final Value<String?> content;
+  final Value<int> groupId;
+  final Value<String> recto;
+  final Value<String> verso;
   final Value<String> tags;
   const ReviseCardsCompanion({
     this.id = const Value.absent(),
-    this.title = const Value.absent(),
-    this.content = const Value.absent(),
+    this.groupId = const Value.absent(),
+    this.recto = const Value.absent(),
+    this.verso = const Value.absent(),
     this.tags = const Value.absent(),
   });
   ReviseCardsCompanion.insert({
     this.id = const Value.absent(),
-    required String title,
-    this.content = const Value.absent(),
+    required int groupId,
+    required String recto,
+    required String verso,
     required String tags,
-  })  : title = Value(title),
+  })  : groupId = Value(groupId),
+        recto = Value(recto),
+        verso = Value(verso),
         tags = Value(tags);
   static Insertable<ReviseCard> custom({
     Expression<int>? id,
-    Expression<String>? title,
-    Expression<String>? content,
+    Expression<int>? groupId,
+    Expression<String>? recto,
+    Expression<String>? verso,
     Expression<String>? tags,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (title != null) 'title': title,
-      if (content != null) 'content': content,
+      if (groupId != null) 'group_id': groupId,
+      if (recto != null) 'recto': recto,
+      if (verso != null) 'verso': verso,
       if (tags != null) 'body': tags,
     });
   }
 
   ReviseCardsCompanion copyWith(
       {Value<int>? id,
-      Value<String>? title,
-      Value<String?>? content,
+      Value<int>? groupId,
+      Value<String>? recto,
+      Value<String>? verso,
       Value<String>? tags}) {
     return ReviseCardsCompanion(
       id: id ?? this.id,
-      title: title ?? this.title,
-      content: content ?? this.content,
+      groupId: groupId ?? this.groupId,
+      recto: recto ?? this.recto,
+      verso: verso ?? this.verso,
       tags: tags ?? this.tags,
     );
   }
@@ -257,11 +516,14 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (title.present) {
-      map['title'] = Variable<String>(title.value);
+    if (groupId.present) {
+      map['group_id'] = Variable<int>(groupId.value);
     }
-    if (content.present) {
-      map['content'] = Variable<String>(content.value);
+    if (recto.present) {
+      map['recto'] = Variable<String>(recto.value);
+    }
+    if (verso.present) {
+      map['verso'] = Variable<String>(verso.value);
     }
     if (tags.present) {
       map['body'] = Variable<String>(tags.value);
@@ -273,8 +535,9 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   String toString() {
     return (StringBuffer('ReviseCardsCompanion(')
           ..write('id: $id, ')
-          ..write('title: $title, ')
-          ..write('content: $content, ')
+          ..write('groupId: $groupId, ')
+          ..write('recto: $recto, ')
+          ..write('verso: $verso, ')
           ..write('tags: $tags')
           ..write(')'))
         .toString();
@@ -283,10 +546,11 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
+  late final $GroupTable group = $GroupTable(this);
   late final $ReviseCardsTable reviseCards = $ReviseCardsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [reviseCards];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [group, reviseCards];
 }

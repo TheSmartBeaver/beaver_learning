@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:beaver_learning/src/models/db/cardTable.dart';
+import 'package:beaver_learning/src/models/db/groupTable.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,9 +11,7 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [
-  ReviseCards,
-], views: [])
+@DriftDatabase(tables: [ReviseCards, Group], views: [])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -49,13 +48,28 @@ class AppDatabase extends _$AppDatabase {
   //Stream<List<TodoItem>> get allItems => select(todoItems).watch();
 }
 
+deleteFile(File file) {
+  try {
+    if (file.existsSync()) {
+      file.deleteSync(); // Supprimez le fichier de manière synchrone.
+      print('Le fichier a été supprimé avec succès.');
+    } else {
+      print('Le fichier n\'existe pas.');
+    }
+  } catch (e) {
+    print('Une erreur s\'est produite lors de la suppression du fichier : $e');
+  }
+}
+
 LazyDatabase _openConnection() {
   // the LazyDatabase util lets us find the right location for the file async.
   return LazyDatabase(() async {
     // put the database file, called db.sqlite here, into the documents folder
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'db.sqlite'));
+    var file = File(p.join(dbFolder.path, 'db.sqlite'));
+    //deleteFile(file);
+    file = File(p.join(dbFolder.path, 'db.sqlite'));
 
     // Also work around limitations on old Android versions
     if (Platform.isAndroid) {

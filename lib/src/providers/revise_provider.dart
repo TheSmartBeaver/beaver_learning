@@ -3,6 +3,7 @@
  * - Interrogation BDD pour statistiques des révisons
  ***/
 
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,14 +13,14 @@ class ReviseNotifier extends StateNotifier<Object> {
   ReviseNotifier() : super([]);
 
   Future<void> init() async {
-    final database = AppDatabase();
+    final database = MyDatabaseInstance.getInstance();
 
-    await database.into(database.reviseCards).insert(
-        ReviseCardsCompanion.insert(
-            title: 'todo: finish drift setup',
-            content: const Value(
-                'We can now write queries and define our own tables.'),
-            tags: 'toto;ahah'));
+    // await database.into(database.reviseCards).insert(
+    //     ReviseCardsCompanion.insert(
+    //         title: 'todo: finish drift setup',
+    //         content: const Value(
+    //             'We can now write queries and define our own tables.'),
+    //         tags: 'toto;ahah'));
 
     List<ReviseCard> allItems =
         await database.select(database.reviseCards).get();

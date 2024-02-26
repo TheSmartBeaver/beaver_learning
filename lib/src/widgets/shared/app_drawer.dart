@@ -35,7 +35,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     //Navigator.pop(context);
     switch (item) {
       case DrawerItem.groups:
-        Navigator.pushReplacementNamed(context, GroupEditorScreen.routeName);
+        Navigator.pushReplacementNamed(context, GroupScreen.routeName);
         break;
       case DrawerItem.cards:
         Navigator.pushReplacementNamed(context, CardList.routeName);

@@ -1,3 +1,5 @@
+import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
@@ -29,10 +31,25 @@ void onCardSelected(DropDownItem? item) {
   var toto = 0;
 }
 
+Widget packInBox(Widget child) {
+  return Expanded(
+      child: Container(
+          margin: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(border: Border.all()),
+          child: child));
+}
+
 class _CardListState extends State<CardList> {
-  final TextEditingController groupController = TextEditingController();
-  final TextEditingController cardController = TextEditingController();
   final TextEditingController wordController = TextEditingController();
+  late List<ReviseCard> cards;
+
+  Future<void> init() async {
+    var database = MyDatabaseInstance.getInstance();
+    cards = await database.select(database.reviseCards).get();
+    var toto = 0;
+    //TODO: Pourquoi refait t'on cette appel quand on est dans écran création carte
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,17 +62,15 @@ class _CardListState extends State<CardList> {
           child: Column(
         children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            CustomDropdown(
+            CustomDropdownMenu(
               items: items,
               label: "Group",
-              dpController: groupController,
               onSelected: onGroupSelected,
               width: MediaQuery.of(context).size.width / 2,
             ),
-            CustomDropdown(
+            CustomDropdownMenu(
               items: items,
               label: "Cards",
-              dpController: cardController,
               onSelected: onCardSelected,
               width: MediaQuery.of(context).size.width / 2,
             )
@@ -70,7 +85,34 @@ class _CardListState extends State<CardList> {
                   border: OutlineInputBorder(),
                   labelText: 'Words',
                 ),
-              ))
+              )),
+          FutureBuilder(
+              future: init(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else {
+                  return Expanded(
+                      child: ListView.builder(
+                    // Providing a restorationId allows the ListView to restore the
+                    // scroll position when a user leaves and returns to the app after it
+                    // has been killed while running in the background.
+                    restorationId: 'sampleItemListView',
+                    itemCount: cards.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Container(
+                          decoration: BoxDecoration(border: Border.all()),
+                          margin: const EdgeInsets.all(2),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                packInBox(Text(cards[index].recto)),
+                                packInBox(Text(cards[index].verso)),
+                              ]));
+                    },
+                  ));
+                }
+              })
         ],
       )),
       floatingActionButton: FloatingActionButton(

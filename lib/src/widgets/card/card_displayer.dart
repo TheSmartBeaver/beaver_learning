@@ -22,7 +22,7 @@ class CardDisplayer extends StatefulWidget {
   State<CardDisplayer> createState() => _CardDisplayerState();
 }
 
-String _getCustomHtml(String color) {
+String _getCustomHtml(String color, bool isPrintAnswer) {
   return '''
       <!DOCTYPE html>
       <html>
@@ -57,8 +57,8 @@ String _getCustomHtml(String color) {
         </style>
       </head>
       <body>
-        <div class='recto texte'><ul><li>Hello, World!</li><li>Hello, World!</li><li>Hello, World!</li></ul></div>
-        <div class='verso texte'>Hello, c'est le verso</div>
+        <div class='recto texte'><ul><li>Hello, World!</li><li>Pourquoi les vampires ne peuvent-ils pas être de bons photographes</li></ul></div>
+        ${isPrintAnswer ? "<div class='verso texte'>Parce qu'ils ont peur d'être \"développés\" par le soleil !</div>" : ""}
         <script>
           function sayHello() {
             alert('Hello from JavaScript!');
@@ -96,12 +96,13 @@ WebViewController _buildController() {
 class _CardDisplayerState extends State<CardDisplayer> {
   WebViewController controller = _buildController();
   WebViewController controller2 = _buildController();
+  bool isPrintAnswer = false;
 
   double revisorButtonHeight = 36.0;
 
   @override
   Widget build(BuildContext context) {
-    controller.loadHtmlString(_getCustomHtml("lightblue"));
+    controller.loadHtmlString(_getCustomHtml("lightblue", isPrintAnswer));
     return Scaffold(
         appBar: AppBar(title: const Text("Card displayer")),
         body: Column(
@@ -157,35 +158,54 @@ class _CardDisplayerState extends State<CardDisplayer> {
                 )
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                    child: Container(
-                        height: revisorButtonHeight,
-                        color: Colors.grey,
-                        alignment: Alignment.center,
-                        child: Text("Very hard"))),
-                Expanded(
-                    child: Container(
-                        height: revisorButtonHeight,
-                        alignment: Alignment.center,
-                        color: Colors.red,
-                        child: Text("Hard"))),
-                Expanded(
-                    child: Container(
-                        height: revisorButtonHeight,
-                        color: Colors.green,
-                        alignment: Alignment.center,
-                        child: Text("Easy"))),
-                Expanded(
-                    child: Container(
-                        height: revisorButtonHeight,
-                        color: Colors.blue,
-                        alignment: Alignment.center,
-                        child: Text("Very Easy"))),
-              ],
-            )
+            if (isPrintAnswer)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                      child: Container(
+                          height: revisorButtonHeight,
+                          color: Colors.grey,
+                          alignment: Alignment.center,
+                          child: Text("Very hard"))),
+                  Expanded(
+                      child: Container(
+                          height: revisorButtonHeight,
+                          alignment: Alignment.center,
+                          color: Colors.red,
+                          child: Text("Hard"))),
+                  Expanded(
+                      child: Container(
+                          height: revisorButtonHeight,
+                          color: Colors.green,
+                          alignment: Alignment.center,
+                          child: Text("Easy"))),
+                  Expanded(
+                      child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isPrintAnswer = false;
+                            });
+                          },
+                          child: Container(
+                              height: revisorButtonHeight,
+                              color: Colors.blue,
+                              alignment: Alignment.center,
+                              child: Text("Very Easy")))),
+                ],
+              )
+            else
+              GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isPrintAnswer = true;
+                    });
+                  },
+                  child: Container(
+                      height: revisorButtonHeight,
+                      color: Colors.grey,
+                      alignment: Alignment.center,
+                      child: const Text("Print Answer")))
           ],
         ),
         drawer: const AppDrawer());

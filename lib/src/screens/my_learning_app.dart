@@ -6,6 +6,7 @@ import 'package:beaver_learning/src/screens/statistics.dart';
 import 'package:beaver_learning/src/settings/settings_controller.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
+import 'package:beaver_learning/src/widgets/group/group_editor.dart';
 import 'package:beaver_learning/src/widgets/reviser/course_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -72,8 +73,8 @@ class MyLearningApp extends StatelessWidget {
                 switch (routeSettings.name) {
                   case CardEditorScreen.routeName:
                     return CardEditorScreen();
-                  case GroupEditorScreen.routeName:
-                    return GroupEditorScreen();
+                  case GroupScreen.routeName:
+                    return GroupScreen();
                   case CardDisplayer.routeName:
                     return CardDisplayer();
                   case CardList.routeName:
@@ -86,6 +87,8 @@ class MyLearningApp extends StatelessWidget {
                     return SettingsScreen();
                   case StatisticsScreen.routeName:
                     return StatisticsScreen();
+                  case GroupEditor.routeName:
+                    return GroupEditor();
                   default:
                     return CourseSummary();
                 }

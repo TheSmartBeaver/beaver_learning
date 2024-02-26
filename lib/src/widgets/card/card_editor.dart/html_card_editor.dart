@@ -1,11 +1,29 @@
+import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
+import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:flutter/material.dart';
 
-class HtmlCardEditor extends StatefulWidget {
+class HtmlCardEditor extends StatefulWidget implements CardEditorInterface {
   final TextEditingController rectoController = TextEditingController();
+  final TextEditingController versoController = TextEditingController();
+
+  HtmlCardEditor({super.key});
 
   @override
   State<StatefulWidget> createState() {
     return _HtmlCardEditorState();
+  }
+
+  @override
+  Future<void> createCard(int groupId) async {
+    final database = MyDatabaseInstance.getInstance();
+    await database.into(database.reviseCards).insert(
+        ReviseCardsCompanion.insert(
+            groupId: groupId,
+            recto: rectoController.text,
+            verso: versoController.text,
+            tags: 'toto;ahah'));
+    var toto = 0;
   }
 }
 
@@ -41,7 +59,7 @@ class _HtmlCardEditorState extends State<HtmlCardEditor> {
           child: TextField(
             maxLines: 5,
             minLines: 5,
-            controller: widget.rectoController,
+            controller: widget.versoController,
             decoration: const InputDecoration(
                 labelText: 'Verso',
                 fillColor: Color.fromARGB(19, 207, 138, 128),
