@@ -1,11 +1,12 @@
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:beaver_learning/data/constants.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
 
-  final String title = "My Learning App";
+  final String title = AppConstante.AppTitle;
   static const routeName = '/StatisticsScreen';
 
   @override

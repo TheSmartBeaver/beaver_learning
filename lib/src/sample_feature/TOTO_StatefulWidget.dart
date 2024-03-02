@@ -1,8 +1,11 @@
+import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
+import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
+import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 
 class TOTO extends StatefulWidget {
-  final String title = "My Learning App";
+  final String title = AppConstante.AppTitle;
 
   @override
   State<TOTO> createState() {
@@ -32,4 +35,16 @@ FutureBuilderExe() {
           return Text("FINAL RENDER");
         }
       });
+}
+
+scaffold(){
+  return Scaffold(
+      appBar: CustomAppBar(
+        title: "widget.title",
+        actions: [
+        ],
+      ),
+      body: Text("TODO"),
+      drawer: const AppDrawer()
+      );
 }

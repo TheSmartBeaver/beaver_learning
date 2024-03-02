@@ -9,11 +9,12 @@ import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:beaver_learning/data/constants.dart';
 
 class CardEditorScreen extends ConsumerStatefulWidget {
   CardEditorScreen({super.key});
 
-  final String title = "My Learning App";
+  final String title = AppConstante.AppTitle;
   static const routeName = '/cardEditorScreen';
 
   late List<DropDownItem<int>> groupItems;

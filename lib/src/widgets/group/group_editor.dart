@@ -6,9 +6,10 @@ import 'package:beaver_learning/src/widgets/shared/widgets/form-tools/custom-tex
 import 'package:beaver_learning/src/widgets/shared/widgets/form-tools/form-styles.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
+import 'package:beaver_learning/data/constants.dart';
 
 class GroupEditor extends StatefulWidget {
-  final String title = "My Learning App";
+  final String title = AppConstante.AppTitle;
   static const routeName = '/groupEditorScreen';
   bool isEditMode = false;
 
