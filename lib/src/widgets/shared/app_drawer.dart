@@ -1,3 +1,4 @@
+import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/providers/app_bar_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
@@ -7,6 +8,7 @@ import 'package:beaver_learning/src/screens/statistics.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/reviser/course_summary.dart';
+import 'package:beaver_learning/src/widgets/reviser/reviser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -50,7 +52,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
         Navigator.pushReplacementNamed(context, StatisticsScreen.routeName);
         break;
       case DrawerItem.revisor:
-        Navigator.pushReplacementNamed(context, CardDisplayer.routeName);
+        Navigator.pushReplacementNamed(context, RevisorDisplayer.routeName);
         break;
       case DrawerItem.course:
         Navigator.pushReplacementNamed(context, CourseSummary.routeName);
@@ -79,7 +81,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             decoration: BoxDecoration(
               color: Colors.blue,
             ),
-            child: Text('My Learning App'),
+            child: Text(AppConstante.AppTitle),
           ),
           ListTile(
             title: const Text('Groupes'),

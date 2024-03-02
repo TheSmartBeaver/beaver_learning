@@ -21,6 +21,8 @@ dependencies:
   flutter_riverpod: ^2.4.9
   webview_flutter: ^4.4.4
   font_awesome_flutter: ^10.6.0
+  dio: ^5.4.1
+  shelf_static: ^1.1.2
 
 dev_dependencies:
   drift_dev: ^2.14.0

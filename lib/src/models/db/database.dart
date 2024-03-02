@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:beaver_learning/src/dao/image_dao.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/groupTable.dart';
+import 'package:beaver_learning/src/models/db/image_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,7 +13,7 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [ReviseCards, Group], views: [])
+@DriftDatabase(tables: [ReviseCards, Group, Images], views: [], daos: [ImageDao])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 

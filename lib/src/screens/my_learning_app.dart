@@ -8,16 +8,27 @@ import 'package:beaver_learning/src/widgets/card/card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/group/group_editor.dart';
 import 'package:beaver_learning/src/widgets/reviser/course_summary.dart';
+import 'package:beaver_learning/src/widgets/reviser/reviser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MyLearningApp extends StatelessWidget {
+//ref.read(appbarProvider.notifier).changeSelectedDrawerIndex(item);
+
+class MyLearningApp extends ConsumerStatefulWidget {
   const MyLearningApp({super.key, required this.settingsController});
 
   static const appTitle = 'Drawer Demo';
   final SettingsController settingsController;
+  
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() {
+    return _MyLearningAppState();
+  }
+}
 
+class _MyLearningAppState extends ConsumerState<MyLearningApp> {
   @override
   Widget build(BuildContext context) {
     // Glue the SettingsController to the MaterialApp.
@@ -25,7 +36,7 @@ class MyLearningApp extends StatelessWidget {
     // The AnimatedBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
     return AnimatedBuilder(
-      animation: settingsController,
+      animation: widget.settingsController,
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
           // Providing a restorationScopeId allows the Navigator built by the
@@ -62,7 +73,7 @@ class MyLearningApp extends StatelessWidget {
           // theme: ThemeData(
           // colorSchemeSeed: Colors.lightGreen, useMaterial3: true),
           darkTheme: ThemeData.dark(),
-          themeMode: settingsController.themeMode,
+          themeMode: widget.settingsController.themeMode,
 
           // Define a function to handle named routes in order to support
           // Flutter web url navigation and deep linking.
@@ -75,8 +86,9 @@ class MyLearningApp extends StatelessWidget {
                     return CardEditorScreen();
                   case GroupScreen.routeName:
                     return GroupScreen();
-                  case CardDisplayer.routeName:
-                    return CardDisplayer();
+                  case RevisorDisplayer.routeName:
+                    
+                    return RevisorDisplayer();
                   case CardList.routeName:
                     return CardList();
                   case CourseSummary.routeName:

@@ -12,7 +12,7 @@ import '../models/db/database.dart';
 class ReviseNotifier extends StateNotifier<Object> {
   ReviseNotifier() : super([]);
 
-  Future<void> init() async {
+  Future<List<ReviseCard>> getAllCardsToRevise() async {
     final database = MyDatabaseInstance.getInstance();
 
     // await database.into(database.reviseCards).insert(
@@ -24,6 +24,7 @@ class ReviseNotifier extends StateNotifier<Object> {
 
     List<ReviseCard> allItems =
         await database.select(database.reviseCards).get();
+    return allItems;
   }
 }
 

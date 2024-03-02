@@ -6,15 +6,17 @@
  * - En usant Webview on perds l'interaction avec Flutter. à utiliser pour quelques types de cartes
  */
 
+import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CardDisplayer extends StatefulWidget {
-  const CardDisplayer({super.key});
+  const CardDisplayer({super.key, required this.cardToRevise, required this.goNextCard});
 
-  static const routeName = '/cardDisplayerScreen';
+  final ReviseCard cardToRevise;
+  final Function goNextCard;
 
   @override
   State<CardDisplayer> createState() => _CardDisplayerState();
@@ -25,37 +27,13 @@ class _CardDisplayerState extends State<CardDisplayer> {
   double revisorButtonHeight = 36.0;
 
   Widget getCorrectDisplayer() {
-    return HTMLCardDisplayer(isPrintAnswer: isPrintAnswer);
+    return HTMLCardDisplayer(isPrintAnswer: isPrintAnswer, cardToRevise: widget.cardToRevise);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(title: const Text("Card displayer")),
-        body: Column(
+    return Column(
           children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Container(
-                padding: const EdgeInsets.only(left: 10),
-                child: const Row(children: [
-                  Text("35",
-                      style: TextStyle(
-                          color: Colors.red, fontWeight: FontWeight.bold)),
-                  Text(" "),
-                  Text("cards to repeat")
-                ]),
-              ),
-              Container(
-                padding: const EdgeInsets.only(right: 10),
-                child: const Row(children: [
-                  Text("14",
-                      style: TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold)),
-                  Text(" "),
-                  Text("cards left")
-                ]),
-              )
-            ]),
             Expanded(
               child: getCorrectDisplayer(),
             ),
@@ -113,6 +91,7 @@ class _CardDisplayerState extends State<CardDisplayer> {
                             setState(() {
                               isPrintAnswer = false;
                             });
+                            widget.goNextCard();
                           },
                           child: Container(
                               height: revisorButtonHeight,
@@ -134,7 +113,6 @@ class _CardDisplayerState extends State<CardDisplayer> {
                       alignment: Alignment.center,
                       child: const Text("Print Answer")))
           ],
-        ),
-        drawer: const AppDrawer());
+        );
   }
 }

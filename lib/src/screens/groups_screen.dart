@@ -1,16 +1,19 @@
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/db/groupTable.dart';
+import 'package:beaver_learning/src/widgets/group/group_detail.dart';
 import 'package:beaver_learning/src/widgets/group/group_editor.dart';
+import 'package:beaver_learning/src/widgets/group/group_list.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
+import 'package:beaver_learning/data/constants.dart';
 //import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 
 class GroupScreen extends StatefulWidget {
   const GroupScreen({super.key});
 
-  final String title = "My Learning App";
+  final String title = AppConstante.AppTitle;
   static const routeName = '/groupScreen';
 
   @override
@@ -27,7 +30,9 @@ class _GroupScreenState extends State<GroupScreen> {
 
   init() async {
     final database = MyDatabaseInstance.getInstance();
-    groups = await database.select(database.group).get();
+    groups = await (database.select(database.group)
+          ..where((group) => group.parentId.isNull()))
+        .get();
   }
 
   @override
@@ -60,49 +65,7 @@ class _GroupScreenState extends State<GroupScreen> {
                     return const CircularProgressIndicator();
                   } else {
                     return Expanded(
-                        child: GridView.builder(
-                            padding: const EdgeInsets.all(8.0),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              childAspectRatio: 2 / 3,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                            ),
-                            itemCount: groups.length,
-                            itemBuilder: (context, index) {
-                              return Card(
-                                child: Column(
-                                  children: [
-                                    Expanded(
-                                        child: Column(
-                                      children: [
-                                        Text(groups[index].title),
-                                        Text(
-                                            'parent ${groups[index].parentId}'),
-                                      ],
-                                    )),
-                                    Container(
-                                      margin: const EdgeInsets.all(4),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Icon(
-                                            Icons.remove_red_eye_sharp,
-                                            color: Colors.deepOrange,
-                                          ),
-                                          Text('${groups[index].tags}',
-                                              style: const TextStyle(
-                                                  color: Colors.purpleAccent,
-                                                  fontWeight: FontWeight.bold)),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              );
-                            }));
+                        child: GroupList(groups: groups));
                   }
                 }),
           ],
