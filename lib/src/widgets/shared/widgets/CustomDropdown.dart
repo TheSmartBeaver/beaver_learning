@@ -8,6 +8,7 @@ class CustomDropdownMenu<T> extends StatefulWidget {
   final TextEditingController dpController = TextEditingController();
   final void Function(DropDownItem<T>?)? onSelected;
   DropDownItem<T>? value;
+  bool isInitialized = false;
 
   CustomDropdownMenu(
       {super.key,
@@ -35,15 +36,16 @@ class DropDownItem<T> {
 }
 
 class _CustomDropdown extends State<CustomDropdownMenu> {
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   if (widget.value != null) {
-  //     widget.dpController.text = widget.items
-  //         .firstWhere((element) => element.value == widget.value)
-  //         .label;
-  //   }
-  // }
+  @override
+  void initState() {
+    super.initState();
+    if (widget.value != null && !widget.isInitialized) {
+      widget.dpController.text = widget.items
+          .firstWhere((element) => element.value == widget.value?.value)
+          .label;
+    }
+    widget.isInitialized = true;
+  }
 
   @override
   Widget build(BuildContext context) {
