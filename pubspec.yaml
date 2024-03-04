@@ -23,10 +23,12 @@ dependencies:
   font_awesome_flutter: ^10.6.0
   dio: ^5.4.1
   shelf_static: ^1.1.2
+  transparent_image: ^2.0.1
 
 dev_dependencies:
   drift_dev: ^2.14.0
   build_runner: ^2.4.7
+  flutter_launcher_icons: "^0.13.1"
   flutter_test:
     sdk: flutter
 
@@ -41,3 +43,16 @@ flutter:
   assets:
     # Add assets from the images directory to the application.
     - assets/images/
+
+flutter_launcher_icons:
+  image_path: "assets/images/flashmemorizepro.png"
+  ios:
+    generate: true
+    icon_size: 256
+    background_color: "#09EFC1"
+    theme_color: "#09EFC1"
+  android:
+    generate: true
+    icon_size: 256
+    background_color: "#09EFC1"
+    theme_color: "#09EFC1"
