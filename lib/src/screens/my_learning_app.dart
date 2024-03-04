@@ -1,4 +1,5 @@
 import 'package:beaver_learning/src/screens/card_editor.dart';
+import 'package:beaver_learning/src/screens/courses.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/marketplace.dart';
 import 'package:beaver_learning/src/screens/settings_screen.dart';
@@ -7,7 +8,7 @@ import 'package:beaver_learning/src/settings/settings_controller.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/group/group_editor.dart';
-import 'package:beaver_learning/src/widgets/reviser/course_summary.dart';
+import 'package:beaver_learning/src/widgets/course/course_summary.dart';
 import 'package:beaver_learning/src/widgets/reviser/reviser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -101,8 +102,10 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
                     return StatisticsScreen();
                   case GroupEditor.routeName:
                     return GroupEditor();
+                  case CoursesScreen.routeName:
+                    return CoursesScreen();
                   default:
-                    return CourseSummary();
+                    return CoursesScreen();
                 }
               },
             );

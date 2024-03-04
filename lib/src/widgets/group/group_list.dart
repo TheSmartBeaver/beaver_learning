@@ -13,7 +13,7 @@ class GroupList extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          childAspectRatio: 2 / 3,
+          childAspectRatio: 5 / 4,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
@@ -26,11 +26,12 @@ class GroupList extends StatelessWidget {
                     child: Column(
                   children: [
                     Text(groups[index].title),
-                    Text('parent ${groups[index].parentId}'),
+                    const SizedBox(height: 6),
+                    const Text('4 / 3 / 5'),
                   ],
                 )),
                 Container(
-                    margin: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.only(bottom: 4),
                     child: GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(

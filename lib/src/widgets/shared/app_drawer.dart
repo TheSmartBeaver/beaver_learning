@@ -1,13 +1,14 @@
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/providers/app_bar_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
+import 'package:beaver_learning/src/screens/courses.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/marketplace.dart';
 import 'package:beaver_learning/src/screens/settings_screen.dart';
 import 'package:beaver_learning/src/screens/statistics.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
-import 'package:beaver_learning/src/widgets/reviser/course_summary.dart';
+import 'package:beaver_learning/src/widgets/course/course_summary.dart';
 import 'package:beaver_learning/src/widgets/reviser/reviser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,7 @@ enum DrawerItem {
   cards,
   statistics,
   revisor,
-  course,
+  courses,
   marketplace,
   settings
 }
@@ -54,8 +55,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       case DrawerItem.revisor:
         Navigator.pushReplacementNamed(context, RevisorDisplayer.routeName);
         break;
-      case DrawerItem.course:
-        Navigator.pushReplacementNamed(context, CourseSummary.routeName);
+      case DrawerItem.courses:
+        Navigator.pushReplacementNamed(context, CoursesScreen.routeName);
         break;
       case DrawerItem.marketplace:
         Navigator.pushReplacementNamed(context, MarketPlaceScreen.routeName);
@@ -123,9 +124,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             title: const Text('Cours'),
             selected:
                 ref.read(appbarProvider.notifier).state.currentDrawerIndex ==
-                    DrawerItem.course,
+                    DrawerItem.courses,
             onTap: () {
-              _internalOnItemTapped(DrawerItem.course);
+              _internalOnItemTapped(DrawerItem.courses);
             },
           ),
           ListTile(
