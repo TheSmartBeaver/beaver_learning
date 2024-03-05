@@ -88,12 +88,9 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
                   case GroupScreen.routeName:
                     return GroupScreen();
                   case RevisorDisplayer.routeName:
-                    
                     return RevisorDisplayer();
                   case CardList.routeName:
                     return CardList();
-                  case CourseSummary.routeName:
-                    return CourseSummary();
                   case MarketPlaceScreen.routeName:
                     return MarketPlaceScreen();
                   case SettingsScreen.routeName:

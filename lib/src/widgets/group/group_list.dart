@@ -13,7 +13,7 @@ class GroupList extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          childAspectRatio: 5 / 4,
+          childAspectRatio: 10 / 11,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),

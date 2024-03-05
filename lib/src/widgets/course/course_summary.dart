@@ -1,69 +1,75 @@
+import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 
-class Topic {
+class Topic2 {
+  final int id;
   final String name;
-  final List<Topic> childrenTopics;
+  final List<Topic2> childrenTopics;
+  int? parentId;
 
-  Topic(this.name, this.childrenTopics);
+  Topic2(this.id, this.name, this.childrenTopics, {this.parentId});
+
+  Topic2 deepCopy() {
+  // Create a new Person object with the same properties
+  Topic2 copy = Topic2(id, name, childrenTopics, parentId: parentId);
+  return copy;
+}
 }
 
 class CourseSummary extends StatefulWidget {
   static const routeName = '/courseScreen';
+  final Course course;
+  final List<Topic> topics;
 
-  Topic summary = Topic("Foot Course", [
-    Topic("basics", [
-      Topic("basics 1", []),
-      Topic("basics 2", [Topic("basics 2.1", []), Topic("basics 2.2", [])])
-    ]),
-    Topic("advanced 1", [
-      Topic("advanced 1", []),
-      Topic(
-          "advanced 2", [Topic("advanced 2.1", []), Topic("advanced 2.2", [])])
-    ]),
-  ]);
+  // Topic2 summary = Topic2("Foot Course", [
+  //   Topic2("basics", [
+  //     Topic2("basics 1", []),
+  //     Topic2("basics 2", [Topic2("basics 2.1", []), Topic2("basics 2.2", [])])
+  //   ]),
+  //   Topic2("advanced 1", [
+  //     Topic2("advanced 1", []),
+  //     Topic2(
+  //         "advanced 2", [Topic2("advanced 2.1", []), Topic2("advanced 2.2", [])])
+  //   ]),
+  // ]);
 
-  Topic englishCourse = Topic("Cours d'anglais", [
-    Topic("Bases", [
-      Topic("Introduction à l'anglais", []),
-      Topic("Les bases de la grammaire", [
-        Topic("Les articles", []),
-        Topic("Les pronoms", []),
-        Topic("Les verbes", []),
-        // Vous pouvez ajouter d'autres sous-thèmes ici
-      ]),
-      Topic("Vocabulaire de base", [
-        Topic("Les chiffres et les nombres", []),
-        Topic("Les jours de la semaine", []),
-        Topic("Les mois de l'année", []),
-        // Ajoutez d'autres sous-thèmes de vocabulaire ici
-      ]),
-    ]),
-    Topic("Avancé", [
-      Topic("Conversation avancée", [
-        Topic("Dialogues et expressions courantes", []),
-        Topic("Débats et discussions", []),
-        // Vous pouvez ajouter d'autres sous-thèmes ici
-      ]),
-      Topic("Grammaire avancée", [
-        Topic("Temps verbaux", []),
-        Topic("Les propositions subordonnées", []),
-        // Ajoutez d'autres sous-thèmes de grammaire ici
-      ]),
-      Topic("Vocabulaire avancé", [
-        Topic("Idiomes et expressions idiomatiques", []),
-        Topic("Termes techniques et professionnels", []),
-        // Ajoutez d'autres sous-thèmes de vocabulaire ici
-      ]),
-    ]),
-  ]);
+  CourseSummary({super.key, required this.course, required this.topics});
 
-  CourseSummary({super.key});
+
 
   @override
   State<StatefulWidget> createState() {
     return _CourseSummaryState();
   }
+}
+
+//une fonction qui convertit List<Topic> List<Topic2>
+List<Topic2> buildTopic2(List<Topic> topics) {
+  // List<Topic2> topics2 = topics.map((e) => Topic2(e.id ,e.title, [], parentId: e.parentId)).toList();
+  // for (var topic in topics2) {
+  //   if(topic.parentId != null){
+  //     topics2.firstWhere((element) => element.id == topic.parentId).childrenTopics.add(topic.deepCopy());
+  //     //topics2.remove(topic);
+  //   }
+  // }
+
+  List<Topic2> topics2 = [];
+
+  void setDirectChildren(Topic2 parent, List<Topic> topics){
+    for(var topic in topics.where((element) => element.parentId == parent.id)){
+      parent.childrenTopics.add(Topic2(topic.id, topic.title, [], parentId: topic.parentId));
+      setDirectChildren(parent.childrenTopics.last, topics);
+    }
+  }
+
+  for(var rootTopic in topics.where((element) => element.parentId == null)){
+    var topic2 = Topic2(rootTopic.id ,rootTopic.title, [], parentId: rootTopic.parentId);
+    setDirectChildren(topic2, topics);
+    topics2.add(topic2);
+  }
+
+  return topics2;
 }
 
 Widget _renderButton() {
@@ -92,7 +98,7 @@ Widget _renderButton2() {
       ));
 }
 
-Widget _renderTopicBlock(Topic topic) {
+Widget _renderTopicBlock(Topic2 topic) {
   List<Widget> childrenRendered = [];
   for (var child in topic.childrenTopics) {
     childrenRendered.add(_renderTopicBlock(child));
@@ -110,14 +116,17 @@ Widget _renderTopicBlock(Topic topic) {
   ]);
 }
 
+
 class _CourseSummaryState extends State<CourseSummary> {
   @override
   Widget build(BuildContext context) {
+    var topics2 = buildTopic2(widget.topics);
+    var topic3 = Topic2(-1, widget.course.title, topics2);
     return Scaffold(
         appBar: AppBar(
           title: const Text('Course Summary'),
         ),
-        body: _renderTopicBlock(widget.englishCourse),
+        body: _renderTopicBlock(topic3),
         drawer: const AppDrawer());
     //body: Text("aaaa"));
   }

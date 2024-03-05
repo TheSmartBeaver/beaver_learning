@@ -12,7 +12,8 @@ import 'package:flutter/material.dart';
 
 class CourseDetail extends StatefulWidget {
   final String title = AppConstante.AppTitle;
-  const CourseDetail({Key? key}) : super(key: key);
+  final Course course;
+  const CourseDetail({Key? key, required this.course}) : super(key: key);
 
   @override
   _CourseDetailState createState() => _CourseDetailState();
@@ -20,9 +21,13 @@ class CourseDetail extends StatefulWidget {
 
 class _CourseDetailState extends State<CourseDetail> {
   List<GroupData> groups = [];
+  List<Topic> topics = [];
 
   init() async {
     final database = MyDatabaseInstance.getInstance();
+    topics = await (database.select(database.topics)..where((tbl) => tbl.parentCourseId.equals(widget.course.id))).get();
+    Set<int> groupIds = topics.map((e) => e.groupId).whereType<int>().toSet();
+    groups = await (database.select(database.group)..where((tbl) => tbl.id.isIn(groupIds))).get();
   }
 
   @override
@@ -41,7 +46,7 @@ class _CourseDetailState extends State<CourseDetail> {
         ),
         body: Column(
           children: [
-            Text("TITRE", style: const TextStyle(fontSize: 24)),
+            Text(widget.course.title, style: const TextStyle(fontSize: 24)),
             ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(
@@ -53,13 +58,13 @@ class _CourseDetailState extends State<CourseDetail> {
                 style: const ButtonStyle(
                     backgroundColor:
                         MaterialStatePropertyAll(Colors.lightGreen)),
-                child: const Text("Revise course",
+                child: const Text("Revise seen topics",
                     style: TextStyle(color: Colors.black))),
             ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => CourseSummary(),
+                      builder: (ctx) => CourseSummary(course: widget.course, topics: topics),
                     ),
                   );
                 },
@@ -74,9 +79,9 @@ class _CourseDetailState extends State<CourseDetail> {
                 child: containerWithLabel(
                     label: "Description",
                     body: Container(
-                        margin: const EdgeInsets.all(4),
+                        margin: const EdgeInsets.only(top: 10, bottom: 8, left: 4, right: 4),
                         width: MediaQuery.of(context).size.width * 0.95,
-                        child: const Text("FULL DESCRIPTION\nFULL DESCRIPTION\nFULL DESCRIPTION")))),
+                        child: Text(widget.course.description)))),
             FutureBuilder(
                 future: init(),
                 builder: (context, snapshot) {

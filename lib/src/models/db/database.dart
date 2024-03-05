@@ -2,8 +2,14 @@ import 'dart:io';
 
 import 'package:beaver_learning/src/dao/image_dao.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
+import 'package:beaver_learning/src/models/db/courseTable.dart';
+import 'package:beaver_learning/src/models/db/fileTable.dart';
 import 'package:beaver_learning/src/models/db/groupTable.dart';
+import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
+import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/models/db/image_table.dart';
+import 'package:beaver_learning/src/models/db/topicTable.dart';
+import 'package:beaver_learning/src/models/migrator/initial_migration.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,7 +19,19 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [ReviseCards, Group, Images], views: [], daos: [ImageDao])
+@DriftDatabase(tables: [
+  ReviseCards,
+  Group,
+  Images,
+  Courses,
+  FileContents,
+  HTMLContents,
+  HTMLContentFiles,
+  Topics
+], views: [], daos: [
+  ImageDao
+])
+
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -26,18 +44,11 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (m) async {
         await m.createAll();
 
-        // Add a bunch of default items in a batch
-        // await batch((b) {
-        //   b.insertAll(todoItems, [
-        //     TodoItemsCompanion.insert(title: 'A first entry', categoryId: 0),
-        //     TodoItemsCompanion.insert(
-        //       title: 'Todo: Checkout drift',
-        //       content: const Value('Drift is a persistence library for Dart '
-        //           'and Flutter applications.'),
-        //       categoryId: 0,
-        //     ),
-        //   ]);
-        // });
+        //Add a bunch of default items in a batch
+        await batch((b) async {
+          DatabasesBatchInfos dbInfos = DatabasesBatchInfos(group, reviseCards, images, courses, topics, fileContents, hTMLContents, hTMLContentFiles);
+          await initial_migrate_batch(b, dbInfos);
+        });
       },
     );
   }
@@ -70,7 +81,7 @@ LazyDatabase _openConnection() {
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
     var file = File(p.join(dbFolder.path, 'db.sqlite'));
-    //deleteFile(file);
+    deleteFile(file);
     file = File(p.join(dbFolder.path, 'db.sqlite'));
 
     // Also work around limitations on old Android versions
