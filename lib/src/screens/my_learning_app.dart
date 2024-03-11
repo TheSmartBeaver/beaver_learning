@@ -1,4 +1,5 @@
 import 'package:beaver_learning/src/screens/card_editor.dart';
+import 'package:beaver_learning/src/screens/course_creator.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/marketplace.dart';
@@ -73,7 +74,7 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
           theme: ThemeData(),
           // theme: ThemeData(
           // colorSchemeSeed: Colors.lightGreen, useMaterial3: true),
-          darkTheme: ThemeData.dark(),
+          darkTheme: ThemeData.light(),
           themeMode: widget.settingsController.themeMode,
 
           // Define a function to handle named routes in order to support
@@ -101,6 +102,8 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
                     return GroupEditor();
                   case CoursesScreen.routeName:
                     return CoursesScreen();
+                  case CourseCreatorScreen.routeName:
+                    return CourseCreatorScreen();
                   default:
                     return CoursesScreen();
                 }

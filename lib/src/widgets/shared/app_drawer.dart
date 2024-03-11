@@ -1,6 +1,7 @@
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/providers/app_bar_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
+import 'package:beaver_learning/src/screens/course_creator.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/marketplace.dart';
@@ -29,7 +30,8 @@ enum DrawerItem {
   revisor,
   courses,
   marketplace,
-  settings
+  settings,
+  course_creator
 }
 
 class _AppDrawerState extends ConsumerState<AppDrawer> {
@@ -63,6 +65,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
         break;
       case DrawerItem.settings:
         Navigator.pushReplacementNamed(context, SettingsScreen.routeName);
+        break;
+      case DrawerItem.course_creator:
+        Navigator.pushReplacementNamed(context, CourseCreatorScreen.routeName);
         break;
       default:
     }
@@ -147,6 +152,15 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     DrawerItem.settings,
             onTap: () {
               _internalOnItemTapped(DrawerItem.settings);
+            },
+          ),
+          ListTile(
+            title: const Text('Course creator'),
+            selected:
+                ref.read(appbarProvider.notifier).state.currentDrawerIndex ==
+                    DrawerItem.marketplace,
+            onTap: () {
+              _internalOnItemTapped(DrawerItem.course_creator);
             },
           ),
         ],
