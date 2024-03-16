@@ -1,0 +1,1 @@
+enum CardDisplayerType { html, queelEditor }

@@ -60,7 +60,7 @@ class _CourseCreatorState extends ConsumerState<CourseCreatorScreen> {
               IconButton(onPressed: () {
                 Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => QueelEditor(),
+                      builder: (ctx) => MyQueelEditor("", isEditionMode: true),
                     ),
                   );
               }, icon: const Icon(Icons.edit))

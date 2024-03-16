@@ -1,4 +1,5 @@
 import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/html_card_editor.dart';
@@ -18,19 +19,33 @@ class CardEditorScreen extends ConsumerStatefulWidget {
   static const routeName = '/cardEditorScreen';
 
   late List<DropDownItem<int>> groupItems;
+  CustomDropdownMenu<int>? groupDropdown;
+  late List<DropDownItem<CardDisplayerType>> cardDiplayerTypeItems;
+  CustomDropdownMenu<CardDisplayerType>? cardDiplayerTypeDropdown;
+
 
   final TextEditingController cardTypeController = TextEditingController();
-  CustomDropdownMenu<int>? groupDropdown;
+  
   bool isInitialized = false;
 
   Future<void> init(WidgetRef ref, BuildContext context) async {
     if (!isInitialized) {
+
+      //Group
       var groups = await ref.read(appDatabaseProvider.notifier).getAllGroups();
       groupItems = groups.map<DropDownItem<int>>(
         (GroupData gData) {
           return DropDownItem<int>(gData.title, gData.id);
         },
       ).toList();
+
+      //Card displayer types
+      cardDiplayerTypeItems = CardDisplayerType.values.map<DropDownItem<CardDisplayerType>>(
+        (CardDisplayerType cdt) {
+          return DropDownItem<CardDisplayerType>(cdt.name, cdt);
+        },
+      ).toList();
+
       isInitialized = true;
     }
   }
@@ -47,20 +62,21 @@ List<DropDownItem> items = [
 class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
   Widget getDropDowns(WidgetRef ref, BuildContext context) {
     List<Widget> getDropDowns2() {
+
       widget.groupDropdown = CustomDropdownMenu(
         items: widget.groupItems,
         label: "Group",
         width: MediaQuery.of(context).size.width,
       );
 
+      widget.cardDiplayerTypeDropdown = CustomDropdownMenu(
+        items: widget.cardDiplayerTypeItems,
+        label: "Card displayer type",
+        width: MediaQuery.of(context).size.width,
+      );
+
       return [
-        Container(
-            margin: const EdgeInsets.all(4),
-            child: CustomDropdownMenu(
-              items: items,
-              label: "Card Type",
-              width: MediaQuery.of(context).size.width,
-            )),
+        Container(margin: const EdgeInsets.all(4), child: widget.cardDiplayerTypeDropdown),
         Container(margin: const EdgeInsets.all(4), child: widget.groupDropdown)
       ];
     }
@@ -92,7 +108,7 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
             icon: const Icon(Icons.check_circle),
             onPressed: () async {
               int groupId = widget.groupDropdown!.getValue()!.value;
-              await editorToRender.createCard(groupId);
+              await editorToRender.createCard(groupId, widget.cardDiplayerTypeDropdown!.getValue()!.value);
               Navigator.pushNamed(context, CardList.routeName);
             },
           )

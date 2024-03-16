@@ -58,6 +58,7 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
             display: flex;
             justify-content: center; /* Centre le contenu horizontalement */
             align-items: center; /* Centre le contenu verticalement */
+            flex-direction: column; /* Organise les éléments de haut en bas */
           }
 
           .verso {
@@ -66,6 +67,7 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
             flex-grow: 1; /* Permet à la partie "recto" de s'étendre pour remplir l'espace restant */
             justify-content: center; /* Centre le contenu horizontalement */
             align-items: center; /* Centre le contenu verticalement */
+            flex-direction: column; /* Organise les éléments de haut en bas */
           }
 
           .texte {
@@ -105,8 +107,8 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
   //       "<ul><li>Hello, World!</li><li>Pourquoi les vampires ne peuvent-ils pas être de bons photographes</li></ul>";
   //   var verso =
   //       "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>";
-    
-
+  
+  
   Future<void> init() async {
     recto = widget.cardToRevise.recto;
     verso = widget.cardToRevise.verso;
@@ -114,6 +116,7 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
     await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index.html");
     await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));
+    //await controller.loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
     //serverProps.server.close(force: true);
   }
 

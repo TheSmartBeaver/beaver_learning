@@ -18,8 +18,12 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:path/path.dart' as path;
 import 'package:quill_html_converter/quill_html_converter.dart';
 
-class QueelEditor extends ConsumerStatefulWidget {
+class MyQueelEditor extends ConsumerStatefulWidget {
   static const routeName = "/queel-editor";
+  final bool isEditionMode;
+  final String content;
+
+  MyQueelEditor(this.content, {super.key, required this.isEditionMode});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
@@ -27,13 +31,19 @@ class QueelEditor extends ConsumerStatefulWidget {
   }
 }
 
-class _QueelEditorState extends ConsumerState<QueelEditor> {
+class _QueelEditorState extends ConsumerState<MyQueelEditor> {
   final _controller = QuillController.basic();
   final _editorScrollController = ScrollController();
   final _editorFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
+
+    //_controller.document.insert(0, widget.content);
+    if(widget.content.isNotEmpty){
+      _controller.document = Document.fromDelta(Document.fromHtml(widget.content));
+    }
+  
     return Scaffold(
         appBar: CustomAppBar(
           title: "widget.title",
@@ -115,14 +125,16 @@ class _QueelEditorState extends ConsumerState<QueelEditor> {
           ],
         ),
         body: Column(children: [
-          MyQuillToolbar(controller: _controller, focusNode: _editorFocusNode),
+          if(widget.isEditionMode) MyQuillToolbar(controller: _controller, focusNode: _editorFocusNode),
           Expanded(
               child:
           MyQuillEditor(
               configurations: QuillEditorConfigurations(
                 sharedConfigurations: _sharedConfigurations,
                 controller: _controller,
-                readOnly: false,
+                readOnly: !widget.isEditionMode,
+                showCursor: widget.isEditionMode,
+                autoFocus: widget.isEditionMode,
               ),
               scrollController: _editorScrollController,
               focusNode: _editorFocusNode))
@@ -181,7 +193,7 @@ class MyQuillEditor extends StatelessWidget {
           ),
         ),
         scrollable: true,
-        placeholder: 'Start writting your notes...',
+        placeholder: 'Start writtingggg your notes...',
         padding: const EdgeInsets.all(16),
         onImagePaste: (imageBytes) async {
           if (isWeb()) {
