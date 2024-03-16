@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:drift/drift.dart';
 
 class DatabasesBatchInfos {
@@ -39,11 +40,12 @@ Future<void> initial_migrate_batch(Batch batch, DatabasesBatchInfos dbInfos) asy
           ]);
 
           batch.insertAll(dbInfos.reviseCards, [
-            ReviseCardsCompanion.insert(groupId: 1, recto: 'chien', verso: 'dog', tags: ''),
-            ReviseCardsCompanion.insert(groupId: 1, recto: 'chat', verso: 'cat', tags: ''),
-            ReviseCardsCompanion.insert(groupId: 1, recto: 'cuisine', verso: 'kitchen', tags: ''),
-            ReviseCardsCompanion.insert(groupId: 2, recto: 'devenir', verso: 'become\nbecame\nbecome', tags: ''),
-            ReviseCardsCompanion.insert(groupId: 2, recto: 'partir', verso: 'leave\nleft\nleft', tags: '')
+            ReviseCardsCompanion.insert(groupId: 1, recto: 'test', verso: 'ahhahaha', tags: '', displayerType: CardDisplayerType.queelEditor, nextRevisionDateMultiplicator: 0.2),
+            ReviseCardsCompanion.insert(groupId: 1, recto: 'chien', verso: 'dog', tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2),
+            ReviseCardsCompanion.insert(groupId: 1, recto: 'chat', verso: 'cat', tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2),
+            ReviseCardsCompanion.insert(groupId: 1, recto: 'cuisine', verso: 'kitchen', tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2),
+            ReviseCardsCompanion.insert(groupId: 2, recto: 'devenir', verso: 'become\nbecame\nbecome', tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2),
+            ReviseCardsCompanion.insert(groupId: 2, recto: 'partir', verso: 'leave\nleft\nleft', tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2)
           ]);
 
           // batch.insertAll(dbInfos.fileContents, [

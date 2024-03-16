@@ -9,6 +9,7 @@ import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/models/db/image_table.dart';
 import 'package:beaver_learning/src/models/db/topicTable.dart';
+import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/models/migrator/initial_migration.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';

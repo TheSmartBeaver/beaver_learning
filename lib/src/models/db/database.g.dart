@@ -290,13 +290,43 @@ class $ReviseCardsTable extends ReviseCards
   late final GeneratedColumn<String> verso = GeneratedColumn<String>(
       'verso', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _displayerTypeMeta =
+      const VerificationMeta('displayerType');
+  @override
+  late final GeneratedColumnWithTypeConverter<CardDisplayerType, int>
+      displayerType = GeneratedColumn<int>('displayer_type', aliasedName, false,
+              type: DriftSqlType.int, requiredDuringInsert: true)
+          .withConverter<CardDisplayerType>(
+              $ReviseCardsTable.$converterdisplayerType);
   static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
   @override
   late final GeneratedColumn<String> tags = GeneratedColumn<String>(
       'body', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nextRevisionDateMultiplicatorMeta =
+      const VerificationMeta('nextRevisionDateMultiplicator');
   @override
-  List<GeneratedColumn> get $columns => [id, groupId, recto, verso, tags];
+  late final GeneratedColumn<double> nextRevisionDateMultiplicator =
+      GeneratedColumn<double>(
+          'next_revision_date_multiplicator', aliasedName, false,
+          type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _nextRevisionDateMeta =
+      const VerificationMeta('nextRevisionDate');
+  @override
+  late final GeneratedColumn<DateTime> nextRevisionDate =
+      GeneratedColumn<DateTime>('next_revision_date', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        groupId,
+        recto,
+        verso,
+        displayerType,
+        tags,
+        nextRevisionDateMultiplicator,
+        nextRevisionDate
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -328,11 +358,27 @@ class $ReviseCardsTable extends ReviseCards
     } else if (isInserting) {
       context.missing(_versoMeta);
     }
+    context.handle(_displayerTypeMeta, const VerificationResult.success());
     if (data.containsKey('body')) {
       context.handle(
           _tagsMeta, tags.isAcceptableOrUnknown(data['body']!, _tagsMeta));
     } else if (isInserting) {
       context.missing(_tagsMeta);
+    }
+    if (data.containsKey('next_revision_date_multiplicator')) {
+      context.handle(
+          _nextRevisionDateMultiplicatorMeta,
+          nextRevisionDateMultiplicator.isAcceptableOrUnknown(
+              data['next_revision_date_multiplicator']!,
+              _nextRevisionDateMultiplicatorMeta));
+    } else if (isInserting) {
+      context.missing(_nextRevisionDateMultiplicatorMeta);
+    }
+    if (data.containsKey('next_revision_date')) {
+      context.handle(
+          _nextRevisionDateMeta,
+          nextRevisionDate.isAcceptableOrUnknown(
+              data['next_revision_date']!, _nextRevisionDateMeta));
     }
     return context;
   }
@@ -351,8 +397,16 @@ class $ReviseCardsTable extends ReviseCards
           .read(DriftSqlType.string, data['${effectivePrefix}recto'])!,
       verso: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}verso'])!,
+      displayerType: $ReviseCardsTable.$converterdisplayerType.fromSql(
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.int, data['${effectivePrefix}displayer_type'])!),
       tags: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
+      nextRevisionDateMultiplicator: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}next_revision_date_multiplicator'])!,
+      nextRevisionDate: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}next_revision_date']),
     );
   }
 
@@ -360,6 +414,10 @@ class $ReviseCardsTable extends ReviseCards
   $ReviseCardsTable createAlias(String alias) {
     return $ReviseCardsTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<CardDisplayerType, int, int>
+      $converterdisplayerType =
+      const EnumIndexConverter<CardDisplayerType>(CardDisplayerType.values);
 }
 
 class ReviseCard extends DataClass implements Insertable<ReviseCard> {
@@ -367,13 +425,19 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final int groupId;
   final String recto;
   final String verso;
+  final CardDisplayerType displayerType;
   final String tags;
+  final double nextRevisionDateMultiplicator;
+  final DateTime? nextRevisionDate;
   const ReviseCard(
       {required this.id,
       required this.groupId,
       required this.recto,
       required this.verso,
-      required this.tags});
+      required this.displayerType,
+      required this.tags,
+      required this.nextRevisionDateMultiplicator,
+      this.nextRevisionDate});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -381,7 +445,16 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     map['group_id'] = Variable<int>(groupId);
     map['recto'] = Variable<String>(recto);
     map['verso'] = Variable<String>(verso);
+    {
+      map['displayer_type'] = Variable<int>(
+          $ReviseCardsTable.$converterdisplayerType.toSql(displayerType));
+    }
     map['body'] = Variable<String>(tags);
+    map['next_revision_date_multiplicator'] =
+        Variable<double>(nextRevisionDateMultiplicator);
+    if (!nullToAbsent || nextRevisionDate != null) {
+      map['next_revision_date'] = Variable<DateTime>(nextRevisionDate);
+    }
     return map;
   }
 
@@ -391,7 +464,12 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       groupId: Value(groupId),
       recto: Value(recto),
       verso: Value(verso),
+      displayerType: Value(displayerType),
       tags: Value(tags),
+      nextRevisionDateMultiplicator: Value(nextRevisionDateMultiplicator),
+      nextRevisionDate: nextRevisionDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextRevisionDate),
     );
   }
 
@@ -403,7 +481,13 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       groupId: serializer.fromJson<int>(json['groupId']),
       recto: serializer.fromJson<String>(json['recto']),
       verso: serializer.fromJson<String>(json['verso']),
+      displayerType: $ReviseCardsTable.$converterdisplayerType
+          .fromJson(serializer.fromJson<int>(json['displayerType'])),
       tags: serializer.fromJson<String>(json['tags']),
+      nextRevisionDateMultiplicator:
+          serializer.fromJson<double>(json['nextRevisionDateMultiplicator']),
+      nextRevisionDate:
+          serializer.fromJson<DateTime?>(json['nextRevisionDate']),
     );
   }
   @override
@@ -414,7 +498,12 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       'groupId': serializer.toJson<int>(groupId),
       'recto': serializer.toJson<String>(recto),
       'verso': serializer.toJson<String>(verso),
+      'displayerType': serializer.toJson<int>(
+          $ReviseCardsTable.$converterdisplayerType.toJson(displayerType)),
       'tags': serializer.toJson<String>(tags),
+      'nextRevisionDateMultiplicator':
+          serializer.toJson<double>(nextRevisionDateMultiplicator),
+      'nextRevisionDate': serializer.toJson<DateTime?>(nextRevisionDate),
     };
   }
 
@@ -423,13 +512,22 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           int? groupId,
           String? recto,
           String? verso,
-          String? tags}) =>
+          CardDisplayerType? displayerType,
+          String? tags,
+          double? nextRevisionDateMultiplicator,
+          Value<DateTime?> nextRevisionDate = const Value.absent()}) =>
       ReviseCard(
         id: id ?? this.id,
         groupId: groupId ?? this.groupId,
         recto: recto ?? this.recto,
         verso: verso ?? this.verso,
+        displayerType: displayerType ?? this.displayerType,
         tags: tags ?? this.tags,
+        nextRevisionDateMultiplicator:
+            nextRevisionDateMultiplicator ?? this.nextRevisionDateMultiplicator,
+        nextRevisionDate: nextRevisionDate.present
+            ? nextRevisionDate.value
+            : this.nextRevisionDate,
       );
   @override
   String toString() {
@@ -438,13 +536,18 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           ..write('groupId: $groupId, ')
           ..write('recto: $recto, ')
           ..write('verso: $verso, ')
-          ..write('tags: $tags')
+          ..write('displayerType: $displayerType, ')
+          ..write('tags: $tags, ')
+          ..write(
+              'nextRevisionDateMultiplicator: $nextRevisionDateMultiplicator, ')
+          ..write('nextRevisionDate: $nextRevisionDate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, groupId, recto, verso, tags);
+  int get hashCode => Object.hash(id, groupId, recto, verso, displayerType,
+      tags, nextRevisionDateMultiplicator, nextRevisionDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -453,7 +556,11 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           other.groupId == this.groupId &&
           other.recto == this.recto &&
           other.verso == this.verso &&
-          other.tags == this.tags);
+          other.displayerType == this.displayerType &&
+          other.tags == this.tags &&
+          other.nextRevisionDateMultiplicator ==
+              this.nextRevisionDateMultiplicator &&
+          other.nextRevisionDate == this.nextRevisionDate);
 }
 
 class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
@@ -461,37 +568,55 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<int> groupId;
   final Value<String> recto;
   final Value<String> verso;
+  final Value<CardDisplayerType> displayerType;
   final Value<String> tags;
+  final Value<double> nextRevisionDateMultiplicator;
+  final Value<DateTime?> nextRevisionDate;
   const ReviseCardsCompanion({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
     this.recto = const Value.absent(),
     this.verso = const Value.absent(),
+    this.displayerType = const Value.absent(),
     this.tags = const Value.absent(),
+    this.nextRevisionDateMultiplicator = const Value.absent(),
+    this.nextRevisionDate = const Value.absent(),
   });
   ReviseCardsCompanion.insert({
     this.id = const Value.absent(),
     required int groupId,
     required String recto,
     required String verso,
+    required CardDisplayerType displayerType,
     required String tags,
+    required double nextRevisionDateMultiplicator,
+    this.nextRevisionDate = const Value.absent(),
   })  : groupId = Value(groupId),
         recto = Value(recto),
         verso = Value(verso),
-        tags = Value(tags);
+        displayerType = Value(displayerType),
+        tags = Value(tags),
+        nextRevisionDateMultiplicator = Value(nextRevisionDateMultiplicator);
   static Insertable<ReviseCard> custom({
     Expression<int>? id,
     Expression<int>? groupId,
     Expression<String>? recto,
     Expression<String>? verso,
+    Expression<int>? displayerType,
     Expression<String>? tags,
+    Expression<double>? nextRevisionDateMultiplicator,
+    Expression<DateTime>? nextRevisionDate,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (groupId != null) 'group_id': groupId,
       if (recto != null) 'recto': recto,
       if (verso != null) 'verso': verso,
+      if (displayerType != null) 'displayer_type': displayerType,
       if (tags != null) 'body': tags,
+      if (nextRevisionDateMultiplicator != null)
+        'next_revision_date_multiplicator': nextRevisionDateMultiplicator,
+      if (nextRevisionDate != null) 'next_revision_date': nextRevisionDate,
     });
   }
 
@@ -500,13 +625,20 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       Value<int>? groupId,
       Value<String>? recto,
       Value<String>? verso,
-      Value<String>? tags}) {
+      Value<CardDisplayerType>? displayerType,
+      Value<String>? tags,
+      Value<double>? nextRevisionDateMultiplicator,
+      Value<DateTime?>? nextRevisionDate}) {
     return ReviseCardsCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
       recto: recto ?? this.recto,
       verso: verso ?? this.verso,
+      displayerType: displayerType ?? this.displayerType,
       tags: tags ?? this.tags,
+      nextRevisionDateMultiplicator:
+          nextRevisionDateMultiplicator ?? this.nextRevisionDateMultiplicator,
+      nextRevisionDate: nextRevisionDate ?? this.nextRevisionDate,
     );
   }
 
@@ -525,8 +657,19 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     if (verso.present) {
       map['verso'] = Variable<String>(verso.value);
     }
+    if (displayerType.present) {
+      map['displayer_type'] = Variable<int>(
+          $ReviseCardsTable.$converterdisplayerType.toSql(displayerType.value));
+    }
     if (tags.present) {
       map['body'] = Variable<String>(tags.value);
+    }
+    if (nextRevisionDateMultiplicator.present) {
+      map['next_revision_date_multiplicator'] =
+          Variable<double>(nextRevisionDateMultiplicator.value);
+    }
+    if (nextRevisionDate.present) {
+      map['next_revision_date'] = Variable<DateTime>(nextRevisionDate.value);
     }
     return map;
   }
@@ -538,7 +681,11 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
           ..write('groupId: $groupId, ')
           ..write('recto: $recto, ')
           ..write('verso: $verso, ')
-          ..write('tags: $tags')
+          ..write('displayerType: $displayerType, ')
+          ..write('tags: $tags, ')
+          ..write(
+              'nextRevisionDateMultiplicator: $nextRevisionDateMultiplicator, ')
+          ..write('nextRevisionDate: $nextRevisionDate')
           ..write(')'))
         .toString();
   }

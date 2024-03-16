@@ -1,4 +1,7 @@
+import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
+import 'package:beaver_learning/src/models/enum/answer_dificulty.dart';
 import 'package:beaver_learning/src/providers/revise_provider.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
@@ -16,6 +19,13 @@ class RevisorDisplayer extends ConsumerStatefulWidget {
   @override
   ConsumerState<RevisorDisplayer> createState() => _RevisorDisplayerState();
 }
+
+Map<AnswerDifficulty, double> difficultyMultiplicator = {
+      AnswerDifficulty.veryHard: 0.25,
+      AnswerDifficulty.hard: 0.5,
+      AnswerDifficulty.easy: 2.0,
+      AnswerDifficulty.veryEasy: 4.0,
+    };
 
 class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
   int counter = 0;
@@ -37,7 +47,7 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
     super.initState();
     if (!widget.isInitialized) {
       initialcards = widget.initialcards;
-      if(initialcards != null && initialcards!.isNotEmpty) {
+      if (initialcards != null && initialcards!.isNotEmpty) {
         cardToRevise = initialcards![counter];
       } else {
         getReviseCards(ref);
@@ -46,7 +56,21 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
     widget.isInitialized = true;
   }
 
-  void goNextCard() {
+  void goNextCard(ReviseCard card, AnswerDifficulty answerDifficulty) async {
+    
+    final cardDao = CardDao(MyDatabaseInstance.getInstance());
+    var today = DateTime.now();
+    var fakeToday = DateTime(today.year, today.month, today.day, 1);
+
+    var durationToAdd = (24 * card.nextRevisionDateMultiplicator * difficultyMultiplicator[answerDifficulty]!).floor();
+
+    var diffMult = difficultyMultiplicator[answerDifficulty]!;
+    var newMultiplicator = diffMult * card.nextRevisionDateMultiplicator;
+    var newNextRevisionDate = fakeToday.add(Duration(hours: durationToAdd));
+
+    await cardDao.updateNextRevision(card.id, newMultiplicator, newNextRevisionDate);
+    print('nouvelle date de révision : ${newNextRevisionDate.toString()} Nouveau multiplicateur : ${newMultiplicator.toString()}');
+
     if (counter < initialcards!.length - 1) {
       setState(() {
         counter++;
