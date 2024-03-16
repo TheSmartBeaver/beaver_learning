@@ -11,7 +11,7 @@ import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
 
 Future<File> downloadAndSaveImage(String url, String filename) async {
-  final directory = await getApplicationDocumentsDirectory();
+  final directory = await getTemporaryDirectory();
   final path = '${directory.path}/$filename';
   final dio = Dio();
   await dio.download(url, path);
@@ -45,7 +45,7 @@ class MyLocalServer {
 
 Future<ServerProps> startLocalHttpServer() async {
   //TODO: SHIT TEST pour voir des fichiers localement à partir d'un serveur
-  final directory = await getApplicationDocumentsDirectory();
+  final directory = await getTemporaryDirectory();
   final handler = createStaticHandler(directory.path);
 
   final server = await io.serve(handler, 'localhost', 0);
@@ -54,20 +54,20 @@ Future<ServerProps> startLocalHttpServer() async {
 
 Future<File> copyImageToServerDirectory(
     String imagePath, String filename) async {
-  final directory = await getApplicationDocumentsDirectory();
+  final directory = await getTemporaryDirectory();
   final path = '${directory.path}/$filename';
   final imageFile = File(imagePath);
   return imageFile.copy(path);
 }
 
 Future<File> copyImageToServerDirectory2(File fileToCopy, String filename) async {
-  final directory = await getApplicationDocumentsDirectory();
+  final directory = await getTemporaryDirectory();
   final path = '${directory.path}/$filename';
   return fileToCopy.copy(path);
 }
 
 Future<File> writeHtmlToServerDirectory(String html, String filename) async {
-  final directory = await getApplicationDocumentsDirectory();
+  final directory = await getTemporaryDirectory();
   final path = '${directory.path}/$filename';
   final htmlFile = File(path);
   return htmlFile.writeAsString(html);

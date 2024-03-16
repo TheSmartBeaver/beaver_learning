@@ -47,21 +47,27 @@ Future<void> initial_migrate_batch(Batch batch, DatabasesBatchInfos dbInfos) asy
             HTMLContentsCompanion.insert(id: const Value(4), content: 'become\nbecame\nbecome'),
             //HTMLContentsCompanion.insert(id: const Value(), content: '')
             HTMLContentsCompanion.insert(id: const Value(5), content: 'TEST IMAGE'),
-            HTMLContentsCompanion.insert(id: const Value(6), content: "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>")
+            HTMLContentsCompanion.insert(id: const Value(6), content: "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>"),
+            HTMLContentsCompanion.insert(id: const Value(7), content: '<div>TEST Spidey</div>'),
+            HTMLContentsCompanion.insert(id: const Value(8), content: "<div>Tisseur de toile</div><img width='600' height='400' src=\"spiderman.jpg\" />")
           ]);
           var image = await downloadImageBytes("https://image.api.playstation.com/vulcan/img/rnd/202010/2621/H9v5o8vP6RKkQtR77LIGrGDE.png", "batman2");
+          var image2 = await downloadImageBytes("https://media.gqmagazine.fr/photos/6571d7e79779b8a3415b0a9b/16:9/w_2240,c_limit/Tom-Holland-Spiderman-what-we-know-so-far.jpg", "spiderman");
           batch.insertAll(dbInfos.fileContents, [
-            FileContentsCompanion.insert(id: const Value(1), name: "batman2", format: "png", content: image)
+            FileContentsCompanion.insert(id: const Value(1), name: "batman2", format: "png", content: image),
+            FileContentsCompanion.insert(id: const Value(2), name: "spiderman", format: "jpg", content: image2)
           ]);
 
           batch.insertAll(dbInfos.hTMLContentFiles, [
-            HTMLContentFilesCompanion.insert(fileId: 1, htmlContentParentId: 6)
+            HTMLContentFilesCompanion.insert(fileId: 1, htmlContentParentId: 6),
+            HTMLContentFilesCompanion.insert(fileId: 2, htmlContentParentId: 8)
           ]);
 
           batch.insertAll(dbInfos.reviseCards, [
             ReviseCardsCompanion.insert(groupId: 1, recto: 1, verso: 2, tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2),
             ReviseCardsCompanion.insert(groupId: 2, recto: 3, verso: 4, tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2),
             ReviseCardsCompanion.insert(groupId: 2, recto: 5, verso: 6, tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2),
+            ReviseCardsCompanion.insert(groupId: 1, recto: 7, verso: 8, tags: '', displayerType: CardDisplayerType.html, nextRevisionDateMultiplicator: 0.2),
           ]);
 
           // batch.insertAll(dbInfos.fileContents, [
