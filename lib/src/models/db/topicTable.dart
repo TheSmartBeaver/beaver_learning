@@ -1,5 +1,5 @@
 import 'package:beaver_learning/src/models/db/courseTable.dart';
-import 'package:beaver_learning/src/models/db/fileTable.dart';
+import 'package:beaver_learning/src/models/db/fileContentsTable.dart';
 import 'package:beaver_learning/src/models/db/groupTable.dart';
 import 'package:drift/drift.dart';
 

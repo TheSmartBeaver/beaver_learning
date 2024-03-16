@@ -183,8 +183,8 @@ class _CardListState extends ConsumerState<CardList> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              packInBox(Text(cards[index].recto)),
-                              packInBox(Text(cards[index].verso)),
+                              packInBox(Text("cards[index].recto")),
+                              packInBox(Text("cards[index].verso")),
                             ],
                           ),
                         );

@@ -6,7 +6,7 @@ import 'package:drift/drift.dart';
 part 'card_dao.g.dart';
 
 @DriftAccessor(tables: [ReviseCards])
-class CardDao extends DatabaseAccessor<AppDatabase> with _$ImageDaoMixin {
+class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   final AppDatabase db;
 
   CardDao(this.db) : super(db);

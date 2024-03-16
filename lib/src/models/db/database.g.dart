@@ -256,6 +256,179 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
   }
 }
 
+class $HTMLContentsTable extends HTMLContents
+    with TableInfo<$HTMLContentsTable, HTMLContent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HTMLContentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _contentMeta =
+      const VerificationMeta('content');
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'body', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, content];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'h_t_m_l_contents';
+  @override
+  VerificationContext validateIntegrity(Insertable<HTMLContent> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('body')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['body']!, _contentMeta));
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HTMLContent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HTMLContent(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      content: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
+    );
+  }
+
+  @override
+  $HTMLContentsTable createAlias(String alias) {
+    return $HTMLContentsTable(attachedDatabase, alias);
+  }
+}
+
+class HTMLContent extends DataClass implements Insertable<HTMLContent> {
+  final int id;
+  final String content;
+  const HTMLContent({required this.id, required this.content});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['body'] = Variable<String>(content);
+    return map;
+  }
+
+  HTMLContentsCompanion toCompanion(bool nullToAbsent) {
+    return HTMLContentsCompanion(
+      id: Value(id),
+      content: Value(content),
+    );
+  }
+
+  factory HTMLContent.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HTMLContent(
+      id: serializer.fromJson<int>(json['id']),
+      content: serializer.fromJson<String>(json['content']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'content': serializer.toJson<String>(content),
+    };
+  }
+
+  HTMLContent copyWith({int? id, String? content}) => HTMLContent(
+        id: id ?? this.id,
+        content: content ?? this.content,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('HTMLContent(')
+          ..write('id: $id, ')
+          ..write('content: $content')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, content);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HTMLContent &&
+          other.id == this.id &&
+          other.content == this.content);
+}
+
+class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
+  final Value<int> id;
+  final Value<String> content;
+  const HTMLContentsCompanion({
+    this.id = const Value.absent(),
+    this.content = const Value.absent(),
+  });
+  HTMLContentsCompanion.insert({
+    this.id = const Value.absent(),
+    required String content,
+  }) : content = Value(content);
+  static Insertable<HTMLContent> custom({
+    Expression<int>? id,
+    Expression<String>? content,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (content != null) 'body': content,
+    });
+  }
+
+  HTMLContentsCompanion copyWith({Value<int>? id, Value<String>? content}) {
+    return HTMLContentsCompanion(
+      id: id ?? this.id,
+      content: content ?? this.content,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (content.present) {
+      map['body'] = Variable<String>(content.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HTMLContentsCompanion(')
+          ..write('id: $id, ')
+          ..write('content: $content')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ReviseCardsTable extends ReviseCards
     with TableInfo<$ReviseCardsTable, ReviseCard> {
   @override
@@ -282,14 +455,20 @@ class $ReviseCardsTable extends ReviseCards
           GeneratedColumn.constraintIsAlways('REFERENCES "group" (id)'));
   static const VerificationMeta _rectoMeta = const VerificationMeta('recto');
   @override
-  late final GeneratedColumn<String> recto = GeneratedColumn<String>(
+  late final GeneratedColumn<int> recto = GeneratedColumn<int>(
       'recto', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES h_t_m_l_contents (id)'));
   static const VerificationMeta _versoMeta = const VerificationMeta('verso');
   @override
-  late final GeneratedColumn<String> verso = GeneratedColumn<String>(
+  late final GeneratedColumn<int> verso = GeneratedColumn<int>(
       'verso', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES h_t_m_l_contents (id)'));
   static const VerificationMeta _displayerTypeMeta =
       const VerificationMeta('displayerType');
   @override
@@ -394,9 +573,9 @@ class $ReviseCardsTable extends ReviseCards
       groupId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}group_id'])!,
       recto: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}recto'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}recto'])!,
       verso: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}verso'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}verso'])!,
       displayerType: $ReviseCardsTable.$converterdisplayerType.fromSql(
           attachedDatabase.typeMapping.read(
               DriftSqlType.int, data['${effectivePrefix}displayer_type'])!),
@@ -423,8 +602,8 @@ class $ReviseCardsTable extends ReviseCards
 class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final int id;
   final int groupId;
-  final String recto;
-  final String verso;
+  final int recto;
+  final int verso;
   final CardDisplayerType displayerType;
   final String tags;
   final double nextRevisionDateMultiplicator;
@@ -443,8 +622,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['group_id'] = Variable<int>(groupId);
-    map['recto'] = Variable<String>(recto);
-    map['verso'] = Variable<String>(verso);
+    map['recto'] = Variable<int>(recto);
+    map['verso'] = Variable<int>(verso);
     {
       map['displayer_type'] = Variable<int>(
           $ReviseCardsTable.$converterdisplayerType.toSql(displayerType));
@@ -479,8 +658,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     return ReviseCard(
       id: serializer.fromJson<int>(json['id']),
       groupId: serializer.fromJson<int>(json['groupId']),
-      recto: serializer.fromJson<String>(json['recto']),
-      verso: serializer.fromJson<String>(json['verso']),
+      recto: serializer.fromJson<int>(json['recto']),
+      verso: serializer.fromJson<int>(json['verso']),
       displayerType: $ReviseCardsTable.$converterdisplayerType
           .fromJson(serializer.fromJson<int>(json['displayerType'])),
       tags: serializer.fromJson<String>(json['tags']),
@@ -496,8 +675,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'groupId': serializer.toJson<int>(groupId),
-      'recto': serializer.toJson<String>(recto),
-      'verso': serializer.toJson<String>(verso),
+      'recto': serializer.toJson<int>(recto),
+      'verso': serializer.toJson<int>(verso),
       'displayerType': serializer.toJson<int>(
           $ReviseCardsTable.$converterdisplayerType.toJson(displayerType)),
       'tags': serializer.toJson<String>(tags),
@@ -510,8 +689,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   ReviseCard copyWith(
           {int? id,
           int? groupId,
-          String? recto,
-          String? verso,
+          int? recto,
+          int? verso,
           CardDisplayerType? displayerType,
           String? tags,
           double? nextRevisionDateMultiplicator,
@@ -566,8 +745,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
 class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<int> id;
   final Value<int> groupId;
-  final Value<String> recto;
-  final Value<String> verso;
+  final Value<int> recto;
+  final Value<int> verso;
   final Value<CardDisplayerType> displayerType;
   final Value<String> tags;
   final Value<double> nextRevisionDateMultiplicator;
@@ -585,8 +764,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   ReviseCardsCompanion.insert({
     this.id = const Value.absent(),
     required int groupId,
-    required String recto,
-    required String verso,
+    required int recto,
+    required int verso,
     required CardDisplayerType displayerType,
     required String tags,
     required double nextRevisionDateMultiplicator,
@@ -600,8 +779,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   static Insertable<ReviseCard> custom({
     Expression<int>? id,
     Expression<int>? groupId,
-    Expression<String>? recto,
-    Expression<String>? verso,
+    Expression<int>? recto,
+    Expression<int>? verso,
     Expression<int>? displayerType,
     Expression<String>? tags,
     Expression<double>? nextRevisionDateMultiplicator,
@@ -623,8 +802,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   ReviseCardsCompanion copyWith(
       {Value<int>? id,
       Value<int>? groupId,
-      Value<String>? recto,
-      Value<String>? verso,
+      Value<int>? recto,
+      Value<int>? verso,
       Value<CardDisplayerType>? displayerType,
       Value<String>? tags,
       Value<double>? nextRevisionDateMultiplicator,
@@ -652,10 +831,10 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       map['group_id'] = Variable<int>(groupId.value);
     }
     if (recto.present) {
-      map['recto'] = Variable<String>(recto.value);
+      map['recto'] = Variable<int>(recto.value);
     }
     if (verso.present) {
-      map['verso'] = Variable<String>(verso.value);
+      map['verso'] = Variable<int>(verso.value);
     }
     if (displayerType.present) {
       map['displayer_type'] = Variable<int>(
@@ -1360,213 +1539,6 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
   }
 }
 
-class $HTMLContentsTable extends HTMLContents
-    with TableInfo<$HTMLContentsTable, HTMLContent> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $HTMLContentsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
-  @override
-  late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'body', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [id, name, content];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'h_t_m_l_contents';
-  @override
-  VerificationContext validateIntegrity(Insertable<HTMLContent> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('body')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['body']!, _contentMeta));
-    } else if (isInserting) {
-      context.missing(_contentMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  HTMLContent map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return HTMLContent(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
-    );
-  }
-
-  @override
-  $HTMLContentsTable createAlias(String alias) {
-    return $HTMLContentsTable(attachedDatabase, alias);
-  }
-}
-
-class HTMLContent extends DataClass implements Insertable<HTMLContent> {
-  final int id;
-  final String name;
-  final String content;
-  const HTMLContent(
-      {required this.id, required this.name, required this.content});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    map['body'] = Variable<String>(content);
-    return map;
-  }
-
-  HTMLContentsCompanion toCompanion(bool nullToAbsent) {
-    return HTMLContentsCompanion(
-      id: Value(id),
-      name: Value(name),
-      content: Value(content),
-    );
-  }
-
-  factory HTMLContent.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return HTMLContent(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      content: serializer.fromJson<String>(json['content']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-      'content': serializer.toJson<String>(content),
-    };
-  }
-
-  HTMLContent copyWith({int? id, String? name, String? content}) => HTMLContent(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        content: content ?? this.content,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('HTMLContent(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('content: $content')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name, content);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is HTMLContent &&
-          other.id == this.id &&
-          other.name == this.name &&
-          other.content == this.content);
-}
-
-class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
-  final Value<int> id;
-  final Value<String> name;
-  final Value<String> content;
-  const HTMLContentsCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.content = const Value.absent(),
-  });
-  HTMLContentsCompanion.insert({
-    this.id = const Value.absent(),
-    required String name,
-    required String content,
-  })  : name = Value(name),
-        content = Value(content);
-  static Insertable<HTMLContent> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-    Expression<String>? content,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (content != null) 'body': content,
-    });
-  }
-
-  HTMLContentsCompanion copyWith(
-      {Value<int>? id, Value<String>? name, Value<String>? content}) {
-    return HTMLContentsCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      content: content ?? this.content,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (content.present) {
-      map['body'] = Variable<String>(content.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('HTMLContentsCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('content: $content')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $HTMLContentFilesTable extends HTMLContentFiles
     with TableInfo<$HTMLContentFilesTable, HTMLContentFile> {
   @override
@@ -2129,11 +2101,11 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   late final $GroupTable group = $GroupTable(this);
+  late final $HTMLContentsTable hTMLContents = $HTMLContentsTable(this);
   late final $ReviseCardsTable reviseCards = $ReviseCardsTable(this);
   late final $ImagesTable images = $ImagesTable(this);
   late final $CoursesTable courses = $CoursesTable(this);
   late final $FileContentsTable fileContents = $FileContentsTable(this);
-  late final $HTMLContentsTable hTMLContents = $HTMLContentsTable(this);
   late final $HTMLContentFilesTable hTMLContentFiles =
       $HTMLContentFilesTable(this);
   late final $TopicsTable topics = $TopicsTable(this);
@@ -2144,11 +2116,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         group,
+        hTMLContents,
         reviseCards,
         images,
         courses,
         fileContents,
-        hTMLContents,
         hTMLContentFiles,
         topics
       ];

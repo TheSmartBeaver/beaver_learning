@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/dao/image_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
@@ -108,10 +109,21 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
   //   var verso =
   //       "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>";
   
+
   
   Future<void> init() async {
-    recto = widget.cardToRevise.recto;
-    verso = widget.cardToRevise.verso;
+    final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+    var content = await htmlDao.getHtmlContents(widget.cardToRevise);
+    recto = content.recto.content;
+    verso = content.verso.content;
+
+    for(var rectoFile in content.recto.files){
+      await copyImageToServerDirectory2(rectoFile.file, '${rectoFile.name}.${rectoFile.format}');
+    }
+
+    for(var versoFile in content.verso.files){
+      await copyImageToServerDirectory2(versoFile.file, '${versoFile.name}.${versoFile.format}');
+    }
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
     await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index.html");

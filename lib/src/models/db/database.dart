@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:beaver_learning/src/dao/image_dao.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/courseTable.dart';
-import 'package:beaver_learning/src/models/db/fileTable.dart';
+import 'package:beaver_learning/src/models/db/fileContentsTable.dart';
 import 'package:beaver_learning/src/models/db/groupTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
@@ -82,7 +82,7 @@ LazyDatabase _openConnection() {
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
     var file = File(p.join(dbFolder.path, 'db.sqlite'));
-    //deleteFile(file);
+    deleteFile(file);
     file = File(p.join(dbFolder.path, 'db.sqlite'));
 
     // Also work around limitations on old Android versions
