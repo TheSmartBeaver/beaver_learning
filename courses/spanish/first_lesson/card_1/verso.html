@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verso</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .text {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .pronunciation {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .translation {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text">Hola! Mi nombre es Penelope. Puedo leer cualquier texto que introduzcas aquí.</div>
+        <button onclick="playAudio()">Reproducir</button>
+        <div class="pronunciation">[ˈola! mi nˈombɾe ˈes pˌenelˈope. pwˈeðo leˈeɾ kwalkjˈeɾ tˈeksto ke ˌintɾoðˈuskas akˈi.]</div>
+        <div class="translation">Traduction en français</div>
+    </div>
+
+    <script>
+        function playAudio() {
+            // Replace with the correct path
+            var audio = new Audio('speech_20240318090640356.mp3');
+            audio.play();
+        }
+    </script>
+</body>
+</html>
