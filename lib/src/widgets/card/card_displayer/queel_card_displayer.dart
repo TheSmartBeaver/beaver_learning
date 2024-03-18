@@ -26,9 +26,9 @@ class _QueelCardDisplayerState extends State<QueelCardDisplayer> {
   Future<void> init() async {
     var db = MyDatabaseInstance.getInstance();
     final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
-    var content = await htmlDao.getHtmlContents(widget.cardToRevise);
-    recto = content.recto.content;
-    verso = content.verso.content;
+    var content = await htmlDao.getHtmlContents(widget.cardToRevise.htmlContent);
+    recto = content.recto;
+    verso = content.verso;
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
     // await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index.html");
@@ -42,7 +42,7 @@ class _QueelCardDisplayerState extends State<QueelCardDisplayer> {
     // controller
     //     .loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
 
-    var content = '${widget.cardToRevise.recto}\n${widget.cardToRevise.verso} ';
+    var content = '${widget.cardToRevise.htmlContent}\n${widget.cardToRevise.htmlContent} ';
 
     return FutureBuilder(
       future: init(),

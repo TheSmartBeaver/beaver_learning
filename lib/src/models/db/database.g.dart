@@ -271,14 +271,18 @@ class $HTMLContentsTable extends HTMLContents
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
+  static const VerificationMeta _rectoMeta = const VerificationMeta('recto');
   @override
-  late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'body', aliasedName, false,
+  late final GeneratedColumn<String> recto = GeneratedColumn<String>(
+      'recto', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _versoMeta = const VerificationMeta('verso');
+  @override
+  late final GeneratedColumn<String> verso = GeneratedColumn<String>(
+      'verso', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [id, content];
+  List<GeneratedColumn> get $columns => [id, recto, verso];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -292,11 +296,17 @@ class $HTMLContentsTable extends HTMLContents
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('body')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['body']!, _contentMeta));
+    if (data.containsKey('recto')) {
+      context.handle(
+          _rectoMeta, recto.isAcceptableOrUnknown(data['recto']!, _rectoMeta));
     } else if (isInserting) {
-      context.missing(_contentMeta);
+      context.missing(_rectoMeta);
+    }
+    if (data.containsKey('verso')) {
+      context.handle(
+          _versoMeta, verso.isAcceptableOrUnknown(data['verso']!, _versoMeta));
+    } else if (isInserting) {
+      context.missing(_versoMeta);
     }
     return context;
   }
@@ -309,8 +319,10 @@ class $HTMLContentsTable extends HTMLContents
     return HTMLContent(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
+      recto: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}recto'])!,
+      verso: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}verso'])!,
     );
   }
 
@@ -322,20 +334,24 @@ class $HTMLContentsTable extends HTMLContents
 
 class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   final int id;
-  final String content;
-  const HTMLContent({required this.id, required this.content});
+  final String recto;
+  final String verso;
+  const HTMLContent(
+      {required this.id, required this.recto, required this.verso});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['body'] = Variable<String>(content);
+    map['recto'] = Variable<String>(recto);
+    map['verso'] = Variable<String>(verso);
     return map;
   }
 
   HTMLContentsCompanion toCompanion(bool nullToAbsent) {
     return HTMLContentsCompanion(
       id: Value(id),
-      content: Value(content),
+      recto: Value(recto),
+      verso: Value(verso),
     );
   }
 
@@ -344,7 +360,8 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return HTMLContent(
       id: serializer.fromJson<int>(json['id']),
-      content: serializer.fromJson<String>(json['content']),
+      recto: serializer.fromJson<String>(json['recto']),
+      verso: serializer.fromJson<String>(json['verso']),
     );
   }
   @override
@@ -352,58 +369,70 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'content': serializer.toJson<String>(content),
+      'recto': serializer.toJson<String>(recto),
+      'verso': serializer.toJson<String>(verso),
     };
   }
 
-  HTMLContent copyWith({int? id, String? content}) => HTMLContent(
+  HTMLContent copyWith({int? id, String? recto, String? verso}) => HTMLContent(
         id: id ?? this.id,
-        content: content ?? this.content,
+        recto: recto ?? this.recto,
+        verso: verso ?? this.verso,
       );
   @override
   String toString() {
     return (StringBuffer('HTMLContent(')
           ..write('id: $id, ')
-          ..write('content: $content')
+          ..write('recto: $recto, ')
+          ..write('verso: $verso')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, content);
+  int get hashCode => Object.hash(id, recto, verso);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is HTMLContent &&
           other.id == this.id &&
-          other.content == this.content);
+          other.recto == this.recto &&
+          other.verso == this.verso);
 }
 
 class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   final Value<int> id;
-  final Value<String> content;
+  final Value<String> recto;
+  final Value<String> verso;
   const HTMLContentsCompanion({
     this.id = const Value.absent(),
-    this.content = const Value.absent(),
+    this.recto = const Value.absent(),
+    this.verso = const Value.absent(),
   });
   HTMLContentsCompanion.insert({
     this.id = const Value.absent(),
-    required String content,
-  }) : content = Value(content);
+    required String recto,
+    required String verso,
+  })  : recto = Value(recto),
+        verso = Value(verso);
   static Insertable<HTMLContent> custom({
     Expression<int>? id,
-    Expression<String>? content,
+    Expression<String>? recto,
+    Expression<String>? verso,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (content != null) 'body': content,
+      if (recto != null) 'recto': recto,
+      if (verso != null) 'verso': verso,
     });
   }
 
-  HTMLContentsCompanion copyWith({Value<int>? id, Value<String>? content}) {
+  HTMLContentsCompanion copyWith(
+      {Value<int>? id, Value<String>? recto, Value<String>? verso}) {
     return HTMLContentsCompanion(
       id: id ?? this.id,
-      content: content ?? this.content,
+      recto: recto ?? this.recto,
+      verso: verso ?? this.verso,
     );
   }
 
@@ -413,8 +442,11 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (content.present) {
-      map['body'] = Variable<String>(content.value);
+    if (recto.present) {
+      map['recto'] = Variable<String>(recto.value);
+    }
+    if (verso.present) {
+      map['verso'] = Variable<String>(verso.value);
     }
     return map;
   }
@@ -423,7 +455,8 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   String toString() {
     return (StringBuffer('HTMLContentsCompanion(')
           ..write('id: $id, ')
-          ..write('content: $content')
+          ..write('recto: $recto, ')
+          ..write('verso: $verso')
           ..write(')'))
         .toString();
   }
@@ -453,18 +486,11 @@ class $ReviseCardsTable extends ReviseCards
       requiredDuringInsert: true,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES "group" (id)'));
-  static const VerificationMeta _rectoMeta = const VerificationMeta('recto');
+  static const VerificationMeta _htmlContentMeta =
+      const VerificationMeta('htmlContent');
   @override
-  late final GeneratedColumn<int> recto = GeneratedColumn<int>(
-      'recto', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES h_t_m_l_contents (id)'));
-  static const VerificationMeta _versoMeta = const VerificationMeta('verso');
-  @override
-  late final GeneratedColumn<int> verso = GeneratedColumn<int>(
-      'verso', aliasedName, false,
+  late final GeneratedColumn<int> htmlContent = GeneratedColumn<int>(
+      'html_content', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways(
@@ -499,8 +525,7 @@ class $ReviseCardsTable extends ReviseCards
   List<GeneratedColumn> get $columns => [
         id,
         groupId,
-        recto,
-        verso,
+        htmlContent,
         displayerType,
         tags,
         nextRevisionDateMultiplicator,
@@ -525,17 +550,13 @@ class $ReviseCardsTable extends ReviseCards
     } else if (isInserting) {
       context.missing(_groupIdMeta);
     }
-    if (data.containsKey('recto')) {
+    if (data.containsKey('html_content')) {
       context.handle(
-          _rectoMeta, recto.isAcceptableOrUnknown(data['recto']!, _rectoMeta));
+          _htmlContentMeta,
+          htmlContent.isAcceptableOrUnknown(
+              data['html_content']!, _htmlContentMeta));
     } else if (isInserting) {
-      context.missing(_rectoMeta);
-    }
-    if (data.containsKey('verso')) {
-      context.handle(
-          _versoMeta, verso.isAcceptableOrUnknown(data['verso']!, _versoMeta));
-    } else if (isInserting) {
-      context.missing(_versoMeta);
+      context.missing(_htmlContentMeta);
     }
     context.handle(_displayerTypeMeta, const VerificationResult.success());
     if (data.containsKey('body')) {
@@ -572,10 +593,8 @@ class $ReviseCardsTable extends ReviseCards
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       groupId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}group_id'])!,
-      recto: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}recto'])!,
-      verso: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}verso'])!,
+      htmlContent: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}html_content'])!,
       displayerType: $ReviseCardsTable.$converterdisplayerType.fromSql(
           attachedDatabase.typeMapping.read(
               DriftSqlType.int, data['${effectivePrefix}displayer_type'])!),
@@ -602,8 +621,7 @@ class $ReviseCardsTable extends ReviseCards
 class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final int id;
   final int groupId;
-  final int recto;
-  final int verso;
+  final int htmlContent;
   final CardDisplayerType displayerType;
   final String tags;
   final double nextRevisionDateMultiplicator;
@@ -611,8 +629,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   const ReviseCard(
       {required this.id,
       required this.groupId,
-      required this.recto,
-      required this.verso,
+      required this.htmlContent,
       required this.displayerType,
       required this.tags,
       required this.nextRevisionDateMultiplicator,
@@ -622,8 +639,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['group_id'] = Variable<int>(groupId);
-    map['recto'] = Variable<int>(recto);
-    map['verso'] = Variable<int>(verso);
+    map['html_content'] = Variable<int>(htmlContent);
     {
       map['displayer_type'] = Variable<int>(
           $ReviseCardsTable.$converterdisplayerType.toSql(displayerType));
@@ -641,8 +657,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     return ReviseCardsCompanion(
       id: Value(id),
       groupId: Value(groupId),
-      recto: Value(recto),
-      verso: Value(verso),
+      htmlContent: Value(htmlContent),
       displayerType: Value(displayerType),
       tags: Value(tags),
       nextRevisionDateMultiplicator: Value(nextRevisionDateMultiplicator),
@@ -658,8 +673,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     return ReviseCard(
       id: serializer.fromJson<int>(json['id']),
       groupId: serializer.fromJson<int>(json['groupId']),
-      recto: serializer.fromJson<int>(json['recto']),
-      verso: serializer.fromJson<int>(json['verso']),
+      htmlContent: serializer.fromJson<int>(json['htmlContent']),
       displayerType: $ReviseCardsTable.$converterdisplayerType
           .fromJson(serializer.fromJson<int>(json['displayerType'])),
       tags: serializer.fromJson<String>(json['tags']),
@@ -675,8 +689,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'groupId': serializer.toJson<int>(groupId),
-      'recto': serializer.toJson<int>(recto),
-      'verso': serializer.toJson<int>(verso),
+      'htmlContent': serializer.toJson<int>(htmlContent),
       'displayerType': serializer.toJson<int>(
           $ReviseCardsTable.$converterdisplayerType.toJson(displayerType)),
       'tags': serializer.toJson<String>(tags),
@@ -689,8 +702,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   ReviseCard copyWith(
           {int? id,
           int? groupId,
-          int? recto,
-          int? verso,
+          int? htmlContent,
           CardDisplayerType? displayerType,
           String? tags,
           double? nextRevisionDateMultiplicator,
@@ -698,8 +710,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       ReviseCard(
         id: id ?? this.id,
         groupId: groupId ?? this.groupId,
-        recto: recto ?? this.recto,
-        verso: verso ?? this.verso,
+        htmlContent: htmlContent ?? this.htmlContent,
         displayerType: displayerType ?? this.displayerType,
         tags: tags ?? this.tags,
         nextRevisionDateMultiplicator:
@@ -713,8 +724,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     return (StringBuffer('ReviseCard(')
           ..write('id: $id, ')
           ..write('groupId: $groupId, ')
-          ..write('recto: $recto, ')
-          ..write('verso: $verso, ')
+          ..write('htmlContent: $htmlContent, ')
           ..write('displayerType: $displayerType, ')
           ..write('tags: $tags, ')
           ..write(
@@ -725,16 +735,15 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   }
 
   @override
-  int get hashCode => Object.hash(id, groupId, recto, verso, displayerType,
-      tags, nextRevisionDateMultiplicator, nextRevisionDate);
+  int get hashCode => Object.hash(id, groupId, htmlContent, displayerType, tags,
+      nextRevisionDateMultiplicator, nextRevisionDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ReviseCard &&
           other.id == this.id &&
           other.groupId == this.groupId &&
-          other.recto == this.recto &&
-          other.verso == this.verso &&
+          other.htmlContent == this.htmlContent &&
           other.displayerType == this.displayerType &&
           other.tags == this.tags &&
           other.nextRevisionDateMultiplicator ==
@@ -745,8 +754,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
 class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<int> id;
   final Value<int> groupId;
-  final Value<int> recto;
-  final Value<int> verso;
+  final Value<int> htmlContent;
   final Value<CardDisplayerType> displayerType;
   final Value<String> tags;
   final Value<double> nextRevisionDateMultiplicator;
@@ -754,8 +762,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   const ReviseCardsCompanion({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
-    this.recto = const Value.absent(),
-    this.verso = const Value.absent(),
+    this.htmlContent = const Value.absent(),
     this.displayerType = const Value.absent(),
     this.tags = const Value.absent(),
     this.nextRevisionDateMultiplicator = const Value.absent(),
@@ -764,23 +771,20 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   ReviseCardsCompanion.insert({
     this.id = const Value.absent(),
     required int groupId,
-    required int recto,
-    required int verso,
+    required int htmlContent,
     required CardDisplayerType displayerType,
     required String tags,
     required double nextRevisionDateMultiplicator,
     this.nextRevisionDate = const Value.absent(),
   })  : groupId = Value(groupId),
-        recto = Value(recto),
-        verso = Value(verso),
+        htmlContent = Value(htmlContent),
         displayerType = Value(displayerType),
         tags = Value(tags),
         nextRevisionDateMultiplicator = Value(nextRevisionDateMultiplicator);
   static Insertable<ReviseCard> custom({
     Expression<int>? id,
     Expression<int>? groupId,
-    Expression<int>? recto,
-    Expression<int>? verso,
+    Expression<int>? htmlContent,
     Expression<int>? displayerType,
     Expression<String>? tags,
     Expression<double>? nextRevisionDateMultiplicator,
@@ -789,8 +793,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (groupId != null) 'group_id': groupId,
-      if (recto != null) 'recto': recto,
-      if (verso != null) 'verso': verso,
+      if (htmlContent != null) 'html_content': htmlContent,
       if (displayerType != null) 'displayer_type': displayerType,
       if (tags != null) 'body': tags,
       if (nextRevisionDateMultiplicator != null)
@@ -802,8 +805,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   ReviseCardsCompanion copyWith(
       {Value<int>? id,
       Value<int>? groupId,
-      Value<int>? recto,
-      Value<int>? verso,
+      Value<int>? htmlContent,
       Value<CardDisplayerType>? displayerType,
       Value<String>? tags,
       Value<double>? nextRevisionDateMultiplicator,
@@ -811,8 +813,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     return ReviseCardsCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
-      recto: recto ?? this.recto,
-      verso: verso ?? this.verso,
+      htmlContent: htmlContent ?? this.htmlContent,
       displayerType: displayerType ?? this.displayerType,
       tags: tags ?? this.tags,
       nextRevisionDateMultiplicator:
@@ -830,11 +831,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     if (groupId.present) {
       map['group_id'] = Variable<int>(groupId.value);
     }
-    if (recto.present) {
-      map['recto'] = Variable<int>(recto.value);
-    }
-    if (verso.present) {
-      map['verso'] = Variable<int>(verso.value);
+    if (htmlContent.present) {
+      map['html_content'] = Variable<int>(htmlContent.value);
     }
     if (displayerType.present) {
       map['displayer_type'] = Variable<int>(
@@ -858,8 +856,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     return (StringBuffer('ReviseCardsCompanion(')
           ..write('id: $id, ')
           ..write('groupId: $groupId, ')
-          ..write('recto: $recto, ')
-          ..write('verso: $verso, ')
+          ..write('htmlContent: $htmlContent, ')
           ..write('displayerType: $displayerType, ')
           ..write('tags: $tags, ')
           ..write(

@@ -113,16 +113,12 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
   
   Future<void> init() async {
     final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
-    var content = await htmlDao.getHtmlContents(widget.cardToRevise);
-    recto = content.recto.content;
-    verso = content.verso.content;
+    var content = await htmlDao.getHtmlContents(widget.cardToRevise.htmlContent);
+    recto = content.recto;
+    verso = content.verso;
 
-    for(var rectoFile in content.recto.files){
-      await copyImageToServerDirectory2(rectoFile.file, '${rectoFile.name}.${rectoFile.format}');
-    }
-
-    for(var versoFile in content.verso.files){
-      await copyImageToServerDirectory2(versoFile.file, '${versoFile.name}.${versoFile.format}');
+    for(var contentFile in content.files){
+      await copyImageToServerDirectory2(contentFile.file, '${contentFile.name}.${contentFile.format}');
     }
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();

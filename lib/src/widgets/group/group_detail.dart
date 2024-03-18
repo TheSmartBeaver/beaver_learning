@@ -82,12 +82,9 @@ class _GroupDetailState extends State<GroupDetail> {
                     style: TextStyle(color: Colors.black))),
             ElevatedButton(
                 onPressed: () async {
-                  //await export(widget.group.id);
                   var export = await recursiveGroupDiscovery(widget.group);
-                  var test = export.toJson();
-                  var xd = 2;
-                  final json = jsonEncode(test);
-                  var xddd = 2;
+                  await exportReal(export);
+                  var xdddddd = 2;
                 },
                 style: const ButtonStyle(
                     backgroundColor: MaterialStatePropertyAll(Colors.purple)),

@@ -86,23 +86,12 @@ Future<void> initial_migrate_batch(
   ]);
 
   batch.insertAll(dbInfos.hTMLContents, [
-    HTMLContentsCompanion.insert(id: const Value(1), content: 'chien'),
-    HTMLContentsCompanion.insert(id: const Value(2), content: 'dog'),
-    HTMLContentsCompanion.insert(id: const Value(3), content: 'devenir'),
-    HTMLContentsCompanion.insert(
-        id: const Value(4), content: 'become\nbecame\nbecome'),
+    HTMLContentsCompanion.insert(id: const Value(1), recto: 'chien', verso: 'dog'),
+    HTMLContentsCompanion.insert(id: const Value(2), recto: 'devenir', verso: 'become\nbecame\nbecome'),
     //HTMLContentsCompanion.insert(id: const Value(), content: '')
-    HTMLContentsCompanion.insert(id: const Value(5), content: 'TEST IMAGE'),
+    HTMLContentsCompanion.insert(id: const Value(3), recto: 'TEST IMAGE', verso: "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>"),
     HTMLContentsCompanion.insert(
-        id: const Value(6),
-        content:
-            "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>"),
-    HTMLContentsCompanion.insert(
-        id: const Value(7), content: '<div>TEST Spidey</div>'),
-    HTMLContentsCompanion.insert(
-        id: const Value(8),
-        content:
-            "<div>Tisseur de toile</div><img width='600' height='400' src=\"spiderman.jpg\" />")
+        id: const Value(4), recto: '<div>TEST Spidey</div>', verso: "<div>Tisseur de toile</div><img width='600' height='400' src=\"spiderman.jpg\" />")
   ]);
   var image = await downloadImageBytes(
       "https://image.api.playstation.com/vulcan/img/rnd/202010/2621/H9v5o8vP6RKkQtR77LIGrGDE.png",
@@ -118,36 +107,32 @@ Future<void> initial_migrate_batch(
   ]);
 
   batch.insertAll(dbInfos.hTMLContentFiles, [
-    HTMLContentFilesCompanion.insert(fileId: 1, htmlContentParentId: 6),
-    HTMLContentFilesCompanion.insert(fileId: 2, htmlContentParentId: 8)
+    HTMLContentFilesCompanion.insert(fileId: 1, htmlContentParentId: 3),
+    HTMLContentFilesCompanion.insert(fileId: 2, htmlContentParentId: 4)
   ]);
 
   batch.insertAll(dbInfos.reviseCards, [
     ReviseCardsCompanion.insert(
         groupId: 1,
-        recto: 1,
-        verso: 2,
+        htmlContent: 1,
         tags: '',
         displayerType: CardDisplayerType.html,
         nextRevisionDateMultiplicator: 0.2),
     ReviseCardsCompanion.insert(
         groupId: 2,
-        recto: 3,
-        verso: 4,
+        htmlContent: 2,
         tags: '',
         displayerType: CardDisplayerType.html,
         nextRevisionDateMultiplicator: 0.2),
     ReviseCardsCompanion.insert(
         groupId: 2,
-        recto: 5,
-        verso: 6,
+        htmlContent: 3,
         tags: '',
         displayerType: CardDisplayerType.html,
         nextRevisionDateMultiplicator: 0.2),
     ReviseCardsCompanion.insert(
         groupId: 1,
-        recto: 7,
-        verso: 8,
+        htmlContent: 4,
         tags: '',
         displayerType: CardDisplayerType.html,
         nextRevisionDateMultiplicator: 0.2),

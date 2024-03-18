@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:beaver_learning/src/utils/export_functions.dart';
 import 'package:beaver_learning/src/utils/images_functions.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
@@ -57,6 +58,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             buildSection([
               Text("Settings")
             ], context),
+            ElevatedButton(
+                onPressed: () async {
+                  await importReal();
+                },
+                style: const ButtonStyle(
+                    backgroundColor: MaterialStatePropertyAll(Colors.purple)),
+                child: const Text("Import Deck",
+                    style: TextStyle(color: Colors.black))),
             IconButton(
               icon: const Icon(Icons.image),
               onPressed: () async {

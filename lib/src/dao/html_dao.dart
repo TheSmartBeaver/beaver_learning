@@ -17,63 +17,50 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
   HtmlDao(this.db) : super(db);
 
-  Future<HTMLContentRectoVerso> getHtmlContents(ReviseCard card) async {
-    HTMLContent rectoHtmlContent = await (select(hTMLContents)
-          ..where((tbl) => tbl.id.equals(card.recto)))
-        .getSingle();
-    HTMLContent versoHtmlContent = await (select(hTMLContents)
-          ..where((tbl) => tbl.id.equals(card.verso)))
+  Future<HTMLContentRectoVerso> getHtmlContents(int htmlContentId) async {
+    HTMLContent htmlContent = await (select(hTMLContents)
+          ..where((tbl) => tbl.id.equals(htmlContentId)))
         .getSingle();
 
-    // List<HTMLContentFile> rectoHtmlContentFiles = await (select(hTMLContentFiles)..where((tbl) => tbl.htmlContentParentId.equals(rectoHtmlContent.id))).get();
-    // List<HTMLContentFile> versoHtmlContentFiles = await (select(hTMLContentFiles)..where((tbl) => tbl.id.equals(versoHtmlContent.id))).get();
+    // List<FileContent> contentFiles = await (select(fileContents)
+    //       ..join([
+    //         innerJoin(
+    //             hTMLContentFiles,
+    //             hTMLContentFiles.htmlContentParentId.equals(htmlContent.id) &
+    //                 hTMLContentFiles.fileId.equalsExp(fileContents.id))
+    //       ]))
+    //     .get();
 
-    List<FileContent> rectoHtmlContentFiles = await (select(fileContents)
-          ..join([
-            leftOuterJoin(
-                hTMLContentFiles,
-                hTMLContentFiles.htmlContentParentId
-                    .equals(rectoHtmlContent.id))
-          ]))
-        .get();
-    List<FileContent> versoHtmlContentFiles = await (select(fileContents)
-          ..where((tbl) => tbl.id.equals(versoHtmlContent.id)))
+    List<HTMLContentFile> htmlContentFiles = await (select(hTMLContentFiles)
+          ..where((tbl) => tbl.htmlContentParentId.equals(htmlContent.id)))
         .get();
 
-    List<HTMLContentObjFiles> hTMLContentObjFilesRecto = [];
-    for (var e in rectoHtmlContentFiles) {
-      hTMLContentObjFilesRecto.add(
-          HTMLContentObjFiles(e.name, e.format, (await fileContentToFile(e))));
-    }
+    List<FileContent> contentFiles = await (select(fileContents)
+          ..where((tbl) => tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
+        .get();
 
-    List<HTMLContentObjFiles> hTMLContentObjFilesVerso = [];
-    for (var e in versoHtmlContentFiles) {
-      hTMLContentObjFilesVerso.add(
+    List<HTMLContentObjFiles> hTMLContentObjFiles = [];
+    for (var e in contentFiles) {
+      hTMLContentObjFiles.add(
           HTMLContentObjFiles(e.name, e.format, (await fileContentToFile(e))));
     }
 
     HTMLContentRectoVerso result = HTMLContentRectoVerso(
-        recto:
-            HTMLContentObj(rectoHtmlContent.content, hTMLContentObjFilesRecto),
-        verso:
-            HTMLContentObj(versoHtmlContent.content, hTMLContentObjFilesVerso));
+        recto: htmlContent.recto,
+        verso: htmlContent.verso,
+        files: hTMLContentObjFiles);
 
     return result;
   }
 }
 
 class HTMLContentRectoVerso {
-  final HTMLContentObj recto;
-  final HTMLContentObj verso;
-
-  HTMLContentRectoVerso({required this.recto, required this.verso});
-}
-
-class HTMLContentObj {
-  final String content;
+  final String recto;
+  final String verso;
   final List<HTMLContentObjFiles> files;
 
-  HTMLContentObj(this.content, this.files);
+  HTMLContentRectoVerso(
+      {required this.files, required this.recto, required this.verso});
 }
 
 class HTMLContentObjFiles {

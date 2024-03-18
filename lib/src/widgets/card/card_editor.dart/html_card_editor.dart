@@ -3,6 +3,7 @@ import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/models/enum/answer_dificulty.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
+import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/form-tools/queel_editor.dart';
 import 'package:flutter/material.dart';
@@ -20,24 +21,7 @@ class HtmlCardEditor extends StatefulWidget implements CardEditorInterface {
 
   @override
   Future<void> createCard(int groupId, CardDisplayerType displayerType) async {
-    final database = MyDatabaseInstance.getInstance();
-
-    var rectoContentId = await database.into(database.hTMLContents).insert(
-        HTMLContentsCompanion.insert(content: rectoController.text));
-    var versoContentId = await database.into(database.hTMLContents).insert(
-        HTMLContentsCompanion.insert(content: versoController.text));
-
-    var cardId = await database.into(database.reviseCards).insert(
-        ReviseCardsCompanion.insert(
-            groupId: groupId,
-            displayerType: displayerType,
-            nextRevisionDateMultiplicator: 0.2,
-            recto: rectoContentId,
-            verso: versoContentId,
-            tags: 'toto;ahah'));
-    var toto = 0;
-
-    // Map<String, dynamic> resultMap = json.decode(jsonString);
+    await createCardInDb(groupId, displayerType, HTMLContentsCompanion.insert(recto: rectoController.text, verso: versoController.text));
   }
 }
 

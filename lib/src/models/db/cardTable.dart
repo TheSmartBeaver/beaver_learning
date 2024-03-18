@@ -7,8 +7,10 @@ class ReviseCards extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get groupId => integer().references(Group, #id)();
 
-  IntColumn get recto => integer().references(HTMLContents, #id)();
-  IntColumn get verso => integer().references(HTMLContents, #id)();
+  // IntColumn get recto => integer().references(HTMLContents, #id)();
+  // IntColumn get verso => integer().references(HTMLContents, #id)();
+
+  IntColumn get htmlContent => integer().references(HTMLContents, #id)();
   
   // TextColumn get recto => text()();
   // TextColumn get verso => text()();
