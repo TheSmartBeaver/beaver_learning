@@ -56,6 +56,7 @@ class _CardListState extends ConsumerState<CardList> {
   late List<ReviseCard> cards;
   late List<DropDownItem<int>> groupItems;
   CustomDropdownMenu<int>? groupDropdown;
+  Map<int, HTMLContent> htmlContents = {};
 
   Widget getDropDowns(WidgetRef ref, BuildContext context) {
     List<Widget> getDropDowns2() {
@@ -114,6 +115,11 @@ class _CardListState extends ConsumerState<CardList> {
     }
 
     cards = await cardsRequest.get();
+    htmlContents = {};
+    for (var card in cards) {
+      htmlContents[card.id] = await (database.select(database.hTMLContents)..where((tbl) => tbl.id.equals(card.id))).getSingle();
+      var toto = 0;
+    }
     var toto = 0;
     //TODO: Pourquoi refait t'on cette appel quand on est dans écran création carte
   }
@@ -183,8 +189,8 @@ class _CardListState extends ConsumerState<CardList> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              packInBox(Text("cards[index].recto")),
-                              packInBox(Text("cards[index].verso")),
+                              packInBox(Text(htmlContents[cards[index].id]?.recto ?? '')),
+                              packInBox(Text(htmlContents[cards[index].id]?.verso ?? '')),
                             ],
                           ),
                         );

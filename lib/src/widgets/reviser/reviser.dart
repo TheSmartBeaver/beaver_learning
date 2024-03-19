@@ -20,13 +20,6 @@ class RevisorDisplayer extends ConsumerStatefulWidget {
   ConsumerState<RevisorDisplayer> createState() => _RevisorDisplayerState();
 }
 
-Map<AnswerDifficulty, double> difficultyMultiplicator = {
-      AnswerDifficulty.veryHard: 0.25,
-      AnswerDifficulty.hard: 0.5,
-      AnswerDifficulty.easy: 2.0,
-      AnswerDifficulty.veryEasy: 4.0,
-    };
-
 class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
   int counter = 0;
   ReviseCard? cardToRevise;
@@ -56,19 +49,18 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
     widget.isInitialized = true;
   }
 
-  void goNextCard(ReviseCard card, AnswerDifficulty answerDifficulty) async {
-    
+  void goNextCard(ReviseCard card, NextRevisionInfo nextRevisionInfo) async {
     final cardDao = CardDao(MyDatabaseInstance.getInstance());
     var today = DateTime.now();
     var fakeToday = DateTime(today.year, today.month, today.day, 1);
 
-    var durationToAdd = (24 * card.nextRevisionDateMultiplicator * difficultyMultiplicator[answerDifficulty]!).floor();
+    var newMultiplicator =
+        nextRevisionInfo.diffMult * card.nextRevisionDateMultiplicator;
+    var newNextRevisionDate =
+        fakeToday.add(Duration(hours: nextRevisionInfo.durationToAdd));
 
-    var diffMult = difficultyMultiplicator[answerDifficulty]!;
-    var newMultiplicator = diffMult * card.nextRevisionDateMultiplicator;
-    var newNextRevisionDate = fakeToday.add(Duration(hours: durationToAdd));
-
-    await cardDao.updateNextRevision(card.id, newMultiplicator, newNextRevisionDate);
+    await cardDao.updateNextRevision(
+        card.id, newMultiplicator, newNextRevisionDate);
     print('nouvelle date de révision : ${newNextRevisionDate.toString()} Nouveau multiplicateur : ${newMultiplicator.toString()}');
 
     if (counter < initialcards!.length - 1) {

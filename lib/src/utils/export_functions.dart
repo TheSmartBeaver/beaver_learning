@@ -53,13 +53,13 @@ Future exportReal(GroupExport group) async {
   }
 
   // Zip a directory to out.zip using the zipDirectory convenience method
-  var encoder = TarFileEncoder();
+  var encoder = ZipFileEncoder();
 
   String? deckDestinationDirectory =
       await FilePicker.platform.getDirectoryPath();
   if (deckDestinationDirectory != null) {
-    await encoder.tarDirectory(tempDir,
-        filename: '$deckDestinationDirectory/deck.tar');
+    /*await*/ encoder.zipDirectory(tempDir,
+        filename: '$deckDestinationDirectory/deck.zip');
 
     void listFilesAndFolders(Directory directory) {
       directory.list(recursive: true).listen((FileSystemEntity entity) {
@@ -93,7 +93,7 @@ Future importReal() async {
     for (var file in file_picker_result.files) {
       // Lire l'archive depuis le fichier
       final bytes = File(file.path!).readAsBytesSync();
-      final archive = TarDecoder().decodeBytes(bytes);
+      final archive = ZipDecoder().decodeBytes(bytes);
 
       Map<String, CardExport> cardExports = {};
 
@@ -118,17 +118,17 @@ Future importReal() async {
           if (cardReg.hasMatch(paths[paths.length - 2])) {
             createCardIfNotExists(paths[paths.length - 2]);
             if (fileCanBeReadAsString(archEntity.name)) {
-              if(htmlReg.hasMatch(paths[paths.length - 1])){
-                //String content = utf8.decode(bytes);
+              if(htmlReg.hasMatch(paths[paths.length - 1]) && !paths[paths.length - 1].startsWith('.')){
+                String stringContent = utf8.decode(bytes);
                 if (paths[paths.length - 1] == "recto.html") {
                   cardExports[paths[paths.length - 2]]!.content.recto =
-                      String.fromCharCodes(bytes);
+                      stringContent;
                 } else if (paths[paths.length - 1] == "verso.html") {
                   cardExports[paths[paths.length - 2]]!.content.verso =
-                      String.fromCharCodes(bytes);
+                      stringContent;
                 }
               }
-            } else {
+            } else if(paths[paths.length - 1].contains('.') && !paths[paths.length - 1].startsWith('.')) {
               cardExports[paths[paths.length - 2]]!.content.files.add(
                   FileContentExport(paths[paths.length - 1].split('.')[0],
                       paths[paths.length - 1].split('.')[1], bytes));
@@ -145,6 +145,7 @@ Future importReal() async {
 
       GroupExport groupExport = GroupExport("deck imported", [], cardExports.values.toList());
       await saveGroupExportInDb(groupExport);
+      var issou2 = 1;
     }
   }
 }
@@ -199,7 +200,7 @@ Future export(GroupExport group) async {
   // Ces fichiers JSON devront contenir les métadonnées nécessaires.
 
   // Créer l'archive ZIP
-  String zipFilePath = '${tempDir.path}/deck.tar';
+  String zipFilePath = '${tempDir.path}/deck.zip';
   Archive archive = Archive();
 
   // Ajouter les fichiers JSON à l'archive
