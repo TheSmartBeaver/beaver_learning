@@ -83,7 +83,7 @@ Future exportReal(GroupExport group) async {
     // encoder.addFile(File('test.zip'));
     // encoder.close();
   }
-
+  cleanTempDirectory(tempDir.path);
   //final appDocDir = await getApplicationDocumentsDirectory();
 }
 
@@ -104,7 +104,7 @@ Future importReal() async {
         }
       }
 
-      var cardReg = RegExp(r".*card_.*");
+      var cardReg = RegExp(r"card_\d+.*");
       var htmlReg = RegExp(r".*html");
 
       // Parcourir récursivement les dossiers et fichiers
@@ -271,4 +271,15 @@ Future<GroupExport> recursiveGroupDiscovery(GroupData deck) async {
   }
 
   return GroupExport(deck.title, childGroups, cardExports);
+}
+
+void cleanTempDirectory(String path) async {
+  final dir = Directory(path);
+
+  if (await dir.exists()) {
+    await dir.delete(recursive: true);
+    print('Dossier temporaire nettoyé : $path');
+  } else {
+    print('Le dossier temporaire n\'existe pas : $path');
+  }
 }
