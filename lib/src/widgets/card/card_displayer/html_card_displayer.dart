@@ -20,6 +20,8 @@ WebViewController _buildController() {
   return WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setBackgroundColor(const Color(0x00000000))
+    ..clearCache()
+    ..clearLocalStorage()
     ..setNavigationDelegate(
       NavigationDelegate(
         onProgress: (int progress) {
@@ -29,10 +31,10 @@ WebViewController _buildController() {
         onPageFinished: (String url) {},
         onWebResourceError: (WebResourceError error) {},
         onNavigationRequest: (NavigationRequest request) {
-          if (request.url.startsWith('https://www.youtube.com/')) {
-            return NavigationDecision.prevent;
+          if (request.url.startsWith('http://localhost')) {
+            return NavigationDecision.navigate;
           }
-          return NavigationDecision.navigate;
+          return NavigationDecision.prevent;
         },
       ),
     );
@@ -60,6 +62,7 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
             justify-content: center; /* Centre le contenu horizontalement */
             align-items: center; /* Centre le contenu verticalement */
             flex-direction: column; /* Organise les éléments de haut en bas */
+            padding: 10px; /* Ajoute une padding de 6 pixels */
           }
 
           .verso {
@@ -69,6 +72,7 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
             justify-content: center; /* Centre le contenu horizontalement */
             align-items: center; /* Centre le contenu verticalement */
             flex-direction: column; /* Organise les éléments de haut en bas */
+            padding: 10px; /* Ajoute une padding de 6 pixels */
           }
 
           .texte {
@@ -123,6 +127,8 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
     await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index.html");
+    await controller.clearCache();
+    await controller.clearLocalStorage();
     await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));
     //await controller.loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
     //serverProps.server.close(force: true);
