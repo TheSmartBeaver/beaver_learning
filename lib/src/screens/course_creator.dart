@@ -27,7 +27,7 @@ class _CourseCreatorState extends ConsumerState<CourseCreatorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: "widget.title",
+        title: "Course creator",
         actions: [
         ],
       ),

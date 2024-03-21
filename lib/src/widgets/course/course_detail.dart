@@ -34,7 +34,7 @@ class _CourseDetailState extends State<CourseDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CustomAppBar(
-          title: widget.title,
+          title: "Course Detail",
           actions: [
             IconButton(
               icon: const Icon(Icons.arrow_back),

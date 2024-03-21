@@ -17,7 +17,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
+        appBar: AppBar(title: Text("Statistics")),
         body: const Text("Statistics"),
         drawer: const AppDrawer());
   }

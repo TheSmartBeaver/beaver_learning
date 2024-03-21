@@ -36,7 +36,7 @@ class _GroupDetailState extends State<GroupDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CustomAppBar(
-          title: widget.title,
+          title: "Deck Detail",
           actions: [
             IconButton(
               icon: const Icon(Icons.arrow_back),

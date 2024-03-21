@@ -102,7 +102,7 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: widget.title,
+        title: "Card editor",
         actions: [
           IconButton(
             icon: const Icon(Icons.check_circle),

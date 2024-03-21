@@ -48,7 +48,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
       }
 
     return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
+        appBar: AppBar(title: Text("Your courses")),
         body: FutureBuilder(
       future: init(),
       builder: (context, snapshot) {

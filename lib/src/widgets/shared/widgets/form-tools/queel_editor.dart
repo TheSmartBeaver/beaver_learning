@@ -46,7 +46,7 @@ class _QueelEditorState extends ConsumerState<MyQueelEditor> {
   
     return Scaffold(
         appBar: CustomAppBar(
-          title: "widget.title",
+          title: "Queel editor",
           actions: [
             MenuAnchor(
             builder: (context, controller, child) {

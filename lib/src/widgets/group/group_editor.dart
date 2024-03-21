@@ -47,7 +47,7 @@ class _GroupEditorState extends State<GroupEditor> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: widget.title,
+        title: "Deck editor",
         actions: [
           IconButton(
             icon: const Icon(Icons.check_circle),

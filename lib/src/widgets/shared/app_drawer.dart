@@ -113,7 +113,22 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                 ref.read(appbarProvider.notifier).state.currentDrawerIndex ==
                     DrawerItem.statistics,
             onTap: () {
-              _internalOnItemTapped(DrawerItem.statistics);
+              //_internalOnItemTapped(DrawerItem.statistics);
+              showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                        title: const Text("Whooops !"),
+                        content: const Text(
+                            'Cet écran est actuellement en cours de développement. Veuillez réessayer plus tard !'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Okay'),
+                          ),
+                        ],
+                      ));
             },
           ),
           ListTile(
@@ -155,10 +170,16 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             },
           ),
           ListTile(
-            title: const Text('Course creator'),
+            title: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Course creator'),
+                Text('(Experimental)'),
+              ],
+            ),
             selected:
                 ref.read(appbarProvider.notifier).state.currentDrawerIndex ==
-                    DrawerItem.marketplace,
+                    DrawerItem.course_creator,
             onTap: () {
               _internalOnItemTapped(DrawerItem.course_creator);
             },
