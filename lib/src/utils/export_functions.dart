@@ -9,6 +9,8 @@ import 'package:beaver_learning/src/models/db/groupTable.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/export_classes.dart';
+import 'package:drift/drift.dart';
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -87,88 +89,265 @@ Future exportReal(GroupExport group) async {
   //final appDocDir = await getApplicationDocumentsDirectory();
 }
 
-Future importReal() async {
-  var file_picker_result = await FilePicker.platform.pickFiles();
-  if (file_picker_result != null) {
-    for (var file in file_picker_result.files) {
-      // Lire l'archive depuis le fichier
-      final bytes = File(file.path!).readAsBytesSync();
-      final archive = ZipDecoder().decodeBytes(bytes);
+class EntityNature {
+  final ExportType type;
+  final String path;
+  Uint8List? bytes;
 
-      Map<String, CardExport> cardExports = {};
+  String get name => path.split('/').last;
 
-      createCardIfNotExists(String name) {
-        if (!cardExports.containsKey(name)) {
-          cardExports[name] = CardExport(
-              content: HTMLContentExport(recto: "", verso: "", files: []));
+  EntityNature(this.path, this.type, {this.bytes});
+}
+
+String extractParentFolder(String fullPath) {
+  List<String> paths = fullPath.split('/');
+  return fullPath.substring(
+                        0,
+                        fullPath.length - paths[paths.length - 1].length - 1);
+}
+
+Future importReal(BuildContext context) async {
+  try {
+    var file_picker_result = await FilePicker.platform.pickFiles();
+    if (file_picker_result != null) {
+      for (var file in file_picker_result.files) {
+        // Lire l'archive depuis le fichier
+        final bytes = File(file.path!).readAsBytesSync();
+        final archive = ZipDecoder().decodeBytes(bytes);
+
+        Map<String, CardExport> cardExports = {};
+        Map<String, GroupExport> groupExports = {};
+        Map<String, EntityNature> entityNatures = {};
+
+        createCardIfNotExists(String name) {
+          if (!cardExports.containsKey(name)) {
+            cardExports[name] = CardExport(
+                content: HTMLContentExport(recto: "", verso: "", files: []));
+          }
         }
-      }
 
-      var cardReg = RegExp(r"card_\d+.*");
-      var htmlReg = RegExp(r".*html");
+        var cardReg = RegExp(r"card_\d+.*");
+        var htmlReg = RegExp(r".*html");
+        var deckName = "deck imported";
 
-      // Parcourir récursivement les dossiers et fichiers
-      for (final archEntity in archive) {
-        List<String> paths = archEntity.name.split('/');
-        if (archEntity.isFile) {
-          print('Fichier : ${archEntity.name}');
-          // Vous pouvez accéder au contenu du fichier avec file.content
-          Uint8List bytes = archEntity.content as Uint8List;
+        // Parcourir récursivement les dossiers et fichiers
+        for (final archEntity in archive) {
+          List<String> paths = archEntity.name.split('/');
 
-          if (cardReg.hasMatch(paths[paths.length - 2])) {
-            createCardIfNotExists(paths[paths.length - 2]);
+          if (archEntity.isFile) {
+            print('Fichier : ${archEntity.name}');
+            // Vous pouvez accéder au contenu du fichier avec file.content
+            Uint8List bytes = archEntity.content as Uint8List;
+
             if (fileCanBeReadAsString(archEntity.name)) {
-              if(htmlReg.hasMatch(paths[paths.length - 1]) && !paths[paths.length - 1].startsWith('.')){
-                String stringContent = utf8.decode(bytes);
-                if (paths[paths.length - 1] == "recto.html") {
-                  cardExports[paths[paths.length - 2]]!.content.recto =
-                      stringContent;
-                } else if (paths[paths.length - 1] == "verso.html") {
-                  cardExports[paths[paths.length - 2]]!.content.verso =
-                      stringContent;
+              String stringContent = utf8.decode(bytes);
+              if (cardReg.hasMatch(paths[paths.length - 2])) {
+                //createCardIfNotExists(paths[paths.length - 2]);
+                if (htmlReg.hasMatch(paths[paths.length - 1]) &&
+                    !paths[paths.length - 1].startsWith('.')) {
+                  if (paths[paths.length - 1] == "recto.html") {
+                    // cardExports[paths[paths.length - 2]]!.content.recto =
+                    //     stringContent;
+                    var cardName = extractParentFolder(archEntity.name);
+                    entityNatures[cardName] = EntityNature(
+                        cardName, ExportType.card,
+                        bytes: bytes);
+                    entityNatures[archEntity.name] = EntityNature(
+                        archEntity.name, ExportType.rectoHtml,
+                        bytes: bytes);
+                  } else if (paths[paths.length - 1] == "verso.html") {
+                    // cardExports[paths[paths.length - 2]]!.content.verso =
+                    //     stringContent;
+                    var cardName = extractParentFolder(archEntity.name);
+                    entityNatures[cardName] = EntityNature(
+                        cardName, ExportType.card,
+                        bytes: bytes);
+                    entityNatures[archEntity.name] = EntityNature(
+                        archEntity.name, ExportType.versoHtml,
+                        bytes: bytes);
+                  }
                 }
+              } else if (paths[paths.length - 1] == "group_desc.json") {
+                var groupDescriptor =
+                    ExportDescriptor.fromJson(jsonDecode(stringContent));
+                var groupName = extractParentFolder(archEntity.name);
+                entityNatures[groupName] =
+                    EntityNature(groupName, groupDescriptor.type, bytes: bytes);
+                // if(groupDescriptor.type == ExportType.group && groupDescriptor.name != null){
+                //   deckName = groupDescriptor.name!;
+                // }
               }
-            } else if(paths[paths.length - 1].contains('.') && !paths[paths.length - 1].startsWith('.')) {
-              cardExports[paths[paths.length - 2]]!.content.files.add(
-                  FileContentExport(paths[paths.length - 1].split('.')[0],
-                      paths[paths.length - 1].split('.')[1], bytes));
+            } else if (paths[paths.length - 1].contains('.') &&
+                !paths[paths.length - 1].startsWith('.')) {
+              entityNatures[archEntity.name] = EntityNature(
+                  archEntity.name, ExportType.fileContent,
+                  bytes: bytes);
+
+              // cardExports[paths[paths.length - 2]]!.content.files.add(
+              //     FileContentExport(paths[paths.length - 1].split('.')[0],
+              //         paths[paths.length - 1].split('.')[1], bytes));
 
               var xdd = 0;
             }
+          } else {
+            print('Dossier : ${archEntity.name}');
+            // Pour parcourir récursivement, vous pouvez appeler readArchive sur les sous-dossiers
           }
-        } else {
-          print('Dossier : ${archEntity.name}');
-          // Pour parcourir récursivement, vous pouvez appeler readArchive sur les sous-dossiers
+        }
+        var issou = 1;
+
+        // On crée tous les groupes
+        for (var group in entityNatures.entries
+            .where((element) => element.value.type == ExportType.group)) {
+          var groupDesc = utf8.decode(group.value.bytes!);
+          var groupDescriptor =
+              ExportDescriptor.fromJson(jsonDecode(groupDesc));
+          var groupExport = GroupExport(groupDescriptor.name!, [], []);
+          groupExports[group.key] = groupExport;
+        }
+
+        // On crée les cartes
+        for (var card in entityNatures.entries
+            .where((element) => element.value.type == ExportType.card)) {
+          createCardIfNotExists(card.key);
+          // cardExports[card.key]!.content.recto = utf8.decode(File('${card.key}/recto.html').readAsBytesSync());
+          // cardExports[card.key]!.content.recto = utf8.decode(File('${card.key}/verso.html').readAsBytesSync());
+        }
+
+        // On crée les rectos
+        for (var rectoHtml in entityNatures.entries
+            .where((element) => element.value.type == ExportType.rectoHtml)) {
+          cardExports[extractParentFolder(rectoHtml.key)]!
+              .content
+              .recto = utf8.decode(rectoHtml.value.bytes!);
+        }
+
+        // On crée les versos
+        for (var versoHtml in entityNatures.entries
+            .where((element) => element.value.type == ExportType.versoHtml)) {
+          List<String> paths = versoHtml.key.split('/');
+          cardExports[extractParentFolder(versoHtml.key)]!
+              .content
+              .verso = utf8.decode(versoHtml.value.bytes!);
+        }
+
+        // On ajoute les fichiers aux cartes
+        for (var file in entityNatures.entries
+            .where((element) => element.value.type == ExportType.fileContent)) {
+          List<String> paths = file.key.split('/');
+          String cardKey = extractParentFolder(file.key);
+          if (paths.length >= 2 && cardExports.containsKey(cardKey)) {
+            cardExports[cardKey]!.content.files.add(FileContentExport(
+                paths[paths.length - 1].split('.')[0],
+                paths[paths.length - 1].split('.')[1],
+                bytes));
+          }
+        }
+
+        //On ajoute les cartes aux groupes
+        for (var card in cardExports.entries) {
+          List<String> paths = card.key.split('/');
+          for (int index = paths.length - 2; index >= 0; index--) {
+            var groupEntityNature = entityNatures.values
+                .where((element) =>
+                    element.name == paths[index] &&
+                    element.type == ExportType.group)
+                .firstOrNull;
+            if (groupEntityNature != null) {
+              groupExports[groupEntityNature.path]!.cards.add(card.value);
+              break;
+            }
+          }
+        }
+
+        //On mets les groupes dans leurs groupe parent
+        for (var group in entityNatures.entries
+            .where((element) => element.value.type == ExportType.group)) {
+          List<String> paths = group.key.split('/');
+          for (int index = paths.length - 2; index >= 0; index--) {
+            var groupEntityNature = entityNatures.values
+                .where((element) =>
+                    element.name == paths[index] &&
+                    element.type == ExportType.group)
+                .firstOrNull;
+            if (groupEntityNature != null) {
+              groupExports[groupEntityNature.path]!
+                  .childGroups
+                  .add(groupExports[group.key]!);
+              groupExports.remove(group.key);
+              break;
+            }
+          }
+        }
+
+        //GroupExport groupExport = GroupExport(deckName, [], cardExports.values.toList());
+        for(var group in groupExports.entries){
+          var groupExport = group.value;
+          await saveGroupExportInDb(groupExport);
+        }
+
+        var issou2 = 1;
+
+        //Le filePicker a un bug de cache qui fait qu'on ne prend pas le fichier le plus récent
+        final cacheDirectory =
+            Directory(file.path!.substring(0, file.path!.lastIndexOf('/')));
+
+        if (await cacheDirectory.exists()) {
+          await cacheDirectory.delete(recursive: true);
         }
       }
-      var issou = 1;
-
-      GroupExport groupExport = GroupExport("deck imported", [], cardExports.values.toList());
-      await saveGroupExportInDb(groupExport);
-      var issou2 = 1;
     }
+  } catch (e) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text("Whooops !"),
+              content: Text(e.toString()),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Okay'),
+                ),
+              ],
+            ));
   }
 }
 
-Future<void> saveGroupExportInDb(GroupExport groupExport) async {
-  int groupId = await createGroupInDb(GroupCompanion.insert(title: groupExport.title, tags: ""));
-  for(var card in groupExport.cards){
-    CardCreatedReturns cardReturns = await createCardInDb(groupId, CardDisplayerType.html, HTMLContentsCompanion.insert(recto: card.content.recto, verso: card.content.verso));
-    for(var file in card.content.files){
-      await createFileContentInDb(cardReturns.contentId, FileContentsCompanion.insert(name: file.name, format: file.format, content: file.content));
+Future<void> saveGroupExportInDb(GroupExport groupExport, {int? parentId}) async {
+  int groupId = await createGroupInDb(
+      GroupCompanion.insert(title: groupExport.title, tags: "", parentId: Value(parentId)));
+  for (var card in groupExport.cards) {
+    CardCreatedReturns cardReturns = await createCardInDb(
+        groupId,
+        CardDisplayerType.html,
+        HTMLContentsCompanion.insert(
+            recto: card.content.recto, verso: card.content.verso));
+    for (var file in card.content.files) {
+      await createFileContentInDb(
+          cardReturns.contentId,
+          FileContentsCompanion.insert(
+              name: file.name, format: file.format, content: file.content));
     }
+  }
+  for (var childGroup in groupExport.childGroups) {
+    await saveGroupExportInDb(childGroup, parentId: groupId);
   }
 }
 
 bool fileCanBeReadAsString(String filePath) {
-  if (filePath.contains(".json") ||
-      filePath.contains(".html") ||
-      filePath.contains(".css") ||
-      filePath.contains(".js") ||
-      filePath.contains(".txt") ||
-      filePath.contains(".md") ||
-      filePath.contains(".csv") ||
-      filePath.contains(".xml")) {
+  List<String> paths = filePath.split('/');
+  if ((filePath.contains(".json") ||
+          filePath.contains(".html") ||
+          filePath.contains(".css") ||
+          filePath.contains(".js") ||
+          filePath.contains(".txt") ||
+          filePath.contains(".md") ||
+          filePath.contains(".csv") ||
+          filePath.contains(".xml")) &&
+      paths[paths.length - 1].contains('.') &&
+      !paths[paths.length - 1].startsWith('.')) {
     return true;
   }
   return false;

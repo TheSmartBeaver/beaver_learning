@@ -21,6 +21,8 @@ Map<String, dynamic> _$ExportDescriptorToJson(ExportDescriptor instance) =>
 const _$ExportTypeEnumMap = {
   ExportType.group: 'group',
   ExportType.card: 'card',
-  ExportType.htmlContent: 'htmlContent',
+  ExportType.rectoHtml: 'rectoHtml',
+  ExportType.versoHtml: 'versoHtml',
   ExportType.fileContent: 'fileContent',
+  ExportType.unknown: 'unknown',
 };

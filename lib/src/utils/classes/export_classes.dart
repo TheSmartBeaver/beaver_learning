@@ -8,7 +8,7 @@ part 'export_classes.g.dart';
 //TODO: Inutile d'essayer de tout sérialiser à la volée
 // Parcourir les objets à la place et créer des jsons par-ci, des dossiers par-là et des fichiers.
 
-enum ExportType { group, card, htmlContent, fileContent }
+enum ExportType { group, card, rectoHtml, versoHtml, fileContent, unknown }
 
 @JsonSerializable(explicitToJson: true)
 class ExportDescriptor {
