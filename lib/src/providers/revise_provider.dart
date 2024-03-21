@@ -14,16 +14,9 @@ class ReviseNotifier extends StateNotifier<Object> {
 
   Future<List<ReviseCard>> getAllCardsToRevise() async {
     final database = MyDatabaseInstance.getInstance();
-
-    // await database.into(database.reviseCards).insert(
-    //     ReviseCardsCompanion.insert(
-    //         title: 'todo: finish drift setup',
-    //         content: const Value(
-    //             'We can now write queries and define our own tables.'),
-    //         tags: 'toto;ahah'));
-
+    DateTime now = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 23, 59, 59);
     List<ReviseCard> allItems =
-        await database.select(database.reviseCards).get();
+        await (database.select(database.reviseCards)..where((tbl) => tbl.nextRevisionDate.isSmallerThanValue(now) | tbl.nextRevisionDate.isNull())).get();
     return allItems;
   }
 }

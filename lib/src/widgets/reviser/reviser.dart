@@ -31,7 +31,7 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
     var cards = await ref.read(reviseProvider.notifier).getAllCardsToRevise();
     setState(() {
       initialcards = cards;
-      cardToRevise = initialcards?[counter];
+      cardToRevise = initialcards != null && initialcards!.isNotEmpty ? initialcards![counter] : null;
     });
   }
 
@@ -70,8 +70,8 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
       });
     } else {
       setState(() {
-        counter++;
-        cardToRevise = null;
+        counter = 0;
+        getReviseCards(ref);
       });
     }
   }
