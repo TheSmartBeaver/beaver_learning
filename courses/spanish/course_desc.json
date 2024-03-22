@@ -1,7 +1,7 @@
 {
     "type" : "course",
     "name" : "Cours d'espagnol ultime",
-    "learn_abouts": [
+    "learnAbouts": [
         "Apprendre grammaire espagnole",
         "Apprendre vocabulaire espagnol",
         "Apprendre conjugaison espagnole",
@@ -18,5 +18,6 @@
         "être motivé",
         "avoir un téléphone",
         "Aucun niveau d'espagnol préalable requis"
-      ]
+      ],
+      "imgUrl": "https://www.revueconflits.com/wp-content/uploads/2020/03/espagnol-espagne-amerique.jpg"
 }

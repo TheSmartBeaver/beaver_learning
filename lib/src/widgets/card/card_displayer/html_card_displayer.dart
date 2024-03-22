@@ -6,6 +6,7 @@ import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/utils/images_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void test() {
@@ -20,24 +21,25 @@ WebViewController _buildController() {
   return WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setBackgroundColor(const Color(0x00000000))
-    ..clearCache()
-    ..clearLocalStorage()
-    ..setNavigationDelegate(
-      NavigationDelegate(
-        onProgress: (int progress) {
-          // Update loading bar.
-        },
-        onPageStarted: (String url) {},
-        onPageFinished: (String url) {},
-        onWebResourceError: (WebResourceError error) {},
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.startsWith('http://localhost')) {
-            return NavigationDecision.navigate;
-          }
-          return NavigationDecision.prevent;
-        },
-      ),
-    );
+    //..clearCache()
+    //..clearLocalStorage()
+    // ..setNavigationDelegate(
+    //   NavigationDelegate(
+    //     onProgress: (int progress) {
+    //       // Update loading bar.
+    //     },
+    //     onPageStarted: (String url) {},
+    //     onPageFinished: (String url) {},
+    //     onWebResourceError: (WebResourceError error) {},
+    //     onNavigationRequest: (NavigationRequest request) {
+    //       if (request.url.startsWith('http://localhost')) {
+    //         return NavigationDecision.navigate;
+    //       }
+    //       return NavigationDecision.prevent;
+    //     },
+    //   ),
+    // )
+    ;
   //..loadRequest(Uri.parse('https://flutter.dev'));
   //..loadHtmlString(customHtml);
 }
@@ -126,10 +128,13 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
     }
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
-    await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index.html");
-    await controller.clearCache();
-    await controller.clearLocalStorage();
+    await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index2.html");
+    var test = await(await getTemporaryDirectory()).list().toList();
     await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));
+    var test2 = await(await getTemporaryDirectory()).list().toList();
+    var tatat = 0;
+    // await controller.clearCache();
+    // await controller.clearLocalStorage();
     //await controller.loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
     //serverProps.server.close(force: true);
   }

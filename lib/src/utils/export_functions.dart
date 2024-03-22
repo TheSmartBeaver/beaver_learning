@@ -102,12 +102,12 @@ class EntityNature {
 String extractParentFolder(String fullPath) {
   List<String> paths = fullPath.split('/');
   return fullPath.substring(
-                        0,
-                        fullPath.length - paths[paths.length - 1].length - 1);
+      0, fullPath.length - paths[paths.length - 1].length - 1);
 }
 
 Future importReal(BuildContext context) async {
   try {
+
     var file_picker_result = await FilePicker.platform.pickFiles();
     if (file_picker_result != null) {
       for (var file in file_picker_result.files) {
@@ -115,9 +115,19 @@ Future importReal(BuildContext context) async {
         final bytes = File(file.path!).readAsBytesSync();
         final archive = ZipDecoder().decodeBytes(bytes);
 
+        //Le filePicker a un bug de cache qui fait qu'on ne prend pas le fichier le plus récent
+        final cacheDirectory =
+            Directory(file.path!.substring(0, file.path!.lastIndexOf('/')));
+
+        if (await cacheDirectory.exists()) {
+          await cacheDirectory.delete(recursive: true);
+        }
+
         Map<String, CardExport> cardExports = {};
         Map<String, GroupExport> groupExports = {};
         Map<String, EntityNature> entityNatures = {};
+        Map<String, TopicExport> topicExports = {};
+
 
         createCardIfNotExists(String name) {
           if (!cardExports.containsKey(name)) {
@@ -128,7 +138,7 @@ Future importReal(BuildContext context) async {
 
         var cardReg = RegExp(r"card_\d+.*");
         var htmlReg = RegExp(r".*html");
-        var deckName = "deck imported";
+        var supportReg = RegExp(r"support.*");
 
         // Parcourir récursivement les dossiers et fichiers
         for (final archEntity in archive) {
@@ -142,26 +152,19 @@ Future importReal(BuildContext context) async {
             if (fileCanBeReadAsString(archEntity.name)) {
               String stringContent = utf8.decode(bytes);
               if (cardReg.hasMatch(paths[paths.length - 2])) {
-                //createCardIfNotExists(paths[paths.length - 2]);
                 if (htmlReg.hasMatch(paths[paths.length - 1]) &&
                     !paths[paths.length - 1].startsWith('.')) {
                   if (paths[paths.length - 1] == "recto.html") {
-                    // cardExports[paths[paths.length - 2]]!.content.recto =
-                    //     stringContent;
                     var cardName = extractParentFolder(archEntity.name);
-                    entityNatures[cardName] = EntityNature(
-                        cardName, ExportType.card,
-                        bytes: bytes);
+                    entityNatures[cardName] =
+                        EntityNature(cardName, ExportType.card, bytes: bytes);
                     entityNatures[archEntity.name] = EntityNature(
                         archEntity.name, ExportType.rectoHtml,
                         bytes: bytes);
                   } else if (paths[paths.length - 1] == "verso.html") {
-                    // cardExports[paths[paths.length - 2]]!.content.verso =
-                    //     stringContent;
                     var cardName = extractParentFolder(archEntity.name);
-                    entityNatures[cardName] = EntityNature(
-                        cardName, ExportType.card,
-                        bytes: bytes);
+                    entityNatures[cardName] =
+                        EntityNature(cardName, ExportType.card, bytes: bytes);
                     entityNatures[archEntity.name] = EntityNature(
                         archEntity.name, ExportType.versoHtml,
                         bytes: bytes);
@@ -173,21 +176,26 @@ Future importReal(BuildContext context) async {
                 var groupName = extractParentFolder(archEntity.name);
                 entityNatures[groupName] =
                     EntityNature(groupName, groupDescriptor.type, bytes: bytes);
-                // if(groupDescriptor.type == ExportType.group && groupDescriptor.name != null){
-                //   deckName = groupDescriptor.name!;
-                // }
+              } else if (paths[paths.length - 1] == "course_desc.json") {
+                var courseName = extractParentFolder(archEntity.name);
+                entityNatures[courseName] =
+                    EntityNature(courseName, ExportType.course, bytes: bytes);
+              } else if (paths[paths.length - 1] == "topic_desc.json") {
+                var topicName = extractParentFolder(archEntity.name);
+                entityNatures[topicName] =
+                    EntityNature(topicName, ExportType.topic, bytes: bytes);
               }
             } else if (paths[paths.length - 1].contains('.') &&
                 !paths[paths.length - 1].startsWith('.')) {
-              entityNatures[archEntity.name] = EntityNature(
+              if(cardReg.hasMatch(paths[paths.length - 2])){
+                entityNatures[archEntity.name] = EntityNature(
                   archEntity.name, ExportType.fileContent,
                   bytes: bytes);
-
-              // cardExports[paths[paths.length - 2]]!.content.files.add(
-              //     FileContentExport(paths[paths.length - 1].split('.')[0],
-              //         paths[paths.length - 1].split('.')[1], bytes));
-
-              var xdd = 0;
+              } else if(supportReg.hasMatch(paths[paths.length - 1])){
+                entityNatures[archEntity.name] = EntityNature(
+                  archEntity.name, ExportType.support,
+                  bytes: bytes);
+              }
             }
           } else {
             print('Dossier : ${archEntity.name}');
@@ -202,7 +210,7 @@ Future importReal(BuildContext context) async {
           var groupDesc = utf8.decode(group.value.bytes!);
           var groupDescriptor =
               ExportDescriptor.fromJson(jsonDecode(groupDesc));
-          var groupExport = GroupExport(groupDescriptor.name!, [], []);
+          var groupExport = GroupExport(groupDescriptor.name!, [], [], path: group.key);
           groupExports[group.key] = groupExport;
         }
 
@@ -210,25 +218,21 @@ Future importReal(BuildContext context) async {
         for (var card in entityNatures.entries
             .where((element) => element.value.type == ExportType.card)) {
           createCardIfNotExists(card.key);
-          // cardExports[card.key]!.content.recto = utf8.decode(File('${card.key}/recto.html').readAsBytesSync());
-          // cardExports[card.key]!.content.recto = utf8.decode(File('${card.key}/verso.html').readAsBytesSync());
         }
 
         // On crée les rectos
         for (var rectoHtml in entityNatures.entries
             .where((element) => element.value.type == ExportType.rectoHtml)) {
-          cardExports[extractParentFolder(rectoHtml.key)]!
-              .content
-              .recto = utf8.decode(rectoHtml.value.bytes!);
+          cardExports[extractParentFolder(rectoHtml.key)]!.content.recto =
+              utf8.decode(rectoHtml.value.bytes!);
         }
 
         // On crée les versos
         for (var versoHtml in entityNatures.entries
             .where((element) => element.value.type == ExportType.versoHtml)) {
           List<String> paths = versoHtml.key.split('/');
-          cardExports[extractParentFolder(versoHtml.key)]!
-              .content
-              .verso = utf8.decode(versoHtml.value.bytes!);
+          cardExports[extractParentFolder(versoHtml.key)]!.content.verso =
+              utf8.decode(versoHtml.value.bytes!);
         }
 
         // On ajoute les fichiers aux cartes
@@ -260,6 +264,67 @@ Future importReal(BuildContext context) async {
           }
         }
 
+        //On crée les topics
+        for (var topic in entityNatures.entries
+            .where((element) => element.value.type == ExportType.topic)) {
+          var topicDescJson = utf8.decode(topic.value.bytes!);
+          var topicDescriptor =
+              ExportDescriptor.fromJson(jsonDecode(topicDescJson));
+          topicExports[topic.key] = TopicExport(topicDescriptor.name!, [], path: topic.key);
+        }
+
+        //On mets les groupes dans leur topic
+        for (var group in groupExports.entries) {
+          List<String> paths = group.key.split('/');
+          for (int index = paths.length - 2; index >= 0; index--) {
+            var topicEntityNature = entityNatures.values
+                .where((element) =>
+                    element.name == paths[index] &&
+                    element.type == ExportType.topic)
+                .firstOrNull;
+            if (topicEntityNature != null) {
+              topicExports[topicEntityNature.path]!.group = group.value;
+              break;
+            }
+          }
+        }
+
+        //On mets les support dans leur topic
+        for (var support in entityNatures.entries.where((element) => element.value.type == ExportType.support)) {
+          List<String> paths = support.key.split('/');
+          for (int index = paths.length - 2; index >= 0; index--) {
+            var topicEntityNature = entityNatures.values
+                .where((element) =>
+                    element.name == paths[index] &&
+                    element.type == ExportType.topic)
+                .firstOrNull;
+            if (topicEntityNature != null) {
+              topicExports[topicEntityNature.path]!.topicSupportBytes = support.value.bytes;
+              break;
+            }
+          }
+        }
+
+        //On mets les topics dans les topics parents
+        for (var topic in entityNatures.entries
+            .where((element) => element.value.type == ExportType.topic)) {
+          List<String> paths = topic.key.split('/');
+          for (int index = paths.length - 2; index >= 0; index--) {
+            var topicEntityNature = entityNatures.values
+                .where((element) =>
+                    element.name == paths[index] &&
+                    element.type == ExportType.topic)
+                .firstOrNull;
+            if (topicEntityNature != null) {
+              topicExports[topicEntityNature.path]!
+                  .childTopics
+                  .add(topicExports[topic.key]!);
+              topicExports.remove(topic.key);
+              break;
+            }
+          }
+        }
+
         //On mets les groupes dans leurs groupe parent
         for (var group in entityNatures.entries
             .where((element) => element.value.type == ExportType.group)) {
@@ -280,21 +345,25 @@ Future importReal(BuildContext context) async {
           }
         }
 
-        //GroupExport groupExport = GroupExport(deckName, [], cardExports.values.toList());
-        for(var group in groupExports.entries){
+        //On crée en bdd tous les groupes
+        for (var group in groupExports.entries) {
           var groupExport = group.value;
           await saveGroupExportInDb(groupExport);
         }
 
-        var issou2 = 1;
+        //On crée le cours en BDD
+        var course = entityNatures.entries.where((element) => element.value.type == ExportType.course).first;
+        var courseDescJson = utf8.decode(course.value.bytes!);
+        var courseDescriptor = ExportDescriptor.fromJson(jsonDecode(courseDescJson));
+        int courseId = await saveCourseExportInDb(courseDescriptor);
 
-        //Le filePicker a un bug de cache qui fait qu'on ne prend pas le fichier le plus récent
-        final cacheDirectory =
-            Directory(file.path!.substring(0, file.path!.lastIndexOf('/')));
-
-        if (await cacheDirectory.exists()) {
-          await cacheDirectory.delete(recursive: true);
+        //On crée en bdd tous les topics
+        for (var topic in topicExports.entries) {
+          var topicExport = topic.value;
+          await saveTopicExportInDb(topicExport, groupExports.values.toList(), courseId);
         }
+
+        var issou2 = 1;
       }
     }
   } catch (e) {
@@ -315,9 +384,11 @@ Future importReal(BuildContext context) async {
   }
 }
 
-Future<void> saveGroupExportInDb(GroupExport groupExport, {int? parentId}) async {
-  int groupId = await createGroupInDb(
-      GroupCompanion.insert(title: groupExport.title, tags: "", parentId: Value(parentId)));
+Future<void> saveGroupExportInDb(GroupExport groupExport,
+    {int? parentId}) async {
+  int groupId = await createGroupInDb(GroupCompanion.insert(
+      title: groupExport.title, tags: "", parentId: Value(parentId)));
+  groupExport.dbId = groupId;
   for (var card in groupExport.cards) {
     CardCreatedReturns cardReturns = await createCardInDb(
         groupId,
@@ -325,7 +396,7 @@ Future<void> saveGroupExportInDb(GroupExport groupExport, {int? parentId}) async
         HTMLContentsCompanion.insert(
             recto: card.content.recto, verso: card.content.verso));
     for (var file in card.content.files) {
-      await createFileContentInDb(
+      await createHtmlContentFileContentInDb(
           cardReturns.contentId,
           FileContentsCompanion.insert(
               name: file.name, format: file.format, content: file.content));
@@ -333,6 +404,24 @@ Future<void> saveGroupExportInDb(GroupExport groupExport, {int? parentId}) async
   }
   for (var childGroup in groupExport.childGroups) {
     await saveGroupExportInDb(childGroup, parentId: groupId);
+  }
+}
+
+Future<int> saveCourseExportInDb(ExportDescriptor courseExport) async {
+  int courseId = await createCourseInDb(CoursesCompanion.insert(title: courseExport.name!, description: courseExport.learnAbouts!.join("\n"), imageUrl: courseExport.imgUrl!));
+  return courseId;
+}
+
+Future<void> saveTopicExportInDb(TopicExport topicExport, List<GroupExport> groups, int parentCourseId, {int? parentId} ) async {
+  int? groupId = groups.where((element) => element.path == topicExport.group?.path).firstOrNull?.dbId;
+  int? supportId;
+  if(topicExport.topicSupportBytes != null){
+    supportId = await createFileContentInDb(FileContentsCompanion.insert(name: "support", format: "pdf", content: topicExport.topicSupportBytes!));
+  }
+  int topicId = await createTopicInDb(TopicsCompanion.insert(title: topicExport.title, parentCourseId: parentCourseId, groupId: Value(groupId), fileId: Value(supportId), parentId: Value(parentId)));
+
+  for (var childTopic in topicExport.childTopics) {
+    await saveTopicExportInDb(childTopic, groups, parentCourseId, parentId: topicId);
   }
 }
 

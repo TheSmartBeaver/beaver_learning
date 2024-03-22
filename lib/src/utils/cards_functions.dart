@@ -1,9 +1,12 @@
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
+
 final database = MyDatabaseInstance.getInstance();
 
-Future<CardCreatedReturns> createCardInDb(int groupId, CardDisplayerType displayerType,
+Future<CardCreatedReturns> createCardInDb(
+    int groupId,
+    CardDisplayerType displayerType,
     HTMLContentsCompanion hTMLContentsCompanion) async {
   var contentId =
       await database.into(database.hTMLContents).insert(hTMLContentsCompanion);
@@ -25,11 +28,31 @@ class CardCreatedReturns {
 }
 
 Future<int> createGroupInDb(GroupCompanion groupCompanion) async {
-    var id = await database.into(database.group).insert(groupCompanion);
-    return id;
-  }
+  var id = await database.into(database.group).insert(groupCompanion);
+  return id;
+}
 
-Future<void> createFileContentInDb(int htmlContentParentId, FileContentsCompanion fileContentsCompanion) async {
-  var fileId = await database.into(database.fileContents).insert(fileContentsCompanion);
-  await database.into(database.hTMLContentFiles).insert(HTMLContentFilesCompanion.insert(htmlContentParentId: htmlContentParentId, fileId: fileId));
+Future<void> createHtmlContentFileContentInDb(int htmlContentParentId,
+    FileContentsCompanion fileContentsCompanion) async {
+  var fileId =
+      await database.into(database.fileContents).insert(fileContentsCompanion);
+  await database.into(database.hTMLContentFiles).insert(
+      HTMLContentFilesCompanion.insert(
+          htmlContentParentId: htmlContentParentId, fileId: fileId));
+}
+
+Future<int> createTopicInDb(TopicsCompanion topicCompanion) async {
+  var id = await database.into(database.topics).insert(topicCompanion);
+  return id;
+}
+
+Future<int> createFileContentInDb(FileContentsCompanion fileContentsCompanion) async {
+  var fileId =
+      await database.into(database.fileContents).insert(fileContentsCompanion);
+  return fileId;
+}
+
+Future<int> createCourseInDb(CoursesCompanion courseCompanion) async {
+  var id = await database.into(database.courses).insert(courseCompanion);
+  return id;
 }

@@ -63,7 +63,7 @@ Future<File> copyImageToServerDirectory(
 Future<File> copyImageToServerDirectory2(File fileToCopy, String filename) async {
   final directory = await getTemporaryDirectory();
   final path = '${directory.path}/$filename';
-  return fileToCopy.copy(path);
+  return fileToCopy.copySync(path);
 }
 
 Future<File> writeHtmlToServerDirectory(String html, String filename) async {
@@ -75,7 +75,7 @@ Future<File> writeHtmlToServerDirectory(String html, String filename) async {
 
 Future<File> fileContentToFile(FileContent fileContent) async {
   final tempDir = await getTemporaryDirectory();
-  File file = await File('${tempDir.path}/${fileContent.name}').create();
+  File file = await File('${tempDir.path}/${fileContent.name}.${fileContent.format}').create();
   file.writeAsBytesSync(fileContent.content);
   return file;
 }

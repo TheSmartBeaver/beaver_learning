@@ -25,9 +25,13 @@ class _CourseDetailState extends State<CourseDetail> {
 
   init() async {
     final database = MyDatabaseInstance.getInstance();
-    topics = await (database.select(database.topics)..where((tbl) => tbl.parentCourseId.equals(widget.course.id))).get();
+    topics = await (database.select(database.topics)
+          ..where((tbl) => tbl.parentCourseId.equals(widget.course.id)))
+        .get();
     Set<int> groupIds = topics.map((e) => e.groupId).whereType<int>().toSet();
-    groups = await (database.select(database.group)..where((tbl) => tbl.id.isIn(groupIds))).get();
+    groups = await (database.select(database.group)
+          ..where((tbl) => tbl.id.isIn(groupIds)))
+        .get();
   }
 
   @override
@@ -44,7 +48,8 @@ class _CourseDetailState extends State<CourseDetail> {
             )
           ],
         ),
-        body: Column(
+        body: SingleChildScrollView(
+            child: Column(
           children: [
             Text(widget.course.title, style: const TextStyle(fontSize: 24)),
             ElevatedButton(
@@ -64,7 +69,8 @@ class _CourseDetailState extends State<CourseDetail> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => CourseSummary(course: widget.course, topics: topics),
+                      builder: (ctx) =>
+                          CourseSummary(course: widget.course, topics: topics),
                     ),
                   );
                 },
@@ -75,11 +81,11 @@ class _CourseDetailState extends State<CourseDetail> {
                     style: TextStyle(color: Colors.black))),
             Container(
                 margin: const EdgeInsets.all(4),
-                
                 child: containerWithLabel(
                     label: "Description",
                     body: Container(
-                        margin: const EdgeInsets.only(top: 10, bottom: 8, left: 4, right: 4),
+                        margin: const EdgeInsets.only(
+                            top: 10, bottom: 8, left: 4, right: 4),
                         width: MediaQuery.of(context).size.width * 0.95,
                         child: Text(widget.course.description)))),
             FutureBuilder(
@@ -98,7 +104,7 @@ class _CourseDetailState extends State<CourseDetail> {
                   }
                 })
           ],
-        ),
+        )),
         drawer: const AppDrawer());
   }
 }

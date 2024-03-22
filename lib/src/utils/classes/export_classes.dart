@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:beaver_learning/src/models/db/groupTable.dart';
 import 'package:beaver_learning/src/utils/export_functions.dart';
+import 'package:drift/drift.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'export_classes.g.dart';
@@ -14,12 +16,14 @@ enum ExportType { group, card, rectoHtml, versoHtml, fileContent, unknown, cours
 class ExportDescriptor {
   final ExportType type;
   String? name;
-
+  List<String>? learnAbouts;
+  List<String>? prerequisites;
+  String? imgUrl;
 
   factory ExportDescriptor.fromJson(Map<String, dynamic> json) =>
       _$ExportDescriptorFromJson(json);
 
-  ExportDescriptor(this.type, {this.name});
+  ExportDescriptor(this.type, {this.name, this.learnAbouts, this.prerequisites});
 
   Map<String, dynamic> toJson() => _$ExportDescriptorToJson(this);
 
@@ -28,6 +32,8 @@ class ExportDescriptor {
 //@JsonSerializable(explicitToJson: true)
 class GroupExport {
   final String title;
+  String? path;
+  int? dbId;
   final List<GroupExport> childGroups;
   final List<CardExport> cards;
 
@@ -36,7 +42,23 @@ class GroupExport {
 
   // Map<String, dynamic> toJson() => _$GroupExportToJson(this);
 
-  GroupExport(this.title, this.childGroups, this.cards);
+  GroupExport(this.title, this.childGroups, this.cards, {this.path});
+}
+
+class TopicExport {
+  final String title;
+  String? path;
+  int? dbId;
+  GroupExport? group;
+  Uint8List? topicSupportBytes;
+  final List<TopicExport> childTopics;
+
+  // factory GroupExport.fromJson(Map<String, dynamic> json) =>
+  //     _$GroupExportFromJson(json);
+
+  // Map<String, dynamic> toJson() => _$GroupExportToJson(this);
+
+  TopicExport(this.title, this.childTopics, {this.path});
 }
 
 //@JsonSerializable(explicitToJson: true)

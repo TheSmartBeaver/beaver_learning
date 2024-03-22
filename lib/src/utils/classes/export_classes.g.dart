@@ -10,12 +10,21 @@ ExportDescriptor _$ExportDescriptorFromJson(Map<String, dynamic> json) =>
     ExportDescriptor(
       $enumDecode(_$ExportTypeEnumMap, json['type']),
       name: json['name'] as String?,
-    );
+      learnAbouts: (json['learnAbouts'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      prerequisites: (json['prerequisites'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+    )..imgUrl = json['imgUrl'] as String?;
 
 Map<String, dynamic> _$ExportDescriptorToJson(ExportDescriptor instance) =>
     <String, dynamic>{
       'type': _$ExportTypeEnumMap[instance.type]!,
       'name': instance.name,
+      'learnAbouts': instance.learnAbouts,
+      'prerequisites': instance.prerequisites,
+      'imgUrl': instance.imgUrl,
     };
 
 const _$ExportTypeEnumMap = {
@@ -25,4 +34,7 @@ const _$ExportTypeEnumMap = {
   ExportType.versoHtml: 'versoHtml',
   ExportType.fileContent: 'fileContent',
   ExportType.unknown: 'unknown',
+  ExportType.course: 'course',
+  ExportType.topic: 'topic',
+  ExportType.support: 'support',
 };
