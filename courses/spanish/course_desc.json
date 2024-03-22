@@ -1,0 +1,22 @@
+{
+    "type" : "course",
+    "name" : "Cours d'espagnol ultime",
+    "learn_abouts": [
+        "Apprendre grammaire espagnole",
+        "Apprendre vocabulaire espagnol",
+        "Apprendre conjugaison espagnole",
+        "Apprendre prononciation espagnole",
+        "Apprendre culture espagnole",
+        "Apprendre expressions espagnoles",
+        "Apprendre espagnol pour voyager",
+        "Apprendre espagnol pour les affaires",
+        "Apprendre espagnol pour les études",
+        "Apprendre espagnol pour les examens",
+        "Apprendre espagnol pour les vacances"
+      ],
+      "prerequisites": [
+        "être motivé",
+        "avoir un téléphone",
+        "Aucun niveau d'espagnol préalable requis"
+      ]
+}
