@@ -112,8 +112,8 @@ Future importReal(BuildContext context) async {
     if (file_picker_result != null) {
       for (var file in file_picker_result.files) {
         // Lire l'archive depuis le fichier
-        final bytes = File(file.path!).readAsBytesSync();
-        final archive = ZipDecoder().decodeBytes(bytes);
+        final pickedFileBytes = File(file.path!).readAsBytesSync();
+        final archive = ZipDecoder().decodeBytes(pickedFileBytes);
 
         //Le filePicker a un bug de cache qui fait qu'on ne prend pas le fichier le plus récent
         final cacheDirectory =
@@ -244,7 +244,7 @@ Future importReal(BuildContext context) async {
             cardExports[cardKey]!.content.files.add(FileContentExport(
                 paths[paths.length - 1].split('.')[0],
                 paths[paths.length - 1].split('.')[1],
-                bytes));
+                file.value.bytes!));
           }
         }
 

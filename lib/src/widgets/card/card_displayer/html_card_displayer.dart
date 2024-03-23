@@ -21,25 +21,24 @@ WebViewController _buildController() {
   return WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setBackgroundColor(const Color(0x00000000))
-    //..clearCache()
-    //..clearLocalStorage()
-    // ..setNavigationDelegate(
-    //   NavigationDelegate(
-    //     onProgress: (int progress) {
-    //       // Update loading bar.
-    //     },
-    //     onPageStarted: (String url) {},
-    //     onPageFinished: (String url) {},
-    //     onWebResourceError: (WebResourceError error) {},
-    //     onNavigationRequest: (NavigationRequest request) {
-    //       if (request.url.startsWith('http://localhost')) {
-    //         return NavigationDecision.navigate;
-    //       }
-    //       return NavigationDecision.prevent;
-    //     },
-    //   ),
-    // )
-    ;
+    ..clearCache()
+    ..clearLocalStorage()
+    ..setNavigationDelegate(
+      NavigationDelegate(
+        onProgress: (int progress) {
+          // Update loading bar.
+        },
+        onPageStarted: (String url) {},
+        onPageFinished: (String url) {},
+        onWebResourceError: (WebResourceError error) {},
+        onNavigationRequest: (NavigationRequest request) {
+          if (request.url.startsWith('http://localhost')) {
+            return NavigationDecision.navigate;
+          }
+          return NavigationDecision.prevent;
+        },
+      ),
+    );
   //..loadRequest(Uri.parse('https://flutter.dev'));
   //..loadHtmlString(customHtml);
 }
@@ -123,18 +122,12 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
     recto = content.recto;
     verso = content.verso;
 
-    for(var contentFile in content.files){
-      await copyImageToServerDirectory2(contentFile.file, '${contentFile.name}.${contentFile.format}');
-    }
-
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
-    await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index2.html");
-    var test = await(await getTemporaryDirectory()).list().toList();
+    await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index.html");
+    await controller.clearCache();
+    await controller.clearLocalStorage();
     await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));
     var test2 = await(await getTemporaryDirectory()).list().toList();
-    var tatat = 0;
-    // await controller.clearCache();
-    // await controller.clearLocalStorage();
     //await controller.loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
     //serverProps.server.close(force: true);
   }
