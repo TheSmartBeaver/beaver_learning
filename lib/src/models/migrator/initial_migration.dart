@@ -85,71 +85,71 @@ Future<void> initial_migrate_batch(
         parentId: const Value(1)),
   ]);
 
-  batch.insertAll(dbInfos.hTMLContents, [
-    HTMLContentsCompanion.insert(
-        id: const Value(1), recto: 'chien', verso: 'dog'),
-    HTMLContentsCompanion.insert(
-        id: const Value(2), recto: 'devenir', verso: 'become\nbecame\nbecome'),
-    //HTMLContentsCompanion.insert(id: const Value(), content: '')
-    HTMLContentsCompanion.insert(
-        id: const Value(3),
-        recto: 'TEST IMAGE',
-        verso:
-            "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>"),
-    HTMLContentsCompanion.insert(
-        id: const Value(4),
-        recto: '<div>TEST Spidey</div>',
-        verso:
-            "<div>Tisseur de toile</div><img width='600' height='400' src=\"spiderman.jpg\" />")
-  ]);
-  var image = await downloadImageBytes(
-      "https://image.api.playstation.com/vulcan/img/rnd/202010/2621/H9v5o8vP6RKkQtR77LIGrGDE.png",
-      "batman2");
-  var image2 = await downloadImageBytes(
-      "https://media.gqmagazine.fr/photos/6571d7e79779b8a3415b0a9b/16:9/w_2240,c_limit/Tom-Holland-Spiderman-what-we-know-so-far.jpg",
-      "spiderman");
-  batch.insertAll(dbInfos.fileContents, [
-    FileContentsCompanion.insert(
-        id: const Value(1), name: "batman2", format: "png", content: image),
-    FileContentsCompanion.insert(
-        id: const Value(2), name: "spiderman", format: "jpg", content: image2)
-  ]);
+  // batch.insertAll(dbInfos.hTMLContents, [
+  //   HTMLContentsCompanion.insert(
+  //       id: const Value(1), recto: 'chien', verso: 'dog'),
+  //   HTMLContentsCompanion.insert(
+  //       id: const Value(2), recto: 'devenir', verso: 'become\nbecame\nbecome'),
+  //   //HTMLContentsCompanion.insert(id: const Value(), content: '')
+  //   HTMLContentsCompanion.insert(
+  //       id: const Value(3),
+  //       recto: 'TEST IMAGE',
+  //       verso:
+  //           "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>"),
+  //   HTMLContentsCompanion.insert(
+  //       id: const Value(4),
+  //       recto: '<div>TEST Spidey</div>',
+  //       verso:
+  //           "<div>Tisseur de toile</div><img width='600' height='400' src=\"spiderman.jpg\" />")
+  // ]);
+  // var image = await downloadImageBytes(
+  //     "https://image.api.playstation.com/vulcan/img/rnd/202010/2621/H9v5o8vP6RKkQtR77LIGrGDE.png",
+  //     "batman2");
+  // var image2 = await downloadImageBytes(
+  //     "https://media.gqmagazine.fr/photos/6571d7e79779b8a3415b0a9b/16:9/w_2240,c_limit/Tom-Holland-Spiderman-what-we-know-so-far.jpg",
+  //     "spiderman");
+  // batch.insertAll(dbInfos.fileContents, [
+  //   FileContentsCompanion.insert(
+  //       id: const Value(1), name: "batman2", format: "png", content: image),
+  //   FileContentsCompanion.insert(
+  //       id: const Value(2), name: "spiderman", format: "jpg", content: image2)
+  // ]);
 
-  batch.insertAll(dbInfos.hTMLContentFiles, [
-    HTMLContentFilesCompanion.insert(fileId: 1, htmlContentParentId: 3),
-    HTMLContentFilesCompanion.insert(fileId: 2, htmlContentParentId: 4)
-  ]);
+  // batch.insertAll(dbInfos.hTMLContentFiles, [
+  //   HTMLContentFilesCompanion.insert(fileId: 1, htmlContentParentId: 3),
+  //   HTMLContentFilesCompanion.insert(fileId: 2, htmlContentParentId: 4)
+  // ]);
 
-  batch.insertAll(dbInfos.reviseCards, [
-    ReviseCardsCompanion.insert(
-        groupId: 1,
-        htmlContent: 1,
-        tags: '',
-        displayerType: CardDisplayerType.html,
-        nextRevisionDateMultiplicator: 0.2),
-    ReviseCardsCompanion.insert(
-        groupId: 2,
-        htmlContent: 2,
-        tags: '',
-        displayerType: CardDisplayerType.html,
-        nextRevisionDateMultiplicator: 0.2),
-    ReviseCardsCompanion.insert(
-        groupId: 2,
-        htmlContent: 3,
-        tags: '',
-        displayerType: CardDisplayerType.html,
-        nextRevisionDateMultiplicator: 0.2),
-    ReviseCardsCompanion.insert(
-        groupId: 1,
-        htmlContent: 4,
-        tags: '',
-        displayerType: CardDisplayerType.html,
-        nextRevisionDateMultiplicator: 0.2),
-    ReviseCardsCompanion.insert(
-        groupId: 1,
-        htmlContent: 5,
-        tags: '',
-        displayerType: CardDisplayerType.html,
-        nextRevisionDateMultiplicator: 0.2),
-  ]);
+  // batch.insertAll(dbInfos.reviseCards, [
+  //   ReviseCardsCompanion.insert(
+  //       groupId: 1,
+  //       htmlContent: 1,
+  //       tags: '',
+  //       displayerType: CardDisplayerType.html,
+  //       nextRevisionDateMultiplicator: 0.2),
+  //   ReviseCardsCompanion.insert(
+  //       groupId: 2,
+  //       htmlContent: 2,
+  //       tags: '',
+  //       displayerType: CardDisplayerType.html,
+  //       nextRevisionDateMultiplicator: 0.2),
+  //   ReviseCardsCompanion.insert(
+  //       groupId: 2,
+  //       htmlContent: 3,
+  //       tags: '',
+  //       displayerType: CardDisplayerType.html,
+  //       nextRevisionDateMultiplicator: 0.2),
+  //   ReviseCardsCompanion.insert(
+  //       groupId: 1,
+  //       htmlContent: 4,
+  //       tags: '',
+  //       displayerType: CardDisplayerType.html,
+  //       nextRevisionDateMultiplicator: 0.2),
+  //   ReviseCardsCompanion.insert(
+  //       groupId: 1,
+  //       htmlContent: 5,
+  //       tags: '',
+  //       displayerType: CardDisplayerType.html,
+  //       nextRevisionDateMultiplicator: 0.2),
+  // ]);
 }
