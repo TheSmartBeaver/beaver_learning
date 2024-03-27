@@ -2,6 +2,7 @@ import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/course_creator.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
+import 'package:beaver_learning/src/screens/interactive_speech.dart';
 import 'package:beaver_learning/src/screens/marketplace.dart';
 import 'package:beaver_learning/src/screens/settings_screen.dart';
 import 'package:beaver_learning/src/screens/statistics.dart';
@@ -97,7 +98,7 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
                   case SettingsScreen.routeName:
                     return SettingsScreen();
                   case StatisticsScreen.routeName:
-                    return StatisticsScreen();
+                    return ChatScreenPage();
                   case GroupEditor.routeName:
                     return GroupEditor();
                   case CoursesScreen.routeName:
