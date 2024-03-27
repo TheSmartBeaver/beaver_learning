@@ -58,7 +58,6 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
           }
 
           .recto {
-            background-color: lightblue; /* Arrière-plan bleu pour la partie "recto" */
             display: flex;
             justify-content: center; /* Centre le contenu horizontalement */
             align-items: center; /* Centre le contenu verticalement */
@@ -67,7 +66,6 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
           }
 
           .verso {
-            background-color: red; /* Arrière-plan rouge pour la partie "verso" */
             display: flex;
             flex-grow: 1; /* Permet à la partie "recto" de s'étendre pour remplir l'espace restant */
             justify-content: center; /* Centre le contenu horizontalement */
@@ -79,10 +77,18 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
           .texte {
             font-size: 34px; /* Augmente la taille de la police à 24 pixels */
           }
+
+          .separateur {
+            width: 100%;
+            height: 2px;
+            background-color: black;
+            margin: 10px 0;
+          }
         </style>
       </head>
       <body>
         <div class='recto texte'>$recto</div>
+        <div class='separateur'></div>
         ${isPrintAnswer ? "<div class='verso texte'>$verso</div>" : ""}
         <script>
           function sayHello() {

@@ -126,7 +126,7 @@ class _CardDisplayerState extends State<CardDisplayer> {
                           color: Colors.grey,
                           alignment: Alignment.center,
                           child: Column(children: [
-                            Text("Very Hard"),
+                            Text("Très dur"),
                             Text(
                                 '${(calculateNextRevision(AnswerDifficulty.veryHard).durationToAdd / 24)
                                     .toStringAsFixed(2)} jours')
@@ -145,7 +145,7 @@ class _CardDisplayerState extends State<CardDisplayer> {
                           alignment: Alignment.center,
                           color: Colors.red,
                           child: Column(children: [
-                            Text("Hard"),
+                            Text("Dur"),
                             Text('${(calculateNextRevision(AnswerDifficulty.hard).durationToAdd / 24)
                                 .toStringAsFixed(2)} jours')
                           ])))),
@@ -163,7 +163,7 @@ class _CardDisplayerState extends State<CardDisplayer> {
                           color: Colors.green,
                           alignment: Alignment.center,
                           child: Column(children: [
-                            Text("Easy"),
+                            Text("Facile"),
                             Text('${(calculateNextRevision(AnswerDifficulty.easy).durationToAdd / 24)
                                 .toStringAsFixed(2)} jours')
                           ])))),
@@ -181,7 +181,7 @@ class _CardDisplayerState extends State<CardDisplayer> {
                           color: Colors.blue,
                           alignment: Alignment.center,
                           child: Column(children: [
-                            Text("Very Easy"),
+                            Text("Très facile"),
                             Text(
                                 '${(calculateNextRevision(AnswerDifficulty.veryEasy).durationToAdd / 24)
                                     .toStringAsFixed(2)} jours')

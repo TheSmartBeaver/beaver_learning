@@ -4,6 +4,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:beaver_learning/data/constants.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:flutter/services.dart';
 
 class MarketPlaceScreen extends StatefulWidget {
   const MarketPlaceScreen({super.key});
@@ -58,6 +59,12 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    super.dispose();
+  }
+
   Future<void> _checkConnectivity() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
@@ -73,6 +80,10 @@ class _MarketPlaceScreenState extends State<MarketPlaceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+
     return Scaffold(
         appBar: AppBar(title: const Text("Marketplace")),
         body: _isOnline

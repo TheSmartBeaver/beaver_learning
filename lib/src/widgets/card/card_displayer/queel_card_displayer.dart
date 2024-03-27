@@ -31,16 +31,10 @@ class _QueelCardDisplayerState extends State<QueelCardDisplayer> {
     verso = content.verso;
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
-    // await writeHtmlToServerDirectory(_getCustomHtml(recto, verso, widget.isPrintAnswer),"index.html");
-    // await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));
-    //serverProps.server.close(force: true);
   }
 
   @override
   Widget build(BuildContext context) {
-
-    // controller
-    //     .loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
 
     var content = '${widget.cardToRevise.htmlContent}\n${widget.cardToRevise.htmlContent} ';
 

@@ -6,6 +6,7 @@ import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:beaver_learning/data/constants.dart';
+import 'package:flutter/services.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class CoursesScreen extends StatefulWidget {
@@ -37,9 +38,18 @@ class _CoursesScreenState extends State<CoursesScreen> {
   //       "https://miro.medium.com/v2/resize:fit:1400/0*y9ULQIXlaaTTqldx.png")
   // ];
 
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    
     late List<Course> courses;
 
     Future<void> init() async {

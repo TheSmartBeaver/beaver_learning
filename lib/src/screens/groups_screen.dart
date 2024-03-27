@@ -9,6 +9,7 @@ import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:beaver_learning/data/constants.dart';
 //import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class GroupScreen extends StatefulWidget {
   const GroupScreen({super.key});
@@ -36,7 +37,16 @@ class _GroupScreenState extends State<GroupScreen> {
   }
 
   @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     return Scaffold(
         appBar: AppBar(title: Text("Decks")),
         body: Center(
@@ -64,8 +74,7 @@ class _GroupScreenState extends State<GroupScreen> {
                     // Affichez un indicateur de chargement ou une vue de chargement tant que les opérations asynchrones ne sont pas terminées.
                     return const CircularProgressIndicator();
                   } else {
-                    return Expanded(
-                        child: GroupList(groups: groups));
+                    return Expanded(child: GroupList(groups: groups));
                   }
                 }),
           ],
