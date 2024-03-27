@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .flashcard {
+            width: 300px;
+            height: 200px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        .flashcard:hover {
+            transform: translateY(-5px);
+        }
+        .flashcard-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        .word {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .translation {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .phonetic {
+            font-style: italic;
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+        .audio-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        .audio-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="flashcard">
+        <div class="flashcard-content">
+            <div class="word">Hola</div>
+            <div class="translation">Hello (en anglais)</div>
+            <div class="translation-direction">(Traduction espagnol vers anglais)</div>
+            <div class="phonetic">[o.la]</div>
+            <button class="audio-button" onclick="playAudio('hola.mp3')">Lire en audio</button>
+        </div>
+    </div>
+
+    <!-- JavaScript pour la lecture audio -->
+    <script>
+        function playAudio(audioFileName) {
+            const audio = new Audio(audioFileName);
+            audio.play();
+        }
+    </script>
+</body>
+</html>
