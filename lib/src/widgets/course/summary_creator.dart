@@ -27,6 +27,7 @@ class _SummaryCreatorState extends State<SummaryCreator> {
                 counter++;
                 setState(() {
                   topics.add(Topic(
+                      path: null,
                       id: counter,
                       title: "NEW TOPIC $counter",
                       parentCourseId: -1,
