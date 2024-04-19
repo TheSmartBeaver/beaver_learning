@@ -38,6 +38,7 @@ class _GroupEditorState extends State<GroupEditor> {
 
   Future<void> createGroup() async {
     createGroupInDb(GroupCompanion.insert(
+        path: const drift.Value(null),
         title: nameController.text,
         tags: 'toto;ahah',
         parentId: drift.Value(_selectedParent?.id)));

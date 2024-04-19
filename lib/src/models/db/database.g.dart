@@ -22,6 +22,11 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
   @override
   late final GeneratedColumn<String> tags = GeneratedColumn<String>(
@@ -37,7 +42,7 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES "group" (id)'));
   @override
-  List<GeneratedColumn> get $columns => [id, title, tags, parentId];
+  List<GeneratedColumn> get $columns => [id, title, path, tags, parentId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -56,6 +61,10 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
           _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
     } else if (isInserting) {
       context.missing(_titleMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
     }
     if (data.containsKey('body')) {
       context.handle(
@@ -80,6 +89,8 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path']),
       tags: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
       parentId: attachedDatabase.typeMapping
@@ -96,11 +107,13 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
 class GroupData extends DataClass implements Insertable<GroupData> {
   final int id;
   final String title;
+  final String? path;
   final String tags;
   final int? parentId;
   const GroupData(
       {required this.id,
       required this.title,
+      this.path,
       required this.tags,
       this.parentId});
   @override
@@ -108,6 +121,9 @@ class GroupData extends DataClass implements Insertable<GroupData> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
+    if (!nullToAbsent || path != null) {
+      map['path'] = Variable<String>(path);
+    }
     map['body'] = Variable<String>(tags);
     if (!nullToAbsent || parentId != null) {
       map['parent_id'] = Variable<int>(parentId);
@@ -119,6 +135,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
     return GroupCompanion(
       id: Value(id),
       title: Value(title),
+      path: path == null && nullToAbsent ? const Value.absent() : Value(path),
       tags: Value(tags),
       parentId: parentId == null && nullToAbsent
           ? const Value.absent()
@@ -132,6 +149,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
     return GroupData(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
+      path: serializer.fromJson<String?>(json['path']),
       tags: serializer.fromJson<String>(json['tags']),
       parentId: serializer.fromJson<int?>(json['parentId']),
     );
@@ -142,6 +160,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
+      'path': serializer.toJson<String?>(path),
       'tags': serializer.toJson<String>(tags),
       'parentId': serializer.toJson<int?>(parentId),
     };
@@ -150,11 +169,13 @@ class GroupData extends DataClass implements Insertable<GroupData> {
   GroupData copyWith(
           {int? id,
           String? title,
+          Value<String?> path = const Value.absent(),
           String? tags,
           Value<int?> parentId = const Value.absent()}) =>
       GroupData(
         id: id ?? this.id,
         title: title ?? this.title,
+        path: path.present ? path.value : this.path,
         tags: tags ?? this.tags,
         parentId: parentId.present ? parentId.value : this.parentId,
       );
@@ -163,6 +184,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
     return (StringBuffer('GroupData(')
           ..write('id: $id, ')
           ..write('title: $title, ')
+          ..write('path: $path, ')
           ..write('tags: $tags, ')
           ..write('parentId: $parentId')
           ..write(')'))
@@ -170,13 +192,14 @@ class GroupData extends DataClass implements Insertable<GroupData> {
   }
 
   @override
-  int get hashCode => Object.hash(id, title, tags, parentId);
+  int get hashCode => Object.hash(id, title, path, tags, parentId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GroupData &&
           other.id == this.id &&
           other.title == this.title &&
+          other.path == this.path &&
           other.tags == this.tags &&
           other.parentId == this.parentId);
 }
@@ -184,17 +207,20 @@ class GroupData extends DataClass implements Insertable<GroupData> {
 class GroupCompanion extends UpdateCompanion<GroupData> {
   final Value<int> id;
   final Value<String> title;
+  final Value<String?> path;
   final Value<String> tags;
   final Value<int?> parentId;
   const GroupCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
+    this.path = const Value.absent(),
     this.tags = const Value.absent(),
     this.parentId = const Value.absent(),
   });
   GroupCompanion.insert({
     this.id = const Value.absent(),
     required String title,
+    this.path = const Value.absent(),
     required String tags,
     this.parentId = const Value.absent(),
   })  : title = Value(title),
@@ -202,12 +228,14 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
   static Insertable<GroupData> custom({
     Expression<int>? id,
     Expression<String>? title,
+    Expression<String>? path,
     Expression<String>? tags,
     Expression<int>? parentId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
+      if (path != null) 'path': path,
       if (tags != null) 'body': tags,
       if (parentId != null) 'parent_id': parentId,
     });
@@ -216,11 +244,13 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
   GroupCompanion copyWith(
       {Value<int>? id,
       Value<String>? title,
+      Value<String?>? path,
       Value<String>? tags,
       Value<int?>? parentId}) {
     return GroupCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
+      path: path ?? this.path,
       tags: tags ?? this.tags,
       parentId: parentId ?? this.parentId,
     );
@@ -234,6 +264,9 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
     }
     if (tags.present) {
       map['body'] = Variable<String>(tags.value);
@@ -249,6 +282,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
     return (StringBuffer('GroupCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
+          ..write('path: $path, ')
           ..write('tags: $tags, ')
           ..write('parentId: $parentId')
           ..write(')'))
@@ -521,6 +555,11 @@ class $ReviseCardsTable extends ReviseCards
   late final GeneratedColumn<DateTime> nextRevisionDate =
       GeneratedColumn<DateTime>('next_revision_date', aliasedName, true,
           type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -529,7 +568,8 @@ class $ReviseCardsTable extends ReviseCards
         displayerType,
         tags,
         nextRevisionDateMultiplicator,
-        nextRevisionDate
+        nextRevisionDate,
+        path
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -580,6 +620,10 @@ class $ReviseCardsTable extends ReviseCards
           nextRevisionDate.isAcceptableOrUnknown(
               data['next_revision_date']!, _nextRevisionDateMeta));
     }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
+    }
     return context;
   }
 
@@ -605,6 +649,8 @@ class $ReviseCardsTable extends ReviseCards
           data['${effectivePrefix}next_revision_date_multiplicator'])!,
       nextRevisionDate: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}next_revision_date']),
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path']),
     );
   }
 
@@ -626,6 +672,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final String tags;
   final double nextRevisionDateMultiplicator;
   final DateTime? nextRevisionDate;
+  final String? path;
   const ReviseCard(
       {required this.id,
       required this.groupId,
@@ -633,7 +680,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       required this.displayerType,
       required this.tags,
       required this.nextRevisionDateMultiplicator,
-      this.nextRevisionDate});
+      this.nextRevisionDate,
+      this.path});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -650,6 +698,9 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     if (!nullToAbsent || nextRevisionDate != null) {
       map['next_revision_date'] = Variable<DateTime>(nextRevisionDate);
     }
+    if (!nullToAbsent || path != null) {
+      map['path'] = Variable<String>(path);
+    }
     return map;
   }
 
@@ -664,6 +715,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       nextRevisionDate: nextRevisionDate == null && nullToAbsent
           ? const Value.absent()
           : Value(nextRevisionDate),
+      path: path == null && nullToAbsent ? const Value.absent() : Value(path),
     );
   }
 
@@ -681,6 +733,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           serializer.fromJson<double>(json['nextRevisionDateMultiplicator']),
       nextRevisionDate:
           serializer.fromJson<DateTime?>(json['nextRevisionDate']),
+      path: serializer.fromJson<String?>(json['path']),
     );
   }
   @override
@@ -696,6 +749,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       'nextRevisionDateMultiplicator':
           serializer.toJson<double>(nextRevisionDateMultiplicator),
       'nextRevisionDate': serializer.toJson<DateTime?>(nextRevisionDate),
+      'path': serializer.toJson<String?>(path),
     };
   }
 
@@ -706,7 +760,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           CardDisplayerType? displayerType,
           String? tags,
           double? nextRevisionDateMultiplicator,
-          Value<DateTime?> nextRevisionDate = const Value.absent()}) =>
+          Value<DateTime?> nextRevisionDate = const Value.absent(),
+          Value<String?> path = const Value.absent()}) =>
       ReviseCard(
         id: id ?? this.id,
         groupId: groupId ?? this.groupId,
@@ -718,6 +773,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
         nextRevisionDate: nextRevisionDate.present
             ? nextRevisionDate.value
             : this.nextRevisionDate,
+        path: path.present ? path.value : this.path,
       );
   @override
   String toString() {
@@ -729,14 +785,15 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           ..write('tags: $tags, ')
           ..write(
               'nextRevisionDateMultiplicator: $nextRevisionDateMultiplicator, ')
-          ..write('nextRevisionDate: $nextRevisionDate')
+          ..write('nextRevisionDate: $nextRevisionDate, ')
+          ..write('path: $path')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, groupId, htmlContent, displayerType, tags,
-      nextRevisionDateMultiplicator, nextRevisionDate);
+      nextRevisionDateMultiplicator, nextRevisionDate, path);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -748,7 +805,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           other.tags == this.tags &&
           other.nextRevisionDateMultiplicator ==
               this.nextRevisionDateMultiplicator &&
-          other.nextRevisionDate == this.nextRevisionDate);
+          other.nextRevisionDate == this.nextRevisionDate &&
+          other.path == this.path);
 }
 
 class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
@@ -759,6 +817,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<String> tags;
   final Value<double> nextRevisionDateMultiplicator;
   final Value<DateTime?> nextRevisionDate;
+  final Value<String?> path;
   const ReviseCardsCompanion({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
@@ -767,6 +826,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     this.tags = const Value.absent(),
     this.nextRevisionDateMultiplicator = const Value.absent(),
     this.nextRevisionDate = const Value.absent(),
+    this.path = const Value.absent(),
   });
   ReviseCardsCompanion.insert({
     this.id = const Value.absent(),
@@ -776,6 +836,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     required String tags,
     required double nextRevisionDateMultiplicator,
     this.nextRevisionDate = const Value.absent(),
+    this.path = const Value.absent(),
   })  : groupId = Value(groupId),
         htmlContent = Value(htmlContent),
         displayerType = Value(displayerType),
@@ -789,6 +850,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     Expression<String>? tags,
     Expression<double>? nextRevisionDateMultiplicator,
     Expression<DateTime>? nextRevisionDate,
+    Expression<String>? path,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -799,6 +861,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       if (nextRevisionDateMultiplicator != null)
         'next_revision_date_multiplicator': nextRevisionDateMultiplicator,
       if (nextRevisionDate != null) 'next_revision_date': nextRevisionDate,
+      if (path != null) 'path': path,
     });
   }
 
@@ -809,7 +872,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       Value<CardDisplayerType>? displayerType,
       Value<String>? tags,
       Value<double>? nextRevisionDateMultiplicator,
-      Value<DateTime?>? nextRevisionDate}) {
+      Value<DateTime?>? nextRevisionDate,
+      Value<String?>? path}) {
     return ReviseCardsCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
@@ -819,6 +883,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       nextRevisionDateMultiplicator:
           nextRevisionDateMultiplicator ?? this.nextRevisionDateMultiplicator,
       nextRevisionDate: nextRevisionDate ?? this.nextRevisionDate,
+      path: path ?? this.path,
     );
   }
 
@@ -848,6 +913,9 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     if (nextRevisionDate.present) {
       map['next_revision_date'] = Variable<DateTime>(nextRevisionDate.value);
     }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
     return map;
   }
 
@@ -861,7 +929,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
           ..write('tags: $tags, ')
           ..write(
               'nextRevisionDateMultiplicator: $nextRevisionDateMultiplicator, ')
-          ..write('nextRevisionDate: $nextRevisionDate')
+          ..write('nextRevisionDate: $nextRevisionDate, ')
+          ..write('path: $path')
           ..write(')'))
         .toString();
   }
@@ -1053,6 +1122,11 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _imageUrlMeta =
       const VerificationMeta('imageUrl');
   @override
@@ -1071,7 +1145,7 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
       'description', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [id, imageUrl, title, description];
+  List<GeneratedColumn> get $columns => [id, sku, imageUrl, title, description];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1084,6 +1158,12 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
+    } else if (isInserting) {
+      context.missing(_skuMeta);
     }
     if (data.containsKey('image_url')) {
       context.handle(_imageUrlMeta,
@@ -1116,6 +1196,8 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
     return Course(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku'])!,
       imageUrl: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}image_url'])!,
       title: attachedDatabase.typeMapping
@@ -1133,11 +1215,13 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
 
 class Course extends DataClass implements Insertable<Course> {
   final int id;
+  final String sku;
   final String imageUrl;
   final String title;
   final String description;
   const Course(
       {required this.id,
+      required this.sku,
       required this.imageUrl,
       required this.title,
       required this.description});
@@ -1145,6 +1229,7 @@ class Course extends DataClass implements Insertable<Course> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['sku'] = Variable<String>(sku);
     map['image_url'] = Variable<String>(imageUrl);
     map['title'] = Variable<String>(title);
     map['description'] = Variable<String>(description);
@@ -1154,6 +1239,7 @@ class Course extends DataClass implements Insertable<Course> {
   CoursesCompanion toCompanion(bool nullToAbsent) {
     return CoursesCompanion(
       id: Value(id),
+      sku: Value(sku),
       imageUrl: Value(imageUrl),
       title: Value(title),
       description: Value(description),
@@ -1165,6 +1251,7 @@ class Course extends DataClass implements Insertable<Course> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Course(
       id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String>(json['sku']),
       imageUrl: serializer.fromJson<String>(json['imageUrl']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String>(json['description']),
@@ -1175,6 +1262,7 @@ class Course extends DataClass implements Insertable<Course> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String>(sku),
       'imageUrl': serializer.toJson<String>(imageUrl),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String>(description),
@@ -1182,9 +1270,14 @@ class Course extends DataClass implements Insertable<Course> {
   }
 
   Course copyWith(
-          {int? id, String? imageUrl, String? title, String? description}) =>
+          {int? id,
+          String? sku,
+          String? imageUrl,
+          String? title,
+          String? description}) =>
       Course(
         id: id ?? this.id,
+        sku: sku ?? this.sku,
         imageUrl: imageUrl ?? this.imageUrl,
         title: title ?? this.title,
         description: description ?? this.description,
@@ -1193,6 +1286,7 @@ class Course extends DataClass implements Insertable<Course> {
   String toString() {
     return (StringBuffer('Course(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('title: $title, ')
           ..write('description: $description')
@@ -1201,12 +1295,13 @@ class Course extends DataClass implements Insertable<Course> {
   }
 
   @override
-  int get hashCode => Object.hash(id, imageUrl, title, description);
+  int get hashCode => Object.hash(id, sku, imageUrl, title, description);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Course &&
           other.id == this.id &&
+          other.sku == this.sku &&
           other.imageUrl == this.imageUrl &&
           other.title == this.title &&
           other.description == this.description);
@@ -1214,31 +1309,37 @@ class Course extends DataClass implements Insertable<Course> {
 
 class CoursesCompanion extends UpdateCompanion<Course> {
   final Value<int> id;
+  final Value<String> sku;
   final Value<String> imageUrl;
   final Value<String> title;
   final Value<String> description;
   const CoursesCompanion({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.imageUrl = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
   });
   CoursesCompanion.insert({
     this.id = const Value.absent(),
+    required String sku,
     required String imageUrl,
     required String title,
     required String description,
-  })  : imageUrl = Value(imageUrl),
+  })  : sku = Value(sku),
+        imageUrl = Value(imageUrl),
         title = Value(title),
         description = Value(description);
   static Insertable<Course> custom({
     Expression<int>? id,
+    Expression<String>? sku,
     Expression<String>? imageUrl,
     Expression<String>? title,
     Expression<String>? description,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
       if (imageUrl != null) 'image_url': imageUrl,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
@@ -1247,11 +1348,13 @@ class CoursesCompanion extends UpdateCompanion<Course> {
 
   CoursesCompanion copyWith(
       {Value<int>? id,
+      Value<String>? sku,
       Value<String>? imageUrl,
       Value<String>? title,
       Value<String>? description}) {
     return CoursesCompanion(
       id: id ?? this.id,
+      sku: sku ?? this.sku,
       imageUrl: imageUrl ?? this.imageUrl,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -1263,6 +1366,9 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
     }
     if (imageUrl.present) {
       map['image_url'] = Variable<String>(imageUrl.value);
@@ -1280,6 +1386,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
   String toString() {
     return (StringBuffer('CoursesCompanion(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('title: $title, ')
           ..write('description: $description')
@@ -1770,6 +1877,11 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -1812,7 +1924,7 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
           GeneratedColumn.constraintIsAlways('REFERENCES file_contents (id)'));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, title, parentId, parentCourseId, groupId, fileId];
+      [id, path, title, parentId, parentCourseId, groupId, fileId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1825,6 +1937,10 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
     }
     if (data.containsKey('title')) {
       context.handle(
@@ -1863,6 +1979,8 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
     return Topic(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path']),
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       parentId: attachedDatabase.typeMapping
@@ -1884,6 +2002,7 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
 
 class Topic extends DataClass implements Insertable<Topic> {
   final int id;
+  final String? path;
   final String title;
   final int? parentId;
   final int parentCourseId;
@@ -1891,6 +2010,7 @@ class Topic extends DataClass implements Insertable<Topic> {
   final int? fileId;
   const Topic(
       {required this.id,
+      this.path,
       required this.title,
       this.parentId,
       required this.parentCourseId,
@@ -1900,6 +2020,9 @@ class Topic extends DataClass implements Insertable<Topic> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || path != null) {
+      map['path'] = Variable<String>(path);
+    }
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || parentId != null) {
       map['parent_id'] = Variable<int>(parentId);
@@ -1917,6 +2040,7 @@ class Topic extends DataClass implements Insertable<Topic> {
   TopicsCompanion toCompanion(bool nullToAbsent) {
     return TopicsCompanion(
       id: Value(id),
+      path: path == null && nullToAbsent ? const Value.absent() : Value(path),
       title: Value(title),
       parentId: parentId == null && nullToAbsent
           ? const Value.absent()
@@ -1935,6 +2059,7 @@ class Topic extends DataClass implements Insertable<Topic> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Topic(
       id: serializer.fromJson<int>(json['id']),
+      path: serializer.fromJson<String?>(json['path']),
       title: serializer.fromJson<String>(json['title']),
       parentId: serializer.fromJson<int?>(json['parentId']),
       parentCourseId: serializer.fromJson<int>(json['parentCourseId']),
@@ -1947,6 +2072,7 @@ class Topic extends DataClass implements Insertable<Topic> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'path': serializer.toJson<String?>(path),
       'title': serializer.toJson<String>(title),
       'parentId': serializer.toJson<int?>(parentId),
       'parentCourseId': serializer.toJson<int>(parentCourseId),
@@ -1957,6 +2083,7 @@ class Topic extends DataClass implements Insertable<Topic> {
 
   Topic copyWith(
           {int? id,
+          Value<String?> path = const Value.absent(),
           String? title,
           Value<int?> parentId = const Value.absent(),
           int? parentCourseId,
@@ -1964,6 +2091,7 @@ class Topic extends DataClass implements Insertable<Topic> {
           Value<int?> fileId = const Value.absent()}) =>
       Topic(
         id: id ?? this.id,
+        path: path.present ? path.value : this.path,
         title: title ?? this.title,
         parentId: parentId.present ? parentId.value : this.parentId,
         parentCourseId: parentCourseId ?? this.parentCourseId,
@@ -1974,6 +2102,7 @@ class Topic extends DataClass implements Insertable<Topic> {
   String toString() {
     return (StringBuffer('Topic(')
           ..write('id: $id, ')
+          ..write('path: $path, ')
           ..write('title: $title, ')
           ..write('parentId: $parentId, ')
           ..write('parentCourseId: $parentCourseId, ')
@@ -1985,12 +2114,13 @@ class Topic extends DataClass implements Insertable<Topic> {
 
   @override
   int get hashCode =>
-      Object.hash(id, title, parentId, parentCourseId, groupId, fileId);
+      Object.hash(id, path, title, parentId, parentCourseId, groupId, fileId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Topic &&
           other.id == this.id &&
+          other.path == this.path &&
           other.title == this.title &&
           other.parentId == this.parentId &&
           other.parentCourseId == this.parentCourseId &&
@@ -2000,6 +2130,7 @@ class Topic extends DataClass implements Insertable<Topic> {
 
 class TopicsCompanion extends UpdateCompanion<Topic> {
   final Value<int> id;
+  final Value<String?> path;
   final Value<String> title;
   final Value<int?> parentId;
   final Value<int> parentCourseId;
@@ -2007,6 +2138,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   final Value<int?> fileId;
   const TopicsCompanion({
     this.id = const Value.absent(),
+    this.path = const Value.absent(),
     this.title = const Value.absent(),
     this.parentId = const Value.absent(),
     this.parentCourseId = const Value.absent(),
@@ -2015,6 +2147,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   });
   TopicsCompanion.insert({
     this.id = const Value.absent(),
+    this.path = const Value.absent(),
     required String title,
     this.parentId = const Value.absent(),
     required int parentCourseId,
@@ -2024,6 +2157,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
         parentCourseId = Value(parentCourseId);
   static Insertable<Topic> custom({
     Expression<int>? id,
+    Expression<String>? path,
     Expression<String>? title,
     Expression<int>? parentId,
     Expression<int>? parentCourseId,
@@ -2032,6 +2166,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (path != null) 'path': path,
       if (title != null) 'title': title,
       if (parentId != null) 'parent_id': parentId,
       if (parentCourseId != null) 'parent_course_id': parentCourseId,
@@ -2042,6 +2177,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
 
   TopicsCompanion copyWith(
       {Value<int>? id,
+      Value<String?>? path,
       Value<String>? title,
       Value<int?>? parentId,
       Value<int>? parentCourseId,
@@ -2049,6 +2185,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
       Value<int?>? fileId}) {
     return TopicsCompanion(
       id: id ?? this.id,
+      path: path ?? this.path,
       title: title ?? this.title,
       parentId: parentId ?? this.parentId,
       parentCourseId: parentCourseId ?? this.parentCourseId,
@@ -2062,6 +2199,9 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -2085,6 +2225,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   String toString() {
     return (StringBuffer('TopicsCompanion(')
           ..write('id: $id, ')
+          ..write('path: $path, ')
           ..write('title: $title, ')
           ..write('parentId: $parentId, ')
           ..write('parentCourseId: $parentCourseId, ')

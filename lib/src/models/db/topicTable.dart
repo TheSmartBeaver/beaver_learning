@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 
 class Topics extends Table {
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get path => text().nullable()();
   TextColumn get title => text()();
   IntColumn get parentId => integer().references(Topics, #id).nullable()();
   IntColumn get parentCourseId => integer().references(Courses, #id)();

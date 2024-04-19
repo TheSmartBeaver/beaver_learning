@@ -15,6 +15,7 @@ enum ExportType { group, card, rectoHtml, versoHtml, fileContent, unknown, cours
 @JsonSerializable(explicitToJson: true)
 class ExportDescriptor {
   final ExportType type;
+  String? sku;
   String? name;
   List<String>? learnAbouts;
   List<String>? prerequisites;
@@ -23,7 +24,7 @@ class ExportDescriptor {
   factory ExportDescriptor.fromJson(Map<String, dynamic> json) =>
       _$ExportDescriptorFromJson(json);
 
-  ExportDescriptor(this.type, {this.name, this.learnAbouts, this.prerequisites});
+  ExportDescriptor(this.type, {this.name, this.sku, this.learnAbouts, this.prerequisites});
 
   Map<String, dynamic> toJson() => _$ExportDescriptorToJson(this);
 
@@ -64,13 +65,14 @@ class TopicExport {
 //@JsonSerializable(explicitToJson: true)
 class CardExport {
   final HTMLContentExport content;
+  String? path;
 
   // factory CardExport.fromJson(Map<String, dynamic> json) =>
   //     _$CardExportFromJson(json);
   
   // Map<String, dynamic> toJson() => _$CardExportToJson(this);
 
-  CardExport({required this.content});
+  CardExport({required this.content, this.path});
 
 }
 //@JsonSerializable(explicitToJson: true)

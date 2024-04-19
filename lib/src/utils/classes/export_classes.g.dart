@@ -10,6 +10,7 @@ ExportDescriptor _$ExportDescriptorFromJson(Map<String, dynamic> json) =>
     ExportDescriptor(
       $enumDecode(_$ExportTypeEnumMap, json['type']),
       name: json['name'] as String?,
+      sku: json['sku'] as String?,
       learnAbouts: (json['learnAbouts'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
@@ -21,6 +22,7 @@ ExportDescriptor _$ExportDescriptorFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ExportDescriptorToJson(ExportDescriptor instance) =>
     <String, dynamic>{
       'type': _$ExportTypeEnumMap[instance.type]!,
+      'sku': instance.sku,
       'name': instance.name,
       'learnAbouts': instance.learnAbouts,
       'prerequisites': instance.prerequisites,

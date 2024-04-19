@@ -25,6 +25,8 @@ class ReviseCards extends Table {
 
   DateTimeColumn get nextRevisionDate => dateTime().nullable()();
 
+  TextColumn get path => text().nullable()();
+
   //IntColumn get categoryId => integer().references(TodoCategories, #id)();
 
   // TextColumn get generatedText => text().nullable().generatedAs(

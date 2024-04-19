@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:archive/archive_io.dart';
 import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/db/groupTable.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
@@ -106,7 +107,7 @@ String extractParentFolder(String fullPath) {
 }
 
 Future importReal(BuildContext context) async {
-  try {
+  // try {
 
     var file_picker_result = await FilePicker.platform.pickFiles();
     if (file_picker_result != null) {
@@ -131,7 +132,7 @@ Future importReal(BuildContext context) async {
 
         createCardIfNotExists(String name) {
           if (!cardExports.containsKey(name)) {
-            cardExports[name] = CardExport(
+            cardExports[name] = CardExport( path: name,
                 content: HTMLContentExport(recto: "", verso: "", files: []));
           }
         }
@@ -204,6 +205,12 @@ Future importReal(BuildContext context) async {
         }
         var issou = 1;
 
+
+
+
+
+
+
         // On crée tous les groupes
         for (var group in entityNatures.entries
             .where((element) => element.value.type == ExportType.group)) {
@@ -215,9 +222,9 @@ Future importReal(BuildContext context) async {
         }
 
         // On crée les cartes
-        for (var card in entityNatures.entries
+        for (MapEntry<String, EntityNature> card in entityNatures.entries
             .where((element) => element.value.type == ExportType.card)) {
-          createCardIfNotExists(card.key);
+          createCardIfNotExists(card.value.path);
         }
 
         // On crée les rectos
@@ -347,7 +354,7 @@ Future importReal(BuildContext context) async {
 
         //On crée en bdd tous les groupes
         for (var group in groupExports.entries) {
-          var groupExport = group.value;
+          GroupExport groupExport = group.value;
           await saveGroupExportInDb(groupExport);
         }
 
@@ -366,38 +373,72 @@ Future importReal(BuildContext context) async {
         var issou2 = 1;
       }
     }
-  } catch (e) {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              title: const Text("Whooops !"),
-              content: Text(e.toString()),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Okay'),
-                ),
-              ],
-            ));
-  }
+  // } catch (e) {
+  //   showDialog(
+  //       context: context,
+  //       builder: (context) => AlertDialog(
+  //             title: const Text("Whooops !"),
+  //             content: Text(e.toString()),
+  //             actions: [
+  //               TextButton(
+  //                 onPressed: () {
+  //                   Navigator.pop(context);
+  //                 },
+  //                 child: const Text('Okay'),
+  //               ),
+  //             ],
+  //           ));
+  // }
 }
 
 Future<void> saveGroupExportInDb(GroupExport groupExport,
     {int? parentId}) async {
-  int groupId = await createGroupInDb(GroupCompanion.insert(
-      title: groupExport.title, tags: "", parentId: Value(parentId)));
-  groupExport.dbId = groupId;
+  var db = MyDatabaseInstance.getInstance();
+  var matchingGroups = await (db.select(db.group)..where((tbl) => tbl.path.equals(groupExport.path!))).get();
+  late int groupId;
+  if(matchingGroups.isNotEmpty){
+    groupExport.dbId = matchingGroups.first.id;
+  } else {
+    groupId = await createGroupInDb(GroupCompanion.insert(
+      title: groupExport.title, tags: "", parentId: Value(parentId), path: Value(groupExport.path!)));
+    groupExport.dbId = groupId;
+  }
+  
+  
   for (var card in groupExport.cards) {
-    CardCreatedReturns cardReturns = await createCardInDb(
+    var matchingCards = await (database.select(database.reviseCards)
+        ..where((tbl) => tbl.path.equals(card.path!)))
+        .get();
+    
+    late int contentId;
+
+    if(matchingCards.isNotEmpty){
+      contentId = matchingCards.first.htmlContent;
+      // supprimer fichiers du htmlContent
+      await (db.delete(db.hTMLContentFiles)..where((tbl) => tbl.htmlContentParentId.equals(contentId))).go();
+
+      var test = await (db.select(db.hTMLContents)..where((tbl) => tbl.id.equals(contentId))).get();
+
+      // mettre à jour le htmlContent
+      await (db.update(db.hTMLContents)..where((tbl) => tbl.id.equals(contentId))).write(HTMLContentsCompanion.insert(
+          recto: card.content.recto, verso: card.content.verso));
+
+      var test2 = await (db.select(db.hTMLContents)..where((tbl) => tbl.id.equals(contentId))).get();
+      var issou = 0;
+    } else {
+      var cardReturns = await createCardInDb(
         groupId,
         CardDisplayerType.html,
+        card.path!,
         HTMLContentsCompanion.insert(
             recto: card.content.recto, verso: card.content.verso));
+
+      contentId = cardReturns.contentId;
+    }
+    
     for (var file in card.content.files) {
       await createHtmlContentFileContentInDb(
-          cardReturns.contentId,
+          contentId,
           FileContentsCompanion.insert(
               name: file.name, format: file.format, content: file.content));
     }
@@ -408,18 +449,47 @@ Future<void> saveGroupExportInDb(GroupExport groupExport,
 }
 
 Future<int> saveCourseExportInDb(ExportDescriptor courseExport) async {
-  int courseId = await createCourseInDb(CoursesCompanion.insert(title: courseExport.name!, description: courseExport.learnAbouts!.join("\n"), imageUrl: courseExport.imgUrl!));
-  return courseId;
+  
+  var db = MyDatabaseInstance.getInstance();
+
+  //Faire la requête pour voir si le cours existe déjà
+  var matchingCourses = await (db.select(db.courses)..where((tbl) => tbl.sku.equals(courseExport.sku!))).get();
+  if(matchingCourses.isNotEmpty){
+    return matchingCourses.first.id;
+  } else {
+    int courseId = await createCourseInDb(CoursesCompanion.insert(sku: courseExport.sku!, title: courseExport.name!, description: courseExport.learnAbouts!.join("\n"), imageUrl: courseExport.imgUrl!));
+    return courseId;
+  }
 }
 
 Future<void> saveTopicExportInDb(TopicExport topicExport, List<GroupExport> groups, int parentCourseId, {int? parentId} ) async {
   int? groupId = groups.where((element) => element.path == topicExport.group?.path).firstOrNull?.dbId;
   int? supportId;
-  if(topicExport.topicSupportBytes != null){
+  late int topicId;
+  var db = MyDatabaseInstance.getInstance();
+
+  Future<void> createFileContent () async {
     supportId = await createFileContentInDb(FileContentsCompanion.insert(name: "support", format: "pdf", content: topicExport.topicSupportBytes!));
   }
-  int topicId = await createTopicInDb(TopicsCompanion.insert(title: topicExport.title, parentCourseId: parentCourseId, groupId: Value(groupId), fileId: Value(supportId), parentId: Value(parentId)));
 
+  if(topicExport.topicSupportBytes != null){
+
+    // Faire suppression de l'ancien fichier / Trouver topic parent en 1er
+    var existingTopic = await (db.select(db.topics)..where((tbl) => tbl.path.equals(topicExport.path!))).getSingleOrNull();
+    if(existingTopic != null){
+      if(existingTopic.fileId != null){
+        var existingSupport = await (db.select(db.fileContents)..where((tbl) => tbl.id.equals(existingTopic.fileId!))).getSingleOrNull();
+        if(existingSupport != null){
+          await (db.delete(db.fileContents)..where((tbl) => tbl.id.equals(existingSupport.id))).go();
+        }
+      }
+      await createFileContent();
+      topicId = existingTopic.id;
+    } else {
+      await createFileContent();
+      topicId = await createTopicInDb(TopicsCompanion.insert(path: Value(topicExport.path!), title: topicExport.title, parentCourseId: parentCourseId, groupId: Value(groupId), fileId: Value(supportId), parentId: Value(parentId)));
+    }
+  }
   for (var childTopic in topicExport.childTopics) {
     await saveTopicExportInDb(childTopic, groups, parentCourseId, parentId: topicId);
   }
@@ -456,7 +526,7 @@ Future<GroupExport> recursiveGroupDiscovery(GroupData deck) async {
       .get();
   List<CardExport> cardExports = [];
 
-  for (var card in cards) {
+  for (ReviseCard card in cards) {
     // HTMLContent htmlContent = await (db.select(db.hTMLContents)
     //                           ..where((tbl) => tbl.id.equals(card.htmlContent))).getSingle();
 
@@ -464,6 +534,7 @@ Future<GroupExport> recursiveGroupDiscovery(GroupData deck) async {
     var content = await htmlDao.getHtmlContents(card.htmlContent);
 
     CardExport cardExport = CardExport(
+      path: card.path,
         content: HTMLContentExport(
             recto: content.recto,
             verso: content.verso,
