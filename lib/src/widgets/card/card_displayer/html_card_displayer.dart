@@ -88,7 +88,6 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
       </head>
       <body>
         <div class='recto texte'>$recto</div>
-        <div class='separateur'></div>
         ${isPrintAnswer ? "<div class='verso texte'>$verso</div>" : ""}
         <script>
           function sayHello() {
