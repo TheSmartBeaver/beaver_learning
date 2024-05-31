@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -51,6 +51,14 @@ class AppDatabase extends _$AppDatabase {
           await initial_migrate_batch(b, dbInfos);
         });
       },
+      onUpgrade: (migrator, from, to) async {
+          if (from < 4) {
+            await migrator.addColumn(
+              reviseCards,
+              reviseCards.mnemotechnicHint,
+            );
+          }
+        },
     );
   }
 
@@ -82,7 +90,7 @@ LazyDatabase _openConnection() {
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
     var file = File(p.join(dbFolder.path, 'db.sqlite'));
-    deleteFile(file);
+    //deleteFile(file);
     file = File(p.join(dbFolder.path, 'db.sqlite'));
 
     // Also work around limitations on old Android versions
