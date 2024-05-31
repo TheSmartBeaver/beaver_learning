@@ -56,7 +56,7 @@ class _CourseDetailState extends State<CourseDetail> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => RevisorDisplayer(initialcards: []),
+                      builder: (ctx) => RevisorDisplayer(groupId: groups.map((e) => e.id).toList(),),
                     ),
                   );
                 },

@@ -52,13 +52,10 @@ class _GroupDetailState extends State<GroupDetail> {
             ElevatedButton(
                 onPressed: () async {
                   final database = MyDatabaseInstance.getInstance();
-                  var cards = await (database.select(database.reviseCards)
-                        ..where((card) => card.groupId.equals(widget.group.id)))
-                      .get();
 
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => RevisorDisplayer(initialcards: cards),
+                      builder: (ctx) => RevisorDisplayer(groupId: [widget.group.id]),
                     ),
                   );
                 },

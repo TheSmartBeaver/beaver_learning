@@ -10,11 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RevisorDisplayer extends ConsumerStatefulWidget {
-  RevisorDisplayer({super.key, this.initialcards});
+  RevisorDisplayer({super.key, this.groupId});
 
   static const routeName = '/revisorDisplayerScreen';
-  List<ReviseCard>? initialcards;
   bool isInitialized = false;
+  List<int>? groupId;
 
   @override
   ConsumerState<RevisorDisplayer> createState() => _RevisorDisplayerState();
@@ -28,10 +28,17 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
   _RevisorDisplayerState();
 
   getReviseCards(WidgetRef ref) async {
-    var cards = await ref.read(reviseProvider.notifier).getAllCardsToRevise();
+    List<ReviseCard> cards;
+    if(widget.groupId == null) {
+      cards = await ref.read(reviseProvider.notifier).getAllCardsToRevise();
+    } else {
+      cards = await ref.read(reviseProvider.notifier).getAllCardsToReviseInGroup(widget.groupId!);
+    }
     setState(() {
       initialcards = cards;
-      cardToRevise = initialcards != null && initialcards!.isNotEmpty ? initialcards![counter] : null;
+      cardToRevise = initialcards != null && initialcards!.isNotEmpty
+          ? initialcards![counter]
+          : null;
     });
   }
 
@@ -39,29 +46,27 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
   void initState() {
     super.initState();
     if (!widget.isInitialized) {
-      initialcards = widget.initialcards;
-      if (initialcards != null && initialcards!.isNotEmpty) {
-        cardToRevise = initialcards![counter];
-      } else {
         getReviseCards(ref);
-      }
     }
     widget.isInitialized = true;
   }
 
-  void goNextCard(ReviseCard card, NextRevisionInfo nextRevisionInfo) async {
-    final cardDao = CardDao(MyDatabaseInstance.getInstance());
-    var today = DateTime.now();
-    var fakeToday = DateTime(today.year, today.month, today.day, 1);
+  void goNextCard(ReviseCard card, NextRevisionInfo? nextRevisionInfo) async {
+    if (nextRevisionInfo != null) {
+      final cardDao = CardDao(MyDatabaseInstance.getInstance());
+      var today = DateTime.now();
+      var fakeToday = DateTime(today.year, today.month, today.day, 1);
 
-    var newMultiplicator =
-        nextRevisionInfo.diffMult * card.nextRevisionDateMultiplicator;
-    var newNextRevisionDate =
-        fakeToday.add(Duration(hours: nextRevisionInfo.durationToAdd));
+      var newMultiplicator =
+          nextRevisionInfo.diffMult * card.nextRevisionDateMultiplicator;
+      var newNextRevisionDate =
+          fakeToday.add(Duration(hours: nextRevisionInfo.durationToAdd));
 
-    await cardDao.updateNextRevision(
-        card.id, newMultiplicator, newNextRevisionDate);
-    print('nouvelle date de révision : ${newNextRevisionDate.toString()} Nouveau multiplicateur : ${newMultiplicator.toString()}');
+      await cardDao.updateNextRevision(
+          card.id, newMultiplicator, newNextRevisionDate);
+      print(
+          'nouvelle date de révision : ${newNextRevisionDate.toString()} Nouveau multiplicateur : ${newMultiplicator.toString()}');
+    }
 
     if (counter < initialcards!.length - 1) {
       setState(() {
