@@ -13,17 +13,17 @@ import 'package:beaver_learning/src/models/enum/answer_dificulty.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/queel_card_displayer.dart';
-import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
-import 'package:beaver_learning/src/widgets/shared/widgets/form-tools/queel_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'card_editor.dart/mnemotechnic_dialog.dart';
 
 class CardDisplayer extends StatefulWidget {
   const CardDisplayer(
       {super.key, required this.cardToRevise, required this.goNextCard});
 
   final ReviseCard cardToRevise;
-  final void Function(ReviseCard card, NextRevisionInfo nextRevisionInfo)
+  final void Function(ReviseCard card, NextRevisionInfo? nextRevisionInfo)
       goNextCard;
 
   @override
@@ -31,8 +31,8 @@ class CardDisplayer extends StatefulWidget {
 }
 
 Map<AnswerDifficulty, double> difficultyMultiplicator = {
-  AnswerDifficulty.veryHard: 0.25,
-  AnswerDifficulty.hard: 0.5,
+  AnswerDifficulty.veryHard: 0.6,
+  AnswerDifficulty.hard: 0.8,
   AnswerDifficulty.easy: 2.0,
   AnswerDifficulty.veryEasy: 4.0,
 };
@@ -41,8 +41,7 @@ class NextRevisionInfo {
   final int durationToAdd;
   final double diffMult;
 
-  NextRevisionInfo(
-      {required this.durationToAdd, required this.diffMult});
+  NextRevisionInfo({required this.durationToAdd, required this.diffMult});
 }
 
 class _CardDisplayerState extends State<CardDisplayer> {
@@ -66,14 +65,13 @@ class _CardDisplayerState extends State<CardDisplayer> {
   @override
   Widget build(BuildContext context) {
     NextRevisionInfo calculateNextRevision(AnswerDifficulty answerDifficulty) {
-      
-      var diffMult = (1+log(difficultyMultiplicator[answerDifficulty]!)).abs();
+      var diffMult =
+          (1 + log(difficultyMultiplicator[answerDifficulty]!)).abs();
 
-      var durationToAdd = (24 *
-              widget.cardToRevise.nextRevisionDateMultiplicator *
-              diffMult)
-          .floor();
-      
+      var durationToAdd =
+          (24 * widget.cardToRevise.nextRevisionDateMultiplicator * diffMult)
+              .floor();
+
       return NextRevisionInfo(durationToAdd: durationToAdd, diffMult: diffMult);
     }
 
@@ -93,19 +91,20 @@ class _CardDisplayerState extends State<CardDisplayer> {
               onPressed: () {},
               child: Icon(FontAwesomeIcons.chartColumn),
             ),
-            Container(
-              padding: EdgeInsets.all(7),
-              margin: EdgeInsets.only(top: 2, bottom: 2, right: 5),
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: Colors.blue[900]!,
-                      style: BorderStyle.solid,
-                      width: 3),
-                  color: Colors.redAccent),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  shape: CircleBorder(),
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.blue[900]),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MnemotechnicDialog(cardId: widget.cardToRevise.id),
+                );
+              },
               child:
                   Icon(FontAwesomeIcons.lightbulb, color: Colors.yellow[400]),
-            )
+            ),
           ],
         ),
         if (isPrintAnswer)
@@ -118,8 +117,8 @@ class _CardDisplayerState extends State<CardDisplayer> {
                         setState(() {
                           isPrintAnswer = false;
                         });
-                        widget.goNextCard(
-                            widget.cardToRevise, calculateNextRevision(AnswerDifficulty.veryHard));
+                        widget.goNextCard(widget.cardToRevise,
+                            calculateNextRevision(AnswerDifficulty.veryHard));
                       },
                       child: Container(
                           height: revisorButtonHeight,
@@ -128,8 +127,7 @@ class _CardDisplayerState extends State<CardDisplayer> {
                           child: Column(children: [
                             Text("Très dur"),
                             Text(
-                                '${(calculateNextRevision(AnswerDifficulty.veryHard).durationToAdd / 24)
-                                    .toStringAsFixed(2)} jours')
+                                '${(calculateNextRevision(AnswerDifficulty.veryHard).durationToAdd / 24).toStringAsFixed(2)} jours')
                           ])))),
               Expanded(
                   child: GestureDetector(
@@ -137,8 +135,8 @@ class _CardDisplayerState extends State<CardDisplayer> {
                         setState(() {
                           isPrintAnswer = false;
                         });
-                        widget.goNextCard(
-                            widget.cardToRevise, calculateNextRevision(AnswerDifficulty.hard));
+                        widget.goNextCard(widget.cardToRevise,
+                            calculateNextRevision(AnswerDifficulty.hard));
                       },
                       child: Container(
                           height: revisorButtonHeight,
@@ -146,8 +144,8 @@ class _CardDisplayerState extends State<CardDisplayer> {
                           color: Colors.red,
                           child: Column(children: [
                             Text("Dur"),
-                            Text('${(calculateNextRevision(AnswerDifficulty.hard).durationToAdd / 24)
-                                .toStringAsFixed(2)} jours')
+                            Text(
+                                '${(calculateNextRevision(AnswerDifficulty.hard).durationToAdd / 24).toStringAsFixed(2)} jours')
                           ])))),
               Expanded(
                   child: GestureDetector(
@@ -155,8 +153,8 @@ class _CardDisplayerState extends State<CardDisplayer> {
                         setState(() {
                           isPrintAnswer = false;
                         });
-                        widget.goNextCard(
-                            widget.cardToRevise, calculateNextRevision(AnswerDifficulty.easy));
+                        widget.goNextCard(widget.cardToRevise,
+                            calculateNextRevision(AnswerDifficulty.easy));
                       },
                       child: Container(
                           height: revisorButtonHeight,
@@ -164,8 +162,8 @@ class _CardDisplayerState extends State<CardDisplayer> {
                           alignment: Alignment.center,
                           child: Column(children: [
                             Text("Facile"),
-                            Text('${(calculateNextRevision(AnswerDifficulty.easy).durationToAdd / 24)
-                                .toStringAsFixed(2)} jours')
+                            Text(
+                                '${(calculateNextRevision(AnswerDifficulty.easy).durationToAdd / 24).toStringAsFixed(2)} jours')
                           ])))),
               Expanded(
                   child: GestureDetector(
@@ -173,8 +171,8 @@ class _CardDisplayerState extends State<CardDisplayer> {
                         setState(() {
                           isPrintAnswer = false;
                         });
-                        widget.goNextCard(
-                            widget.cardToRevise, calculateNextRevision(AnswerDifficulty.veryEasy));
+                        widget.goNextCard(widget.cardToRevise,
+                            calculateNextRevision(AnswerDifficulty.veryEasy));
                       },
                       child: Container(
                           height: revisorButtonHeight,
@@ -183,23 +181,35 @@ class _CardDisplayerState extends State<CardDisplayer> {
                           child: Column(children: [
                             Text("Très facile"),
                             Text(
-                                '${(calculateNextRevision(AnswerDifficulty.veryEasy).durationToAdd / 24)
-                                    .toStringAsFixed(2)} jours')
+                                '${(calculateNextRevision(AnswerDifficulty.veryEasy).durationToAdd / 24).toStringAsFixed(2)} jours')
                           ])))),
             ],
           )
         else
-          GestureDetector(
-              onTap: () {
-                setState(() {
-                  isPrintAnswer = true;
-                });
-              },
-              child: Container(
-                  height: revisorButtonHeight,
-                  color: Colors.grey,
-                  alignment: Alignment.center,
-                  child: const Text("Print Answer")))
+          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            Expanded(
+                child: GestureDetector(
+                    onTap: () {
+                      widget.goNextCard(widget.cardToRevise, null);
+                    },
+                    child: Container(
+                        height: revisorButtonHeight,
+                        color: Colors.redAccent,
+                        alignment: Alignment.center,
+                        child: const Text("Pass")))),
+            Expanded(
+                child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isPrintAnswer = true;
+                      });
+                    },
+                    child: Container(
+                        height: revisorButtonHeight,
+                        color: Colors.grey,
+                        alignment: Alignment.center,
+                        child: const Text("Print Answer"))))
+          ])
       ],
     );
   }

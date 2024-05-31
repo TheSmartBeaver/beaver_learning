@@ -14,17 +14,24 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   Future updateCard(ReviseCard card) => update(reviseCards).replace(card);
   Future deleteCard(ReviseCard card) => delete(reviseCards).delete(card);
 
-  Future updateNextRevision(int cardId, double newCoeff, DateTime nextRevisionDate) {
-  // for updates, we use the "companion" version of a generated class. This wraps the
-  // fields in a "Value" type which can be set to be absent using "Value.absent()". This
-  // allows us to separate between "SET category = NULL" (`category: Value(null)`) and not
-  // updating the category at all: `category: Value.absent()`.
-  return (update(reviseCards)
-      ..where((t) => t.id.equals(cardId))
-    ).write(ReviseCardsCompanion(
-      nextRevisionDateMultiplicator: Value(newCoeff),
-      nextRevisionDate: Value(nextRevisionDate)
-    ),
-  );
-}
+  Future updateNextRevision(
+      int cardId, double newCoeff, DateTime nextRevisionDate) {
+    // for updates, we use the "companion" version of a generated class. This wraps the
+    // fields in a "Value" type which can be set to be absent using "Value.absent()". This
+    // allows us to separate between "SET category = NULL" (`category: Value(null)`) and not
+    // updating the category at all: `category: Value.absent()`.
+    return (update(reviseCards)..where((t) => t.id.equals(cardId))).write(
+      ReviseCardsCompanion(
+          nextRevisionDateMultiplicator: Value(newCoeff),
+          nextRevisionDate: Value(nextRevisionDate)),
+    );
+  }
+
+  Future updateMnemotechnicHint(int cardId, String mnemotechnicHint) {
+    return (update(reviseCards)..where((t) => t.id.equals(cardId))).write(
+        ReviseCardsCompanion(
+          mnemotechnicHint: Value(mnemotechnicHint),
+        ),
+      );
+  }
 }
