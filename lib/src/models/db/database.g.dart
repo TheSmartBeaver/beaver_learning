@@ -560,6 +560,12 @@ class $ReviseCardsTable extends ReviseCards
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
       'path', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _mnemotechnicHintMeta =
+      const VerificationMeta('mnemotechnicHint');
+  @override
+  late final GeneratedColumn<String> mnemotechnicHint = GeneratedColumn<String>(
+      'mnemotechnic_hint', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -569,7 +575,8 @@ class $ReviseCardsTable extends ReviseCards
         tags,
         nextRevisionDateMultiplicator,
         nextRevisionDate,
-        path
+        path,
+        mnemotechnicHint
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -624,6 +631,12 @@ class $ReviseCardsTable extends ReviseCards
       context.handle(
           _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
     }
+    if (data.containsKey('mnemotechnic_hint')) {
+      context.handle(
+          _mnemotechnicHintMeta,
+          mnemotechnicHint.isAcceptableOrUnknown(
+              data['mnemotechnic_hint']!, _mnemotechnicHintMeta));
+    }
     return context;
   }
 
@@ -651,6 +664,8 @@ class $ReviseCardsTable extends ReviseCards
           DriftSqlType.dateTime, data['${effectivePrefix}next_revision_date']),
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path']),
+      mnemotechnicHint: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}mnemotechnic_hint']),
     );
   }
 
@@ -673,6 +688,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final double nextRevisionDateMultiplicator;
   final DateTime? nextRevisionDate;
   final String? path;
+  final String? mnemotechnicHint;
   const ReviseCard(
       {required this.id,
       required this.groupId,
@@ -681,7 +697,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       required this.tags,
       required this.nextRevisionDateMultiplicator,
       this.nextRevisionDate,
-      this.path});
+      this.path,
+      this.mnemotechnicHint});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -701,6 +718,9 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     if (!nullToAbsent || path != null) {
       map['path'] = Variable<String>(path);
     }
+    if (!nullToAbsent || mnemotechnicHint != null) {
+      map['mnemotechnic_hint'] = Variable<String>(mnemotechnicHint);
+    }
     return map;
   }
 
@@ -716,6 +736,9 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           ? const Value.absent()
           : Value(nextRevisionDate),
       path: path == null && nullToAbsent ? const Value.absent() : Value(path),
+      mnemotechnicHint: mnemotechnicHint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mnemotechnicHint),
     );
   }
 
@@ -734,6 +757,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       nextRevisionDate:
           serializer.fromJson<DateTime?>(json['nextRevisionDate']),
       path: serializer.fromJson<String?>(json['path']),
+      mnemotechnicHint: serializer.fromJson<String?>(json['mnemotechnicHint']),
     );
   }
   @override
@@ -750,6 +774,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           serializer.toJson<double>(nextRevisionDateMultiplicator),
       'nextRevisionDate': serializer.toJson<DateTime?>(nextRevisionDate),
       'path': serializer.toJson<String?>(path),
+      'mnemotechnicHint': serializer.toJson<String?>(mnemotechnicHint),
     };
   }
 
@@ -761,7 +786,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           String? tags,
           double? nextRevisionDateMultiplicator,
           Value<DateTime?> nextRevisionDate = const Value.absent(),
-          Value<String?> path = const Value.absent()}) =>
+          Value<String?> path = const Value.absent(),
+          Value<String?> mnemotechnicHint = const Value.absent()}) =>
       ReviseCard(
         id: id ?? this.id,
         groupId: groupId ?? this.groupId,
@@ -774,6 +800,9 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
             ? nextRevisionDate.value
             : this.nextRevisionDate,
         path: path.present ? path.value : this.path,
+        mnemotechnicHint: mnemotechnicHint.present
+            ? mnemotechnicHint.value
+            : this.mnemotechnicHint,
       );
   @override
   String toString() {
@@ -786,14 +815,15 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           ..write(
               'nextRevisionDateMultiplicator: $nextRevisionDateMultiplicator, ')
           ..write('nextRevisionDate: $nextRevisionDate, ')
-          ..write('path: $path')
+          ..write('path: $path, ')
+          ..write('mnemotechnicHint: $mnemotechnicHint')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, groupId, htmlContent, displayerType, tags,
-      nextRevisionDateMultiplicator, nextRevisionDate, path);
+      nextRevisionDateMultiplicator, nextRevisionDate, path, mnemotechnicHint);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -806,7 +836,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           other.nextRevisionDateMultiplicator ==
               this.nextRevisionDateMultiplicator &&
           other.nextRevisionDate == this.nextRevisionDate &&
-          other.path == this.path);
+          other.path == this.path &&
+          other.mnemotechnicHint == this.mnemotechnicHint);
 }
 
 class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
@@ -818,6 +849,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<double> nextRevisionDateMultiplicator;
   final Value<DateTime?> nextRevisionDate;
   final Value<String?> path;
+  final Value<String?> mnemotechnicHint;
   const ReviseCardsCompanion({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
@@ -827,6 +859,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     this.nextRevisionDateMultiplicator = const Value.absent(),
     this.nextRevisionDate = const Value.absent(),
     this.path = const Value.absent(),
+    this.mnemotechnicHint = const Value.absent(),
   });
   ReviseCardsCompanion.insert({
     this.id = const Value.absent(),
@@ -837,6 +870,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     required double nextRevisionDateMultiplicator,
     this.nextRevisionDate = const Value.absent(),
     this.path = const Value.absent(),
+    this.mnemotechnicHint = const Value.absent(),
   })  : groupId = Value(groupId),
         htmlContent = Value(htmlContent),
         displayerType = Value(displayerType),
@@ -851,6 +885,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     Expression<double>? nextRevisionDateMultiplicator,
     Expression<DateTime>? nextRevisionDate,
     Expression<String>? path,
+    Expression<String>? mnemotechnicHint,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -862,6 +897,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
         'next_revision_date_multiplicator': nextRevisionDateMultiplicator,
       if (nextRevisionDate != null) 'next_revision_date': nextRevisionDate,
       if (path != null) 'path': path,
+      if (mnemotechnicHint != null) 'mnemotechnic_hint': mnemotechnicHint,
     });
   }
 
@@ -873,7 +909,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       Value<String>? tags,
       Value<double>? nextRevisionDateMultiplicator,
       Value<DateTime?>? nextRevisionDate,
-      Value<String?>? path}) {
+      Value<String?>? path,
+      Value<String?>? mnemotechnicHint}) {
     return ReviseCardsCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
@@ -884,6 +921,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
           nextRevisionDateMultiplicator ?? this.nextRevisionDateMultiplicator,
       nextRevisionDate: nextRevisionDate ?? this.nextRevisionDate,
       path: path ?? this.path,
+      mnemotechnicHint: mnemotechnicHint ?? this.mnemotechnicHint,
     );
   }
 
@@ -916,6 +954,9 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     if (path.present) {
       map['path'] = Variable<String>(path.value);
     }
+    if (mnemotechnicHint.present) {
+      map['mnemotechnic_hint'] = Variable<String>(mnemotechnicHint.value);
+    }
     return map;
   }
 
@@ -930,7 +971,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
           ..write(
               'nextRevisionDateMultiplicator: $nextRevisionDateMultiplicator, ')
           ..write('nextRevisionDate: $nextRevisionDate, ')
-          ..write('path: $path')
+          ..write('path: $path, ')
+          ..write('mnemotechnicHint: $mnemotechnicHint')
           ..write(')'))
         .toString();
   }
