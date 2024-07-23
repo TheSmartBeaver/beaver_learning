@@ -124,6 +124,7 @@ class ImportManager extends ImportInterface {
   var cardReg = RegExp(r"card_\d+.*");
   var htmlReg = RegExp(r".*html");
   var supportReg = RegExp(r"support.*");
+  var templatedJsonReg = RegExp(r"card_template\.json");
 
   @override
   void fillEntityNatures(ArchiveFile archEntity) {
@@ -137,11 +138,21 @@ class ImportManager extends ImportInterface {
       if (fileCanBeReadAsString(archEntity.name)) {
         String stringContent = utf8.decode(bytes);
         if (cardReg.hasMatch(paths[paths.length - 2])) {
+          var cardName = extractParentFolder(archEntity.name);
+
+          if(templatedJsonReg.hasMatch(paths[paths.length - 1])){
+            //On identifie en temps que carte templated
+              entityNatures[cardName] =
+                  EntityNature(cardName, ExportType.cardTemplated, bytes: bytes);
+              entityNatures[archEntity.name] = EntityNature(
+                  archEntity.name, ExportType.cardJsonTemplated,
+                  bytes: bytes);
+          } else {
+            // On identifie en tant que carte qui se construit avec html recto verso sans template
           if (htmlReg.hasMatch(paths[paths.length - 1]) &&
               !paths[paths.length - 1].startsWith('.')) {
             if (paths[paths.length - 1] == "recto.html") {
               // On identifie en tant que recto d'une carte
-              var cardName = extractParentFolder(archEntity.name);
               entityNatures[cardName] =
                   EntityNature(cardName, ExportType.card, bytes: bytes);
               entityNatures[archEntity.name] = EntityNature(
@@ -149,13 +160,13 @@ class ImportManager extends ImportInterface {
                   bytes: bytes);
             } else if (paths[paths.length - 1] == "verso.html") {
               // On identifie en tant que verso d'une carte
-              var cardName = extractParentFolder(archEntity.name);
               entityNatures[cardName] =
                   EntityNature(cardName, ExportType.card, bytes: bytes);
               entityNatures[archEntity.name] = EntityNature(
                   archEntity.name, ExportType.versoHtml,
                   bytes: bytes);
             }
+          }
           }
         } else if (paths[paths.length - 1] == "group_desc.json") {
           // On identifie en tant que descripteur d'un groupe
@@ -174,6 +185,11 @@ class ImportManager extends ImportInterface {
           var topicName = extractParentFolder(archEntity.name);
           entityNatures[topicName] =
               EntityNature(topicName, ExportType.topic, bytes: bytes);
+        } else if (paths.length > 2 && paths[1] == "templates" && htmlReg.hasMatch(paths[paths.length - 1])) {
+          // On identifie en tant que template HTML d'une carte
+          var htmlTemplateNameName = archEntity.name;
+          entityNatures[htmlTemplateNameName] =
+              EntityNature(htmlTemplateNameName, ExportType.cardHtmlTemplated, bytes: bytes);
         }
       } else if (paths[paths.length - 1].contains('.') &&
           !paths[paths.length - 1].startsWith('.')) {
@@ -316,6 +332,7 @@ class ImportManager extends ImportInterface {
           ..where((tbl) => tbl.path.equals(groupExport.path!)))
         .get();
     late int groupId;
+    // Si le groupe existe déjà, on le met à jour
     if (matchingGroups.isNotEmpty) {
       groupExport.dbId = matchingGroups.first.id;
       groupId = groupExport.dbId!;
