@@ -5,4 +5,6 @@ class HTMLContents extends Table {
   //TextColumn get name => text()();
   TextColumn get recto => text()();
   TextColumn get verso => text()();
+  BoolColumn get isTemplated => boolean().withDefault(const Constant(false))();
+  TextColumn get cardTemplatedJson => text()();
 }

@@ -45,10 +45,19 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
           HTMLContentObjFiles(e.name, e.format, (await fileContentToFile(e))));
     }
 
-    HTMLContentRectoVerso result = HTMLContentRectoVerso(
-        recto: htmlContent.recto,
-        verso: htmlContent.verso,
-        files: hTMLContentObjFiles);
+    HTMLContentRectoVerso result;
+
+    if(htmlContent.isTemplated) {
+      result = HTMLContentRectoVerso(
+          recto: htmlContent.cardTemplatedJson,
+          verso: htmlContent.cardTemplatedJson,
+          files: hTMLContentObjFiles);
+    } else {
+      result = HTMLContentRectoVerso(
+          recto: htmlContent.recto,
+          verso: htmlContent.verso,
+          files: hTMLContentObjFiles);
+    }
 
     return result;
   }

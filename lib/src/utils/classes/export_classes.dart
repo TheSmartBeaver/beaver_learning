@@ -10,7 +10,20 @@ part 'export_classes.g.dart';
 //TODO: Inutile d'essayer de tout sérialiser à la volée
 // Parcourir les objets à la place et créer des jsons par-ci, des dossiers par-là et des fichiers.
 
-enum ExportType { group, card, cardTemplated, cardJsonTemplated, cardHtmlTemplated, rectoHtml, versoHtml, fileContent, unknown, course, topic, support }
+enum ExportType {
+  group,
+  card,
+  cardTemplated,
+  cardJsonTemplated,
+  cardHtmlTemplated,
+  rectoHtml,
+  versoHtml,
+  fileContent,
+  unknown,
+  course,
+  topic,
+  support
+}
 
 @JsonSerializable(explicitToJson: true)
 class ExportDescriptor {
@@ -24,10 +37,10 @@ class ExportDescriptor {
   factory ExportDescriptor.fromJson(Map<String, dynamic> json) =>
       _$ExportDescriptorFromJson(json);
 
-  ExportDescriptor(this.type, {this.name, this.sku, this.learnAbouts, this.prerequisites});
+  ExportDescriptor(this.type,
+      {this.name, this.sku, this.learnAbouts, this.prerequisites});
 
   Map<String, dynamic> toJson() => _$ExportDescriptorToJson(this);
-
 }
 
 //@JsonSerializable(explicitToJson: true)
@@ -62,6 +75,15 @@ class TopicExport {
   TopicExport(this.title, this.childTopics, {this.path});
 }
 
+class HtmlTemplateExport {
+  String path;
+  String sku;
+  String template;
+
+  HtmlTemplateExport({required this.path, required this.sku, required this.template});
+
+}
+
 //@JsonSerializable(explicitToJson: true)
 class CardExport {
   final HTMLContentExport content;
@@ -69,24 +91,31 @@ class CardExport {
 
   // factory CardExport.fromJson(Map<String, dynamic> json) =>
   //     _$CardExportFromJson(json);
-  
+
   // Map<String, dynamic> toJson() => _$CardExportToJson(this);
 
   CardExport({required this.content, this.path});
-
 }
+
 //@JsonSerializable(explicitToJson: true)
 class HTMLContentExport {
   String recto;
   String verso;
+  bool isTemplated;
+  String cardTemplatedJson;
   List<FileContentExport> files;
 
   // factory HTMLContentExport.fromJson(Map<String, dynamic> json) =>
   //     _$HTMLContentExportFromJson(json);
-  
+
   // Map<String, dynamic> toJson() => _$HTMLContentExportToJson(this);
 
-  HTMLContentExport({required this.recto, required this.verso, required this.files});
+  HTMLContentExport(
+      {this.recto = "",
+      this.verso = "",
+      required this.files,
+      this.isTemplated = false,
+      this.cardTemplatedJson = ""});
 }
 
 //@JsonSerializable(explicitToJson: true)

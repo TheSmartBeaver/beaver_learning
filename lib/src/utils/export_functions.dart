@@ -138,9 +138,11 @@ Future importReal(BuildContext context) async {
       var issou = 1;
 
       import.fillAllGroupExports();
+      import.fillAllHtmlTemplatesExports();
       import.fillAllCardExports();
-      import.fillAllCardExportsRecto();
-      import.fillAllCardExportsVerso();
+      import.fillAllCardRegularExportsRecto();
+      import.fillAllCardRegularExportsVerso();
+      import.fillAllJsonCardExportsTemplated();
       import.fillAllCardExportsFiles();
       import.linkAllCardExportsToGroupExports();      
       import.fillAllTopicExports();
@@ -149,6 +151,7 @@ Future importReal(BuildContext context) async {
       import.linkAllTopicExportsToParentTopicExports();
       import.linkAllGroupExportsToParentGroupExports();
 
+      await import.createHtmlTemplatesInDb();
       await import.createGroupsInDB();
       int courseId = await import.createCourseInDB();
       await import.createTopicsInDB(courseId);

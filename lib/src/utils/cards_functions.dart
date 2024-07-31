@@ -59,3 +59,8 @@ Future<int> createCourseInDb(CoursesCompanion courseCompanion) async {
   var id = await database.into(database.courses).insert(courseCompanion);
   return id;
 }
+
+Future<int> createHtmlTemplateInDb(CardTemplateCompanion htmlTemplateCompanion) async {
+  var id = await database.into(database.cardTemplate).insert(htmlTemplateCompanion);
+  return id;
+}

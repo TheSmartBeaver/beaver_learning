@@ -315,8 +315,25 @@ class $HTMLContentsTable extends HTMLContents
   late final GeneratedColumn<String> verso = GeneratedColumn<String>(
       'verso', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _isTemplatedMeta =
+      const VerificationMeta('isTemplated');
   @override
-  List<GeneratedColumn> get $columns => [id, recto, verso];
+  late final GeneratedColumn<bool> isTemplated = GeneratedColumn<bool>(
+      'is_templated', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_templated" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _cardTemplatedJsonMeta =
+      const VerificationMeta('cardTemplatedJson');
+  @override
+  late final GeneratedColumn<String> cardTemplatedJson =
+      GeneratedColumn<String>('card_templated_json', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, recto, verso, isTemplated, cardTemplatedJson];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -342,6 +359,20 @@ class $HTMLContentsTable extends HTMLContents
     } else if (isInserting) {
       context.missing(_versoMeta);
     }
+    if (data.containsKey('is_templated')) {
+      context.handle(
+          _isTemplatedMeta,
+          isTemplated.isAcceptableOrUnknown(
+              data['is_templated']!, _isTemplatedMeta));
+    }
+    if (data.containsKey('card_templated_json')) {
+      context.handle(
+          _cardTemplatedJsonMeta,
+          cardTemplatedJson.isAcceptableOrUnknown(
+              data['card_templated_json']!, _cardTemplatedJsonMeta));
+    } else if (isInserting) {
+      context.missing(_cardTemplatedJsonMeta);
+    }
     return context;
   }
 
@@ -357,6 +388,10 @@ class $HTMLContentsTable extends HTMLContents
           .read(DriftSqlType.string, data['${effectivePrefix}recto'])!,
       verso: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}verso'])!,
+      isTemplated: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_templated'])!,
+      cardTemplatedJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}card_templated_json'])!,
     );
   }
 
@@ -370,14 +405,22 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   final int id;
   final String recto;
   final String verso;
+  final bool isTemplated;
+  final String cardTemplatedJson;
   const HTMLContent(
-      {required this.id, required this.recto, required this.verso});
+      {required this.id,
+      required this.recto,
+      required this.verso,
+      required this.isTemplated,
+      required this.cardTemplatedJson});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['recto'] = Variable<String>(recto);
     map['verso'] = Variable<String>(verso);
+    map['is_templated'] = Variable<bool>(isTemplated);
+    map['card_templated_json'] = Variable<String>(cardTemplatedJson);
     return map;
   }
 
@@ -386,6 +429,8 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       id: Value(id),
       recto: Value(recto),
       verso: Value(verso),
+      isTemplated: Value(isTemplated),
+      cardTemplatedJson: Value(cardTemplatedJson),
     );
   }
 
@@ -396,6 +441,8 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       id: serializer.fromJson<int>(json['id']),
       recto: serializer.fromJson<String>(json['recto']),
       verso: serializer.fromJson<String>(json['verso']),
+      isTemplated: serializer.fromJson<bool>(json['isTemplated']),
+      cardTemplatedJson: serializer.fromJson<String>(json['cardTemplatedJson']),
     );
   }
   @override
@@ -405,68 +452,100 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       'id': serializer.toJson<int>(id),
       'recto': serializer.toJson<String>(recto),
       'verso': serializer.toJson<String>(verso),
+      'isTemplated': serializer.toJson<bool>(isTemplated),
+      'cardTemplatedJson': serializer.toJson<String>(cardTemplatedJson),
     };
   }
 
-  HTMLContent copyWith({int? id, String? recto, String? verso}) => HTMLContent(
+  HTMLContent copyWith(
+          {int? id,
+          String? recto,
+          String? verso,
+          bool? isTemplated,
+          String? cardTemplatedJson}) =>
+      HTMLContent(
         id: id ?? this.id,
         recto: recto ?? this.recto,
         verso: verso ?? this.verso,
+        isTemplated: isTemplated ?? this.isTemplated,
+        cardTemplatedJson: cardTemplatedJson ?? this.cardTemplatedJson,
       );
   @override
   String toString() {
     return (StringBuffer('HTMLContent(')
           ..write('id: $id, ')
           ..write('recto: $recto, ')
-          ..write('verso: $verso')
+          ..write('verso: $verso, ')
+          ..write('isTemplated: $isTemplated, ')
+          ..write('cardTemplatedJson: $cardTemplatedJson')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, recto, verso);
+  int get hashCode =>
+      Object.hash(id, recto, verso, isTemplated, cardTemplatedJson);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is HTMLContent &&
           other.id == this.id &&
           other.recto == this.recto &&
-          other.verso == this.verso);
+          other.verso == this.verso &&
+          other.isTemplated == this.isTemplated &&
+          other.cardTemplatedJson == this.cardTemplatedJson);
 }
 
 class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   final Value<int> id;
   final Value<String> recto;
   final Value<String> verso;
+  final Value<bool> isTemplated;
+  final Value<String> cardTemplatedJson;
   const HTMLContentsCompanion({
     this.id = const Value.absent(),
     this.recto = const Value.absent(),
     this.verso = const Value.absent(),
+    this.isTemplated = const Value.absent(),
+    this.cardTemplatedJson = const Value.absent(),
   });
   HTMLContentsCompanion.insert({
     this.id = const Value.absent(),
     required String recto,
     required String verso,
+    this.isTemplated = const Value.absent(),
+    required String cardTemplatedJson,
   })  : recto = Value(recto),
-        verso = Value(verso);
+        verso = Value(verso),
+        cardTemplatedJson = Value(cardTemplatedJson);
   static Insertable<HTMLContent> custom({
     Expression<int>? id,
     Expression<String>? recto,
     Expression<String>? verso,
+    Expression<bool>? isTemplated,
+    Expression<String>? cardTemplatedJson,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (recto != null) 'recto': recto,
       if (verso != null) 'verso': verso,
+      if (isTemplated != null) 'is_templated': isTemplated,
+      if (cardTemplatedJson != null) 'card_templated_json': cardTemplatedJson,
     });
   }
 
   HTMLContentsCompanion copyWith(
-      {Value<int>? id, Value<String>? recto, Value<String>? verso}) {
+      {Value<int>? id,
+      Value<String>? recto,
+      Value<String>? verso,
+      Value<bool>? isTemplated,
+      Value<String>? cardTemplatedJson}) {
     return HTMLContentsCompanion(
       id: id ?? this.id,
       recto: recto ?? this.recto,
       verso: verso ?? this.verso,
+      isTemplated: isTemplated ?? this.isTemplated,
+      cardTemplatedJson: cardTemplatedJson ?? this.cardTemplatedJson,
     );
   }
 
@@ -482,6 +561,12 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     if (verso.present) {
       map['verso'] = Variable<String>(verso.value);
     }
+    if (isTemplated.present) {
+      map['is_templated'] = Variable<bool>(isTemplated.value);
+    }
+    if (cardTemplatedJson.present) {
+      map['card_templated_json'] = Variable<String>(cardTemplatedJson.value);
+    }
     return map;
   }
 
@@ -490,7 +575,9 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     return (StringBuffer('HTMLContentsCompanion(')
           ..write('id: $id, ')
           ..write('recto: $recto, ')
-          ..write('verso: $verso')
+          ..write('verso: $verso, ')
+          ..write('isTemplated: $isTemplated, ')
+          ..write('cardTemplatedJson: $cardTemplatedJson')
           ..write(')'))
         .toString();
   }
@@ -2278,6 +2365,254 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   }
 }
 
+class $CardTemplateTable extends CardTemplate
+    with TableInfo<$CardTemplateTable, CardTemplateData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CardTemplateTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _templateMeta =
+      const VerificationMeta('template');
+  @override
+  late final GeneratedColumn<String> template = GeneratedColumn<String>(
+      'template', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, sku, path, template];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'card_template';
+  @override
+  VerificationContext validateIntegrity(Insertable<CardTemplateData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
+    } else if (isInserting) {
+      context.missing(_skuMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('template')) {
+      context.handle(_templateMeta,
+          template.isAcceptableOrUnknown(data['template']!, _templateMeta));
+    } else if (isInserting) {
+      context.missing(_templateMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CardTemplateData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CardTemplateData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      template: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}template'])!,
+    );
+  }
+
+  @override
+  $CardTemplateTable createAlias(String alias) {
+    return $CardTemplateTable(attachedDatabase, alias);
+  }
+}
+
+class CardTemplateData extends DataClass
+    implements Insertable<CardTemplateData> {
+  final int id;
+  final String sku;
+  final String path;
+  final String template;
+  const CardTemplateData(
+      {required this.id,
+      required this.sku,
+      required this.path,
+      required this.template});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['sku'] = Variable<String>(sku);
+    map['path'] = Variable<String>(path);
+    map['template'] = Variable<String>(template);
+    return map;
+  }
+
+  CardTemplateCompanion toCompanion(bool nullToAbsent) {
+    return CardTemplateCompanion(
+      id: Value(id),
+      sku: Value(sku),
+      path: Value(path),
+      template: Value(template),
+    );
+  }
+
+  factory CardTemplateData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CardTemplateData(
+      id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String>(json['sku']),
+      path: serializer.fromJson<String>(json['path']),
+      template: serializer.fromJson<String>(json['template']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String>(sku),
+      'path': serializer.toJson<String>(path),
+      'template': serializer.toJson<String>(template),
+    };
+  }
+
+  CardTemplateData copyWith(
+          {int? id, String? sku, String? path, String? template}) =>
+      CardTemplateData(
+        id: id ?? this.id,
+        sku: sku ?? this.sku,
+        path: path ?? this.path,
+        template: template ?? this.template,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('CardTemplateData(')
+          ..write('id: $id, ')
+          ..write('sku: $sku, ')
+          ..write('path: $path, ')
+          ..write('template: $template')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, sku, path, template);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CardTemplateData &&
+          other.id == this.id &&
+          other.sku == this.sku &&
+          other.path == this.path &&
+          other.template == this.template);
+}
+
+class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
+  final Value<int> id;
+  final Value<String> sku;
+  final Value<String> path;
+  final Value<String> template;
+  const CardTemplateCompanion({
+    this.id = const Value.absent(),
+    this.sku = const Value.absent(),
+    this.path = const Value.absent(),
+    this.template = const Value.absent(),
+  });
+  CardTemplateCompanion.insert({
+    this.id = const Value.absent(),
+    required String sku,
+    required String path,
+    required String template,
+  })  : sku = Value(sku),
+        path = Value(path),
+        template = Value(template);
+  static Insertable<CardTemplateData> custom({
+    Expression<int>? id,
+    Expression<String>? sku,
+    Expression<String>? path,
+    Expression<String>? template,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
+      if (path != null) 'path': path,
+      if (template != null) 'template': template,
+    });
+  }
+
+  CardTemplateCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? sku,
+      Value<String>? path,
+      Value<String>? template}) {
+    return CardTemplateCompanion(
+      id: id ?? this.id,
+      sku: sku ?? this.sku,
+      path: path ?? this.path,
+      template: template ?? this.template,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (template.present) {
+      map['template'] = Variable<String>(template.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardTemplateCompanion(')
+          ..write('id: $id, ')
+          ..write('sku: $sku, ')
+          ..write('path: $path, ')
+          ..write('template: $template')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   late final $GroupTable group = $GroupTable(this);
@@ -2289,6 +2624,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HTMLContentFilesTable hTMLContentFiles =
       $HTMLContentFilesTable(this);
   late final $TopicsTable topics = $TopicsTable(this);
+  late final $CardTemplateTable cardTemplate = $CardTemplateTable(this);
   late final ImageDao imageDao = ImageDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -2302,6 +2638,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         courses,
         fileContents,
         hTMLContentFiles,
-        topics
+        topics,
+        cardTemplate
       ];
 }
