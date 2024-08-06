@@ -1,13 +1,10 @@
-import 'dart:io';
-
-import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
-import 'package:beaver_learning/src/models/db/image_table.dart';
+import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/images_functions.dart';
+import 'package:beaver_learning/src/utils/templated_card_render_manager.dart';
 import 'package:drift/drift.dart';
-import 'package:path_provider/path_provider.dart';
 
 part 'html_dao.g.dart';
 
@@ -48,10 +45,8 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
     HTMLContentRectoVerso result;
 
     if(htmlContent.isTemplated) {
-      result = HTMLContentRectoVerso(
-          recto: htmlContent.cardTemplatedJson,
-          verso: htmlContent.cardTemplatedJson,
-          files: hTMLContentObjFiles);
+      TemplatedCardRendererManager templatedCardRendererManager = TemplatedCardRendererManager(htmlContent: htmlContent, hTMLContentObjFiles: hTMLContentObjFiles);
+      result = await templatedCardRendererManager.render();
     } else {
       result = HTMLContentRectoVerso(
           recto: htmlContent.recto,
@@ -61,21 +56,4 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
     return result;
   }
-}
-
-class HTMLContentRectoVerso {
-  final String recto;
-  final String verso;
-  final List<HTMLContentObjFiles> files;
-
-  HTMLContentRectoVerso(
-      {required this.files, required this.recto, required this.verso});
-}
-
-class HTMLContentObjFiles {
-  final String name;
-  final String format;
-  final File file;
-
-  HTMLContentObjFiles(this.name, this.format, this.file);
 }

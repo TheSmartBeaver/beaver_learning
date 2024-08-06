@@ -582,8 +582,9 @@ class ImportManager extends ImportInterface {
     for (MapEntry<String, EntityNature> cardHtmlTemplate in entityNatures.entries.where(
         (element) => element.value.type == ExportType.cardHtmlTemplated)) {
       if (!htmlTemplateExports.containsKey(cardHtmlTemplate.value.path)) {
+        List<String> paths = cardHtmlTemplate.value.path.split('/');
         htmlTemplateExports[cardHtmlTemplate.value.path] = HtmlTemplateExport(
-            path: cardHtmlTemplate.value.path,
+            path: paths[paths.length - 1], // ICI on ne prend que le nom de la template, pas le chemin entier
             template: utf8.decode(cardHtmlTemplate.value.bytes!),
             sku: sku);
       }

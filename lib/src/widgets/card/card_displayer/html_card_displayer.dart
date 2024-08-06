@@ -9,14 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-void test() {
-  final imageDao = ImageDao(MyDatabaseInstance.getInstance());
-  // final imagePath = await imageDao.getImagePathForCard(cardId);
-
-  // final imageFile = File(imagePath);
-  // final imageWidget = Image.file(imageFile);
-}
-
 WebViewController _buildController() {
   return WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
