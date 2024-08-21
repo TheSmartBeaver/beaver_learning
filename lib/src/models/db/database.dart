@@ -49,8 +49,7 @@ class AppDatabase extends _$AppDatabase {
 
         //Add a bunch of default items in a batch
         await batch((b) async {
-          DatabasesBatchInfos dbInfos = DatabasesBatchInfos(group, reviseCards, images, courses, topics, fileContents, hTMLContents, hTMLContentFiles);
-          await initial_migrate_batch(b, dbInfos);
+          await initial_migrate_batch(b, this);
         });
       },
       onUpgrade: (migrator, from, to) async {

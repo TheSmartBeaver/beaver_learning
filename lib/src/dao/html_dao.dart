@@ -46,6 +46,7 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
     if(htmlContent.isTemplated) {
       TemplatedCardRendererManager templatedCardRendererManager = TemplatedCardRendererManager(htmlContent: htmlContent, hTMLContentObjFiles: hTMLContentObjFiles);
+      // TODO: Faire la gestion d'erreur pour quand même retourner un résultat ???
       result = await templatedCardRendererManager.render();
     } else {
       result = HTMLContentRectoVerso(

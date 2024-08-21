@@ -25,7 +25,7 @@ class CustomDropdownMenu<T> extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _CustomDropdown();
+    return _CustomDropdown<T>();
   }
 }
 
@@ -35,7 +35,7 @@ class DropDownItem<T> {
   final T value;
 }
 
-class _CustomDropdown extends State<CustomDropdownMenu> {
+class _CustomDropdown<T> extends State<CustomDropdownMenu<T>> {
   @override
   void initState() {
     super.initState();
@@ -62,11 +62,11 @@ class _CustomDropdown extends State<CustomDropdownMenu> {
       ),
       onSelected: (DropDownItem? item) {
         setState(() {
-          widget.value = item;
+          widget.value = item as DropDownItem<T>?;
         });
 
         if (widget.onSelected != null) {
-          widget.onSelected!(item);
+          widget.onSelected!(item as DropDownItem<T>?);
         }
       },
       dropdownMenuEntries: widget.items.map<DropdownMenuEntry<DropDownItem>>(
@@ -78,39 +78,3 @@ class _CustomDropdown extends State<CustomDropdownMenu> {
     );
   }
 }
-
-// class CustomDropdownButton extends StatefulWidget {
-//   final List<DropDownItem> items;
-//   final String label;
-//   final double? width;
-//   final TextEditingController? dpController;
-//   final void Function(DropDownItem?)? onSelected;
-//   DropDownItem? _selectedValue;
-
-//   CustomDropdownButton(
-//       {super.key,
-//       required this.items,
-//       required this.label,
-//       this.width,
-//       this.dpController,
-//       this.onSelected});
-
-//   @override
-//   _CustomDropdownButtonState createState() => _CustomDropdownButtonState();
-// }
-
-// class _CustomDropdownButtonState extends State<CustomDropdownButton> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return DropdownButton(
-//       onChanged: (newValue) {},
-//       //value: widget._selectedValue,
-//       items: items.map<DropdownMenuItem<DropDownItem>>(
-//         (DropDownItem dpItem) {
-//           return DropdownMenuItem<DropDownItem>(
-//               value: dpItem, child: Text(dpItem.label));
-//         },
-//       ).toList(),
-//     );
-//   }
-// }

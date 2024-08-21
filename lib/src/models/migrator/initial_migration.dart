@@ -1,27 +1,14 @@
 import 'dart:async';
 
+import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/utils/images_functions.dart';
 import 'package:drift/drift.dart';
 
-class DatabasesBatchInfos {
-  final $GroupTable group;
-  final $ReviseCardsTable reviseCards;
-  final $ImagesTable images;
-  final $CoursesTable courses;
-  final $TopicsTable topics;
-  final $FileContentsTable fileContents;
-  final $HTMLContentsTable hTMLContents;
-  final $HTMLContentFilesTable hTMLContentFiles;
-
-  DatabasesBatchInfos(this.group, this.reviseCards, this.images, this.courses,
-      this.topics, this.fileContents, this.hTMLContents, this.hTMLContentFiles);
-}
-
 Future<void> initial_migrate_batch(
-    Batch batch, DatabasesBatchInfos dbInfos) async {
+    Batch batch, AppDatabase dbInfos) async {
   batch.insertAll(dbInfos.courses, [
     CoursesCompanion.insert(
         id: const Value(1),
@@ -86,7 +73,11 @@ Future<void> initial_migrate_batch(
   ]);
 
   batch.insertAll(dbInfos.group, [
-    GroupCompanion.insert(id: const Value(1), path: const Value("tgfdgh§hytgzehyg"), title: 'Bases anglais', tags: ''),
+    GroupCompanion.insert(
+        id: const Value(1),
+        path: const Value("tgfdgh§hytgzehyg"),
+        title: 'Bases anglais',
+        tags: ''),
     GroupCompanion.insert(
         id: const Value(2),
         path: const Value("gfdsrgthyugtgferdszsd"),
@@ -162,4 +153,57 @@ Future<void> initial_migrate_batch(
   //       displayerType: CardDisplayerType.html,
   //       nextRevisionDateMultiplicator: 0.2),
   // ]);
+
+  var emptyTemplate_name = "_empty_template.html";
+
+  var previewCardJson = '''
+  {
+  "recto": {
+    "template_name": "$emptyTemplate_name"
+  },
+  "verso": {
+    "template_name": "$emptyTemplate_name"
+  },
+  "version": "1.0.0"
+}
+  ''';
+
+  var htmlEmptyTemplate = '''
+  <div>
+      <div class="texte">
+        <p>{{field1}}</p>
+      </div>
+      <div class="texte">
+        <p>{{field2}}</p>
+      </div>
+  ''';
+
+  batch.insertAll(dbInfos.cardTemplate, [
+    CardTemplateCompanion.insert(
+      id: const Value(1),
+      path: emptyTemplate_name,
+      sku: "EMPTY_TEMPLATE",
+      template: htmlEmptyTemplate
+    )
+  ]);
+
+  batch.insertAll(dbInfos.hTMLContents, [
+    HTMLContentsCompanion.insert(
+        id: const Value(1),
+        recto: '',
+        verso: '',
+        cardTemplatedJson: previewCardJson,
+        isTemplated: const Value(true))
+  ]);
+  batch.insertAll(dbInfos.reviseCards, [
+    ReviseCardsCompanion.insert(
+      id: const Value(1),
+      path: const Value(AppConstante.templatedCardPreviewNameKey),
+      groupId: -1,
+      htmlContent: 1,
+      tags: '',
+      displayerType: CardDisplayerType.html,
+      nextRevisionDateMultiplicator: 10000000000000000,
+    )
+  ]);
 }

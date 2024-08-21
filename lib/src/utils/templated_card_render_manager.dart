@@ -120,9 +120,8 @@ class TemplatedCardRendererManager {
 
     Map<String, String> associationParts = {};
 
-    RegExp markerRegExp = RegExp(r'{{.*}}');
     void removeRemainingMarkersInAssociation() {
-      association = association.replaceAll(markerRegExp, '');
+      association = association.replaceAll(AppConstante.markerRegExp, '');
     }
 
     // On construit les morceaux d'associations de type "json list"

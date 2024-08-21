@@ -7,4 +7,5 @@ mixin _$CardDaoMixin on DatabaseAccessor<AppDatabase> {
   $GroupTable get group => attachedDatabase.group;
   $HTMLContentsTable get hTMLContents => attachedDatabase.hTMLContents;
   $ReviseCardsTable get reviseCards => attachedDatabase.reviseCards;
+  $CardTemplateTable get cardTemplate => attachedDatabase.cardTemplate;
 }

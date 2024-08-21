@@ -3,6 +3,7 @@ import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/html_card_editor.dart';
+import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_card_editor.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
@@ -23,14 +24,12 @@ class CardEditorScreen extends ConsumerStatefulWidget {
   late List<DropDownItem<CardDisplayerType>> cardDiplayerTypeItems;
   CustomDropdownMenu<CardDisplayerType>? cardDiplayerTypeDropdown;
 
-
   final TextEditingController cardTypeController = TextEditingController();
-  
+
   bool isInitialized = false;
 
   Future<void> init(WidgetRef ref, BuildContext context) async {
     if (!isInitialized) {
-
       //Group
       var groups = await ref.read(appDatabaseProvider.notifier).getAllGroups();
       groupItems = groups.map<DropDownItem<int>>(
@@ -40,7 +39,8 @@ class CardEditorScreen extends ConsumerStatefulWidget {
       ).toList();
 
       //Card displayer types
-      cardDiplayerTypeItems = CardDisplayerType.values.map<DropDownItem<CardDisplayerType>>(
+      cardDiplayerTypeItems =
+          CardDisplayerType.values.map<DropDownItem<CardDisplayerType>>(
         (CardDisplayerType cdt) {
           return DropDownItem<CardDisplayerType>(cdt.name, cdt);
         },
@@ -62,7 +62,6 @@ List<DropDownItem> items = [
 class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
   Widget getDropDowns(WidgetRef ref, BuildContext context) {
     List<Widget> getDropDowns2() {
-
       widget.groupDropdown = CustomDropdownMenu(
         items: widget.groupItems,
         label: "Group",
@@ -76,7 +75,9 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
       );
 
       return [
-        Container(margin: const EdgeInsets.all(4), child: widget.cardDiplayerTypeDropdown),
+        Container(
+            margin: const EdgeInsets.all(4),
+            child: widget.cardDiplayerTypeDropdown),
         Container(margin: const EdgeInsets.all(4), child: widget.groupDropdown)
       ];
     }
@@ -98,7 +99,8 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    CardEditorInterface editorToRender = HtmlCardEditor();
+    //CardEditorInterface editorToRender = HtmlCardEditor();
+    CardEditorInterface editorToRender = TemplateCardEditor();
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -108,15 +110,16 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
             icon: const Icon(Icons.check_circle),
             onPressed: () async {
               int groupId = widget.groupDropdown!.getValue()!.value;
-              await editorToRender.createCard(groupId, widget.cardDiplayerTypeDropdown!.getValue()!.value);
+              await editorToRender.createCard(
+                  groupId, widget.cardDiplayerTypeDropdown!.getValue()!.value);
               Navigator.pushNamed(context, CardList.routeName);
             },
           )
         ],
       ),
-      body: Center(
-        child: Column(children: [getDropDowns(ref, context), editorToRender]),
-      ),
+      body: SingleChildScrollView(
+          child:
+              Column(children: [getDropDowns(ref, context), editorToRender])),
       drawer: const AppDrawer(),
       persistentFooterButtons: [
         FloatingActionButton(

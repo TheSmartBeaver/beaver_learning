@@ -1,11 +1,12 @@
 import 'package:beaver_learning/src/models/db/cardTable.dart';
+import 'package:beaver_learning/src/models/db/cardTemplateTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/image_table.dart';
 import 'package:drift/drift.dart';
 
 part 'card_dao.g.dart';
 
-@DriftAccessor(tables: [ReviseCards])
+@DriftAccessor(tables: [ReviseCards, CardTemplate])
 class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   final AppDatabase db;
 
@@ -33,5 +34,22 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
           mnemotechnicHint: Value(mnemotechnicHint),
         ),
       );
+  }
+
+  Future updateCardTemplatedJson(int htmlContentId, String cardTemplatedJson) {
+    return (update(hTMLContents)..where((t) => t.id.equals(htmlContentId))).write(
+        HTMLContentsCompanion(
+          cardTemplatedJson: Value(cardTemplatedJson),
+        ),
+      );
+  }
+
+  Future<CardTemplateData> getHtmlCardTemplate(int htmlCardTemplateId) async {
+
+    CardTemplateData cardTemplateToReturn = await (select(cardTemplate)
+          ..where((tbl) => tbl.id.equals(htmlCardTemplateId)))
+        .getSingle();
+
+    return cardTemplateToReturn;
   }
 }
