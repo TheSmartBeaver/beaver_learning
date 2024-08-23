@@ -20,9 +20,9 @@ class TemplatedCardRendererManager {
       RectoVersoJsonFields rectoVersoJsonFields = _getRectoVersoJsonFields();
 
       CardTemplatedBranch rectoCardTemplatedBranch =
-          _buildTree(rectoVersoJsonFields.recto);
+          _buildTree(AppConstante.rectoFieldName, rectoVersoJsonFields.recto);
       CardTemplatedBranch versoCardTemplatedBranch =
-          _buildTree(rectoVersoJsonFields.verso);
+          _buildTree(AppConstante.versoFieldName, rectoVersoJsonFields.verso);
       await fillHtmlTemplateDictionary();
 
       String recto = buildJsonHtmlAssociation(rectoCardTemplatedBranch);
@@ -48,23 +48,23 @@ class TemplatedCardRendererManager {
     return rectoVersoJsonFields;
   }
 
-  CardTemplatedBranch _buildTree(Map<String, dynamic> cardFace) {
-    CardTemplatedBranch tree = _buildBranch(cardFace);
+  CardTemplatedBranch _buildTree(String side, Map<String, dynamic> cardFace) {
+    CardTemplatedBranch tree = _buildBranch(side, cardFace);
     return tree;
   }
 
-  CardTemplatedBranch _buildBranch(Map<String, dynamic> cardFace) {
+  CardTemplatedBranch _buildBranch(String fieldName, Map<String, dynamic> cardFace) {
     //var jsonDecoded = jsonDecode(cardFace);
     if (!cardFace.containsKey(AppConstante.templateNameKey)) {
       errors.add(Exception("No template_name key"));
-      return CardTemplatedBranch("");
+      return CardTemplatedBranch(fieldName, "");
     } else {
       //On prépare à la future récupération des templates qui vont nous servir à construire les associations
       htmlTemplates[cardFace[AppConstante.templateNameKey]] = "";
     }
 
     CardTemplatedBranch cardTemplatedBranch =
-        CardTemplatedBranch(cardFace[AppConstante.templateNameKey]);
+        CardTemplatedBranch(fieldName, cardFace[AppConstante.templateNameKey]);
 
     for (var key in cardFace.keys) {
       if (key != AppConstante.templateNameKey) {
@@ -74,7 +74,7 @@ class TemplatedCardRendererManager {
             List<CardTemplatedBranch> cardTemplatedBranchReturnedList = [];
             for (var cardTemplatedBranchItem in cardFace[key]) {
               CardTemplatedBranch cardTemplatedBranchReturned =
-                  _buildBranch(cardTemplatedBranchItem);
+                  _buildBranch(key, cardTemplatedBranchItem);
               cardTemplatedBranchReturnedList.add(cardTemplatedBranchReturned);
             }
             cardTemplatedBranch.jsonObjectsListFields[key] =
@@ -84,7 +84,7 @@ class TemplatedCardRendererManager {
           }
         } else if (cardFace[key] is Map<String, dynamic>) {
           cardTemplatedBranch.jsonObjectFields[key] =
-              _buildBranch(cardFace[key]);
+              _buildBranch(key, cardFace[key]);
         } else if (cardFace[key] is String) {
           cardTemplatedBranch.pureTextFields[key] = cardFace[key];
         } else {

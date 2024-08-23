@@ -158,11 +158,11 @@ Future<void> initial_migrate_batch(
 
   var previewCardJson = '''
   {
-  "recto": {
-    "template_name": "$emptyTemplate_name"
+  "${AppConstante.rectoFieldName}": {
+    "${AppConstante.templateFieldName}": "$emptyTemplate_name"
   },
-  "verso": {
-    "template_name": "$emptyTemplate_name"
+  "${AppConstante.versoFieldName}": {
+    "${AppConstante.templateFieldName}": "$emptyTemplate_name"
   },
   "version": "1.0.0"
 }

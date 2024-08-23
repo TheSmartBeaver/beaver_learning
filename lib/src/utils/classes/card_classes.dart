@@ -32,10 +32,18 @@ class RectoVersoJsonFields {
 }
 
 class CardTemplatedBranch {
-  final String templateName;
+  final String? parentFieldName;
+  final String? templateName;
   Map<String, CardTemplatedBranch> jsonObjectFields = {};
   Map<String, List<CardTemplatedBranch>> jsonObjectsListFields = {};
   Map<String, String> pureTextFields = {};
 
-  CardTemplatedBranch(this.templateName);
+  CardTemplatedBranch(this.parentFieldName, this.templateName);
+}
+
+class PathPiece {
+  final String pathPieceName;
+  int index;
+
+  PathPiece(this.pathPieceName, {this.index = 0});
 }

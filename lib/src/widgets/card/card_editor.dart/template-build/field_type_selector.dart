@@ -1,3 +1,4 @@
+import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/pure_text_templating_field.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_templating_field.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
@@ -11,7 +12,10 @@ enum FieldType {
 }
 
 class FieldTypeSelector extends StatefulWidget {
+  final CardTemplatedBranch cardTemplatedBranchToUpdate;
   final String fieldName;
+  final Function(List<PathPiece> fieldPath, dynamic value) updateJsonTree;
+  late List<PathPiece> fieldPath;
 
   List<DropDownItem<FieldType>> fieldTypeItems =
       FieldType.values.map<DropDownItem<FieldType>>(
@@ -20,7 +24,9 @@ class FieldTypeSelector extends StatefulWidget {
     },
   ).toList();
 
-  FieldTypeSelector({super.key, required this.fieldName});
+  FieldTypeSelector({super.key, required this.fieldName, required this.updateJsonTree, required List<PathPiece> fieldPathArg, required this.cardTemplatedBranchToUpdate}){
+    fieldPath = fieldPathArg;
+  }
 
   @override
   State<StatefulWidget> createState() {
@@ -37,12 +43,12 @@ class _FieldTypeSelectorState extends State<FieldTypeSelector> {
 
     if (selectedFieldType == FieldType.JSON_OBJECT) {
       fieldWidget = TemplateTemplatingField(
-          fieldName: widget.fieldName, isListOfTemplates: false);
+          fieldName: widget.fieldName, isListOfTemplates: false, updateJsonTree: widget.updateJsonTree, fieldPathArg: widget.fieldPath, cardTemplatedBranchToUpdate: widget.cardTemplatedBranchToUpdate);
     } else if (selectedFieldType == FieldType.JSON_OBJECT_ARRAY) {
       fieldWidget = TemplateTemplatingField(
-          fieldName: widget.fieldName, isListOfTemplates: true);
+          fieldName: widget.fieldName, isListOfTemplates: true, updateJsonTree: widget.updateJsonTree, fieldPathArg: widget.fieldPath, cardTemplatedBranchToUpdate: widget.cardTemplatedBranchToUpdate);
     } else if (selectedFieldType == FieldType.PURE_TEXT) {
-      fieldWidget = PureTextTemplatingField(fieldName: widget.fieldName);
+      fieldWidget = PureTextTemplatingField(fieldName: widget.fieldName, updateJsonTree: widget.updateJsonTree, fieldPathArg: widget.fieldPath);
     } else {
       fieldWidget = CustomDropdownMenu<FieldType>(
         items: widget.fieldTypeItems,

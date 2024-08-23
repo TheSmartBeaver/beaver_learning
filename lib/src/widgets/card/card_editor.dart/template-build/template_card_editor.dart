@@ -5,6 +5,8 @@ import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
+import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_form_builder.dart';
@@ -31,15 +33,20 @@ class TemplateCardEditor extends ConsumerStatefulWidget
 
 class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   late ReviseCard cardForPreview;
-  String jsonCard = '''
-  {
-  "recto": {
-  },
-  "verso": {
-  },
-  "version": "1.0.0"
-}
-  ''';
+  bool isInitialized = false;
+  CardTemplatedBranch cardTemplatedBranchToUpdate =
+      CardTemplatedBranch(null, null);
+  late HTMLCardDisplayer htmlCardDisplayer;
+  
+
+  _TemplateCardEditorState() {
+    cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
+        AppConstante.rectoFieldName,
+        () => CardTemplatedBranch(AppConstante.rectoFieldName, null));
+    cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
+        AppConstante.versoFieldName,
+        () => CardTemplatedBranch(AppConstante.versoFieldName, null));
+  }
 
   Future getPreviewCard() async {
     final database = MyDatabaseInstance.getInstance();
@@ -47,16 +54,55 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
           ..where((tbl) =>
               tbl.path.equals(AppConstante.templatedCardPreviewNameKey)))
         .getSingle();
-    var test = 0;
   }
 
-  Future<void> update_card(List<String> fieldPath, String value) async {
-      // On appelle la fonction de mise à jour de la carte
-      await widget.cardDao.updateCardTemplatedJson(cardForPreview.htmlContent, value);
+  void updateJsonTree(List<PathPiece> fieldPath, dynamic value) {
+    if (fieldPath.isNotEmpty) {
+      PathPiece currentPathBlock = fieldPath.first;
+      String fieldNameWithoutBrackets =
+          removeMarkerBrackets(currentPathBlock.pathPieceName);
+      if (fieldPath.length == 1) {
+        if (value is List<CardTemplatedBranch>) {
+          cardTemplatedBranchToUpdate.jsonObjectsListFields[fieldNameWithoutBrackets] = value;
+        } else if (value is CardTemplatedBranch) {
+          cardTemplatedBranchToUpdate.jsonObjectFields[fieldNameWithoutBrackets] = value;
+        } else if (value is String) {
+          cardTemplatedBranchToUpdate.pureTextFields[fieldNameWithoutBrackets] = value;
+        }
+        var new_json =
+            CardTemplatedBranchToJsonString(cardTemplatedBranchToUpdate);
+        update_card(new_json);
+      } else {
+        // On cherche la suite du chemin, dans quelle branche s'enfoncer
+        CardTemplatedBranch? nextCardTemplatedBranchToExplore;
+        if (cardTemplatedBranchToUpdate.jsonObjectFields
+            .containsKey(fieldNameWithoutBrackets)) {
+          nextCardTemplatedBranchToExplore = cardTemplatedBranchToUpdate
+              .jsonObjectFields[fieldNameWithoutBrackets];
+        } else if (cardTemplatedBranchToUpdate.jsonObjectsListFields
+            .containsKey(fieldNameWithoutBrackets)) {
+          nextCardTemplatedBranchToExplore = cardTemplatedBranchToUpdate
+                  .jsonObjectsListFields[fieldNameWithoutBrackets]
+              ?[currentPathBlock.index];
+        }
 
-      // On remet un coup de "getPreviewCard"
-      await getPreviewCard();
+        if (nextCardTemplatedBranchToExplore != null) {
+          updateJsonTree(fieldPath.sublist(1), value);
+        }
+      }
     }
+  }
+
+  Future<void> update_card(String value) async {
+    // On appelle la fonction de mise à jour de la carte
+    await widget.cardDao
+        .updateCardTemplatedJson(cardForPreview.htmlContent, value);
+
+    // On remet un coup de "getPreviewCard"
+    await getPreviewCard();
+
+    htmlCardDisplayer.refresh();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +124,14 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
                 } else {
+                  htmlCardDisplayer = HTMLCardDisplayer(
+                          isPrintAnswer: true, cardToRevise: cardForPreview);
                   return Container(
                       decoration: BoxDecoration(
                         color: Colors.blue,
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      child: HTMLCardDisplayer(
-                          isPrintAnswer: true, cardToRevise: cardForPreview));
+                      child: htmlCardDisplayer);
                 }
               }),
           ClipRect(
@@ -95,10 +142,8 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
             ),
             child: Container(
               alignment: Alignment.center,
-              child: const Column(children: [
-                TemplateFormBuilder(fieldName: "recto"),
-                TemplateFormBuilder(fieldName: "verso")
-              ]),
+              child: TemplateFormBuilder(
+                    updateJsonTree: updateJsonTree, cardTemplatedBranchToUpdate: cardTemplatedBranchToUpdate)
             ),
           )),
         ]));

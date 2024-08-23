@@ -94,11 +94,18 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
 class HTMLCardDisplayer extends StatefulWidget {
   final bool isPrintAnswer;
   final ReviseCard cardToRevise;
+  _HTMLCardDisplayerState hTMLCardDisplayerState= _HTMLCardDisplayerState();
 
-  const HTMLCardDisplayer({super.key, required this.isPrintAnswer, required this.cardToRevise});
+  HTMLCardDisplayer({super.key, required this.isPrintAnswer, required this.cardToRevise});
+
+  void refresh() {
+    hTMLCardDisplayerState.refresh();
+  }
 
   @override
-  State<HTMLCardDisplayer> createState() => _HTMLCardDisplayerState();
+  State<HTMLCardDisplayer> createState(){ 
+    return hTMLCardDisplayerState;
+  }
 }
 
 class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
@@ -111,7 +118,11 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
   //   var verso =
   //       "<ul><li>Salut, le monde !</li><li>Parce qu'ils ont peur d'être \"développés\" par le soleil !</li><li><img width='600' height='400' src=\"batman2.png\" /></li></ul>";
   
-
+  void refresh() {
+    setState(() {
+      // Besoin de rien juste d'un nouveau get en BDD du recto et verso
+    });
+  }
   
   Future<void> init() async {
     final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());

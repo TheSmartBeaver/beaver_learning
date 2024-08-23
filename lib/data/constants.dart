@@ -7,4 +7,8 @@ class AppConstante {
   static const String templatedCardPreviewNameKey = "templated_card_preview";
 
   static RegExp markerRegExp = RegExp(r'{{.*}}');
+
+  static String rectoFieldName = "recto";
+  static String versoFieldName = "verso";
+  static String templateFieldName = "template_name";
 }
