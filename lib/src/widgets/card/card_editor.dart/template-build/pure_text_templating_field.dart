@@ -8,13 +8,8 @@ class PureTextTemplatingField extends StatefulWidget {
   TextEditingController controller = TextEditingController();
   final String fieldName;
   final Function(List<PathPiece> fieldPath, dynamic value) updateJsonTree;
-  late List<PathPiece> fieldPath;
 
-  PureTextTemplatingField({super.key, required this.fieldName, required this.updateJsonTree, required List<PathPiece> fieldPathArg}){
-    var copiedFieldPath = List<PathPiece>.from(fieldPathArg);
-    copiedFieldPath.add(PathPiece(fieldName));
-    fieldPath = copiedFieldPath;
-  }
+  PureTextTemplatingField({super.key, required this.fieldName, required this.updateJsonTree});
 
   @override
   State<StatefulWidget> createState() {
@@ -25,7 +20,7 @@ class PureTextTemplatingField extends StatefulWidget {
 class _PureTextTemplatingFieldState extends State<PureTextTemplatingField> {
 
   void onTextChangeListener(String text){
-    widget.updateJsonTree(widget.fieldPath, text);
+    // widget.updateJsonTree(widget.fieldPath, text);
   }
 
   @override

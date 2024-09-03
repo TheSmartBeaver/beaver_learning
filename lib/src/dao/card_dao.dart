@@ -52,4 +52,13 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
 
     return cardTemplateToReturn;
   }
+
+  Future<CardTemplateData> getHtmlCardTemplateByPath(String htmlCardTemplatePath) async {
+
+    CardTemplateData cardTemplateToReturn = await (select(cardTemplate)
+          ..where((tbl) => tbl.path.equals(htmlCardTemplatePath)))
+        .getSingle();
+
+    return cardTemplateToReturn;
+  }
 }

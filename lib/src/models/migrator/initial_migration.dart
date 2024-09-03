@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:beaver_learning/data/constants.dart';
+import 'package:beaver_learning/src/models/data/test_data.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
@@ -153,30 +154,6 @@ Future<void> initial_migrate_batch(
   //       displayerType: CardDisplayerType.html,
   //       nextRevisionDateMultiplicator: 0.2),
   // ]);
-
-  var emptyTemplate_name = "_empty_template.html";
-
-  var previewCardJson = '''
-  {
-  "${AppConstante.rectoFieldName}": {
-    "${AppConstante.templateFieldName}": "$emptyTemplate_name"
-  },
-  "${AppConstante.versoFieldName}": {
-    "${AppConstante.templateFieldName}": "$emptyTemplate_name"
-  },
-  "version": "1.0.0"
-}
-  ''';
-
-  var htmlEmptyTemplate = '''
-  <div>
-      <div class="texte">
-        <p>{{field1}}</p>
-      </div>
-      <div class="texte">
-        <p>{{field2}}</p>
-      </div>
-  ''';
 
   batch.insertAll(dbInfos.cardTemplate, [
     CardTemplateCompanion.insert(

@@ -4,18 +4,12 @@ import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:flutter/widgets.dart';
 
-enum FieldType {
-  PURE_TEXT,
-  JSON_OBJECT,
-  JSON_OBJECT_ARRAY,
-  // FIELD_TYPE_SELECTOR,
-}
-
 class FieldTypeSelector extends StatefulWidget {
-  final CardTemplatedBranch cardTemplatedBranchToUpdate;
+  @protected
+  final CardTemplatedBranch?
+      cardTemplatedBranchToUpdate; // On stocke ici le cardTemplatedBranchToUpdate de la template parente pour pouvoir le passer à l'enfant une fois qu'on connaîtra son type
   final String fieldName;
   final Function(List<PathPiece> fieldPath, dynamic value) updateJsonTree;
-  late List<PathPiece> fieldPath;
 
   List<DropDownItem<FieldType>> fieldTypeItems =
       FieldType.values.map<DropDownItem<FieldType>>(
@@ -24,45 +18,59 @@ class FieldTypeSelector extends StatefulWidget {
     },
   ).toList();
 
-  FieldTypeSelector({super.key, required this.fieldName, required this.updateJsonTree, required List<PathPiece> fieldPathArg, required this.cardTemplatedBranchToUpdate}){
-    fieldPath = fieldPathArg;
-  }
+  FieldTypeSelector(
+      {super.key,
+      required this.fieldName,
+      required this.updateJsonTree,
+      required this.cardTemplatedBranchToUpdate});
 
   @override
   State<StatefulWidget> createState() {
-    return _FieldTypeSelectorState();
+    return _FieldTypeSelectorState(
+        cardTemplatedBranchToUpdate: cardTemplatedBranchToUpdate);
   }
 }
 
 class _FieldTypeSelectorState extends State<FieldTypeSelector> {
   FieldType? selectedFieldType;
+  CardTemplatedBranch? cardTemplatedBranchToUpdate;
+
+  _FieldTypeSelectorState({required this.cardTemplatedBranchToUpdate});
 
   @override
   Widget build(BuildContext context) {
     late Widget fieldWidget;
 
-    if (selectedFieldType == FieldType.JSON_OBJECT) {
-      fieldWidget = TemplateTemplatingField(
-          fieldName: widget.fieldName, isListOfTemplates: false, updateJsonTree: widget.updateJsonTree, fieldPathArg: widget.fieldPath, cardTemplatedBranchToUpdate: widget.cardTemplatedBranchToUpdate);
-    } else if (selectedFieldType == FieldType.JSON_OBJECT_ARRAY) {
-      fieldWidget = TemplateTemplatingField(
-          fieldName: widget.fieldName, isListOfTemplates: true, updateJsonTree: widget.updateJsonTree, fieldPathArg: widget.fieldPath, cardTemplatedBranchToUpdate: widget.cardTemplatedBranchToUpdate);
-    } else if (selectedFieldType == FieldType.PURE_TEXT) {
-      fieldWidget = PureTextTemplatingField(fieldName: widget.fieldName, updateJsonTree: widget.updateJsonTree, fieldPathArg: widget.fieldPath);
-    } else {
-      fieldWidget = CustomDropdownMenu<FieldType>(
-        items: widget.fieldTypeItems,
-        label: widget.fieldName,
-        onSelected: (DropDownItem<FieldType>? item) {
-          setState(() {
-            selectedFieldType = item?.value;
-          });
-        },
-      );
-    }
+      if (selectedFieldType == FieldType.JSON_OBJECT) {
+        fieldWidget = TemplateTemplatingField(
+            fieldPathPiece: cardTemplatedBranchToUpdate!.getPath(cardTemplatedBranchToUpdate!)!.first,
+            isListOfTemplates: false,
+            updateJsonTree: widget.updateJsonTree,
+            cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(cardTemplatedBranchToUpdate!));
+      } else if (selectedFieldType == FieldType.JSON_OBJECT_ARRAY) {
+        fieldWidget = TemplateTemplatingField(
+            fieldPathPiece: cardTemplatedBranchToUpdate!.getPath(cardTemplatedBranchToUpdate!)!.first,
+            isListOfTemplates: true,
+            updateJsonTree: widget.updateJsonTree,
+            cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(cardTemplatedBranchToUpdate!));
+      } else if (selectedFieldType == FieldType.PURE_TEXT) {
+        fieldWidget = PureTextTemplatingField(
+            fieldName: widget.fieldName, updateJsonTree: widget.updateJsonTree);
+      } else {
+        fieldWidget = CustomDropdownMenu<FieldType>(
+          items: widget.fieldTypeItems,
+          label: widget.fieldName,
+          onSelected: (DropDownItem<FieldType>? item) {
+            setState(() {
+              selectedFieldType = item?.value;
+            });
+          },
+        );
+      }
 
-    return Container(
+      return Container(
         padding: const EdgeInsets.all(4),
         child: Column(children: [Text(widget.fieldName), fieldWidget]));
+    }
+
   }
-}

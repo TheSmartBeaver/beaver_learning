@@ -1,12 +1,10 @@
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
-import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/field_type_selector.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_templating_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class TemplateFormBuilder extends StatefulWidget {
-  final CardTemplatedBranch cardTemplatedBranchToUpdate;
+  final CardTemplatedBranch? cardTemplatedBranchToUpdate;
   final Function(List<PathPiece> fieldPath, dynamic value) updateJsonTree;
 
   const TemplateFormBuilder({super.key, required this.updateJsonTree, required this.cardTemplatedBranchToUpdate});
@@ -28,17 +26,15 @@ class _TemplateFormBuilderState extends State<TemplateFormBuilder> {
         child: Column(
           children: [
             TemplateTemplatingField(
-                fieldName: AppConstante.rectoFieldName,
+                fieldPathPiece: PathPiece(AppConstante.rectoFieldName),
                 updateJsonTree: widget.updateJsonTree,
-                fieldPathArg: [PathPiece(AppConstante.rectoFieldName)],
                 isListOfTemplates: false,
-                cardTemplatedBranchToUpdate: widget.cardTemplatedBranchToUpdate),
+                cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(widget.cardTemplatedBranchToUpdate!.jsonObjectFields[AppConstante.rectoFieldName]!)),
             TemplateTemplatingField(
-                fieldName: AppConstante.versoFieldName,
+                fieldPathPiece: PathPiece(AppConstante.versoFieldName),
                 updateJsonTree: widget.updateJsonTree,
-                fieldPathArg: [PathPiece(AppConstante.versoFieldName)],
                 isListOfTemplates: false, 
-                cardTemplatedBranchToUpdate: widget.cardTemplatedBranchToUpdate),
+                cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(widget.cardTemplatedBranchToUpdate!.jsonObjectFields[AppConstante.versoFieldName]!)),
           ],
         ));
   }

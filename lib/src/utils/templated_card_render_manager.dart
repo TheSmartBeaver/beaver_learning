@@ -5,6 +5,7 @@ import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/template_functions.dart';
 
 class TemplatedCardRendererManager {
   final HTMLContent htmlContent;
@@ -49,51 +50,8 @@ class TemplatedCardRendererManager {
   }
 
   CardTemplatedBranch _buildTree(String side, Map<String, dynamic> cardFace) {
-    CardTemplatedBranch tree = _buildBranch(side, cardFace);
+    CardTemplatedBranch tree = buildBranch(cardFace, errors: errors, htmlTemplates: htmlTemplates);
     return tree;
-  }
-
-  CardTemplatedBranch _buildBranch(String fieldName, Map<String, dynamic> cardFace) {
-    //var jsonDecoded = jsonDecode(cardFace);
-    if (!cardFace.containsKey(AppConstante.templateNameKey)) {
-      errors.add(Exception("No template_name key"));
-      return CardTemplatedBranch(fieldName, "");
-    } else {
-      //On prépare à la future récupération des templates qui vont nous servir à construire les associations
-      htmlTemplates[cardFace[AppConstante.templateNameKey]] = "";
-    }
-
-    CardTemplatedBranch cardTemplatedBranch =
-        CardTemplatedBranch(fieldName, cardFace[AppConstante.templateNameKey]);
-
-    for (var key in cardFace.keys) {
-      if (key != AppConstante.templateNameKey) {
-        // On cherche à choisir entre les 3 types de champs possibles : texte / json / json list
-        if (cardFace[key] is List) {
-          try {
-            List<CardTemplatedBranch> cardTemplatedBranchReturnedList = [];
-            for (var cardTemplatedBranchItem in cardFace[key]) {
-              CardTemplatedBranch cardTemplatedBranchReturned =
-                  _buildBranch(key, cardTemplatedBranchItem);
-              cardTemplatedBranchReturnedList.add(cardTemplatedBranchReturned);
-            }
-            cardTemplatedBranch.jsonObjectsListFields[key] =
-                cardTemplatedBranchReturnedList;
-          } on Exception catch (e) {
-            errors.add(e);
-          }
-        } else if (cardFace[key] is Map<String, dynamic>) {
-          cardTemplatedBranch.jsonObjectFields[key] =
-              _buildBranch(key, cardFace[key]);
-        } else if (cardFace[key] is String) {
-          cardTemplatedBranch.pureTextFields[key] = cardFace[key];
-        } else {
-          errors.add(Exception("Unknown type"));
-        }
-      }
-    }
-
-    return cardTemplatedBranch;
   }
 
   // On remplit le dictionnaire des templates pour pouvoir les associer

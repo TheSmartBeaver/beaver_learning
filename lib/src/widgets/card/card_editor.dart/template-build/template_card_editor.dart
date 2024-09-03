@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/dao/card_dao.dart';
+import 'package:beaver_learning/src/models/data/test_data.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
@@ -35,17 +37,23 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   late ReviseCard cardForPreview;
   bool isInitialized = false;
   CardTemplatedBranch cardTemplatedBranchToUpdate =
-      CardTemplatedBranch(null, null);
+      CardTemplatedBranch(null);
   late HTMLCardDisplayer htmlCardDisplayer;
   
 
   _TemplateCardEditorState() {
     cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
         AppConstante.rectoFieldName,
-        () => CardTemplatedBranch(AppConstante.rectoFieldName, null));
+        () => CardTemplatedBranch(null)..parentCardTemplatedBranch = cardTemplatedBranchToUpdate);
     cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
         AppConstante.versoFieldName,
-        () => CardTemplatedBranch(AppConstante.versoFieldName, null));
+        () => CardTemplatedBranch(null)..parentCardTemplatedBranch = cardTemplatedBranchToUpdate);
+
+    Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
+
+    cardTemplatedBranchToUpdate = buildBranch(json);
+
+    var toto = 0;
   }
 
   Future getPreviewCard() async {
@@ -56,6 +64,7 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
         .getSingle();
   }
 
+  // Je ne devrais plus en avoir besoin ??
   void updateJsonTree(List<PathPiece> fieldPath, dynamic value) {
     if (fieldPath.isNotEmpty) {
       PathPiece currentPathBlock = fieldPath.first;
@@ -131,7 +140,10 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
                         color: Colors.blue,
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      child: htmlCardDisplayer);
+                      child: 
+                      //htmlCardDisplayer
+                      Text("LOOOOOOOOOOOOOOOOOOOOOL")
+                      );
                 }
               }),
           ClipRect(
