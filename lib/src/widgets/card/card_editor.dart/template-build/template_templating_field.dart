@@ -18,13 +18,13 @@ class TemplateTemplatingField extends StatefulWidget {
   final double buttonHeight = 50;
   final bool isListOfTemplates;
   final cardDao = CardDao(MyDatabaseInstance.getInstance());
-  final Function(List<PathPiece> fieldPath, dynamic value) updateJsonTree;
+  final Future<void> Function() updateCard;
 
   TemplateTemplatingField(
       {super.key,
       required this.fieldPathPiece,
       required this.isListOfTemplates,
-      required this.updateJsonTree,
+      required this.updateCard,
       required this.cardTemplatedBranchInteracter}) {
     var result = cardTemplatedBranchInteracter.getCardTemplatedBranchChild(
         fieldPathPiece, isListOfTemplates);
@@ -47,76 +47,28 @@ List<String?> getEveryMarkersInHtmlTemplate(String htmlTemplate) {
 
 class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
   CardTemplateData? activeTemplate;
-  late Widget widgetReturned;
+  Widget widgetReturned = const CircularProgressIndicator();
+  bool isInitialized = false;
 
-  buildListOfTemplates() {
+  Future buildListOfTemplates() async {
     if (!widget.isCardTemplatedBranchToUpdateNew) {
-        List<Widget> listOfTemplates = widget.cardTemplatedBranchToUpdate.jsonObjectsListFields[widget.fieldPathPiece.pathPieceName]!.asMap().entries.map((entry) => TemplateTemplatingField(
-                  fieldPathPiece: PathPiece(widget.fieldPathPiece.pathPieceName, index: entry.key),
-                  isListOfTemplates: false,
-                  updateJsonTree: widget.updateJsonTree,
-                  cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(entry.value))).toList();
+      List<Widget> listOfTemplates = widget
+          .cardTemplatedBranchToUpdate
+          //.parentCardTemplatedBranch!
+          .jsonObjectsListFields[widget.fieldPathPiece.pathPieceName]!
+          .asMap()
+          .entries
+          .map((entry) => TemplateTemplatingField(
+              fieldPathPiece: PathPiece(widget.fieldPathPiece.pathPieceName,
+                  index: entry.key),
+              isListOfTemplates: false,
+              updateCard: widget.updateCard,
+              cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(
+                  updateCard: widget.updateCard,
+                  cardTemplatedBranch: entry.value)))
+          .toList();
 
-        Widget addTemplateButton = GestureDetector(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) => TemplateSearchDialog(
-                    processTemplateFunction: processTemplate),
-              );
-            },
-            child: Container(
-                height: widget.buttonHeight,
-                color: Colors.lightBlue,
-                alignment: Alignment.center,
-                child: const Text("Add Template")));
-        
-        widgetReturned = Container(
-            color: Colors.red,
-            alignment: Alignment.center,
-            child: Column(children: [
-              addTemplateButton,
-              ...listOfTemplates,
-            ]));
-    } else {
-      widgetReturned = const Text("CASE TO IMPLEMENT"); 
-    }
-  }
-
-  buildSingleTemplate() {
-    if(!widget.isCardTemplatedBranchToUpdateNew){
-      List<String?> markersList =
-          getEveryMarkersInHtmlTemplate(activeTemplate!.template);
-
-      widgetReturned = Container(
-          color: Colors.purpleAccent,
-          alignment: Alignment.center,
-          child: Column(children: [
-            Text("Template: ${activeTemplate!.path}"),
-            ...markersList.map((e) => FieldTypeSelector(
-                fieldName: e ?? "",
-                updateJsonTree: widget.updateJsonTree,
-                cardTemplatedBranchToUpdate:
-                    widget.cardTemplatedBranchToUpdate))
-          ]));;
-    } else {
-    if (activeTemplate != null) {
-      List<String?> markersList =
-          getEveryMarkersInHtmlTemplate(activeTemplate!.template);
-
-      widgetReturned = Container(
-          color: Colors.purpleAccent,
-          alignment: Alignment.center,
-          child: Column(children: [
-            Text("Template: ${activeTemplate!.path}"),
-            ...markersList.map((e) => FieldTypeSelector(
-                fieldName: e ?? "",
-                updateJsonTree: widget.updateJsonTree,
-                cardTemplatedBranchToUpdate:
-                    widget.cardTemplatedBranchToUpdate))
-          ]));
-    } else {
-      widgetReturned = GestureDetector(
+      Widget addTemplateButton = GestureDetector(
           onTap: () {
             showDialog(
               context: context,
@@ -126,13 +78,77 @@ class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
           },
           child: Container(
               height: widget.buttonHeight,
-              color: widget.isListOfTemplates
-                  ? Colors.lightBlue
-                  : Colors.redAccent,
+              color: Colors.lightBlue,
               alignment: Alignment.center,
-              child: const Column(children: [Text("Select Template")])));
+              child: const Text("Add Template")));
+
+      widgetReturned = Container(
+          color: Colors.red,
+          alignment: Alignment.center,
+          child: Column(children: [
+            addTemplateButton,
+            ...listOfTemplates,
+          ]));
+    } else {
+      widgetReturned = const Text("CASE TO IMPLEMENT");
     }
   }
+
+  Future buildSingleTemplate() async {
+    Color bgColor = widget.cardTemplatedBranchToUpdate.getColor();
+
+    if (!widget.isCardTemplatedBranchToUpdateNew) {
+      activeTemplate = await processTemplateByPath(
+          widget.cardTemplatedBranchToUpdate.templateName!);
+      List<String?> markersList =
+          getEveryMarkersInHtmlTemplate(activeTemplate!.template);
+
+      widgetReturned = Container(
+          color: bgColor,
+          alignment: Alignment.center,
+          child: Column(children: [
+            Text("Template: ${activeTemplate!.path}"),
+            ...markersList.map((e) => FieldTypeSelector(
+                pathPiece: PathPiece(e ?? "UNKNOWN"),
+                updateCard: widget.updateCard,
+                cardTemplatedBranchToUpdate:
+                    widget.cardTemplatedBranchToUpdate))
+          ]));
+      ;
+    } else {
+      if (activeTemplate != null) {
+        List<String?> markersList =
+            getEveryMarkersInHtmlTemplate(activeTemplate!.template);
+
+        widgetReturned = Container(
+            color: bgColor,
+            alignment: Alignment.center,
+            child: Column(children: [
+              Text("Template: ${activeTemplate!.path}"),
+              ...markersList.map((e) => FieldTypeSelector(
+                  pathPiece: PathPiece(e ?? "UNKNOWN"),
+                  updateCard: widget.updateCard,
+                  cardTemplatedBranchToUpdate:
+                      widget.cardTemplatedBranchToUpdate))
+            ]));
+      } else {
+        widgetReturned = GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => TemplateSearchDialog(
+                    processTemplateFunction: processTemplate),
+              );
+            },
+            child: Container(
+                height: widget.buttonHeight,
+                color: widget.isListOfTemplates
+                    ? Colors.lightBlue
+                    : Colors.redAccent,
+                alignment: Alignment.center,
+                child: const Column(children: [Text("Select Template")])));
+      }
+    }
   }
 
   Future<void> processTemplate(int templateId) async {
@@ -144,17 +160,28 @@ class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
   }
 
   Future<CardTemplateData> processTemplateByPath(String templatePath) async {
-    CardTemplateData htmlTemplate = await widget.cardDao.getHtmlCardTemplateByPath(templatePath);
+    CardTemplateData htmlTemplate =
+        await widget.cardDao.getHtmlCardTemplateByPath(templatePath);
     return htmlTemplate;
+  }
+
+  Future<void> init() async {
+    if (!isInitialized) {
+      if (widget.isListOfTemplates) {
+        await buildListOfTemplates();
+      } else {
+        await buildSingleTemplate();
+      }
+      setState(() {
+        isInitialized = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isListOfTemplates) {
-      buildSingleTemplate();
-    } else {
-      buildListOfTemplates();
-    }
+    init();
+
     return buildSection(widget.fieldPathPiece.pathPieceName, [widgetReturned]);
   }
 }

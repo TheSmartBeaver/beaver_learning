@@ -8,8 +8,9 @@ class FieldTypeSelector extends StatefulWidget {
   @protected
   final CardTemplatedBranch?
       cardTemplatedBranchToUpdate; // On stocke ici le cardTemplatedBranchToUpdate de la template parente pour pouvoir le passer à l'enfant une fois qu'on connaîtra son type
-  final String fieldName;
-  final Function(List<PathPiece> fieldPath, dynamic value) updateJsonTree;
+  final PathPiece pathPiece;
+  final Future<void> Function() updateCard;
+  final isFieldsWithNoTypeHidden = false;
 
   List<DropDownItem<FieldType>> fieldTypeItems =
       FieldType.values.map<DropDownItem<FieldType>>(
@@ -20,57 +21,69 @@ class FieldTypeSelector extends StatefulWidget {
 
   FieldTypeSelector(
       {super.key,
-      required this.fieldName,
-      required this.updateJsonTree,
+      required this.pathPiece,
+      required this.updateCard,
       required this.cardTemplatedBranchToUpdate});
 
   @override
   State<StatefulWidget> createState() {
-    return _FieldTypeSelectorState(
-        cardTemplatedBranchToUpdate: cardTemplatedBranchToUpdate);
+    return _FieldTypeSelectorState();
   }
 }
 
 class _FieldTypeSelectorState extends State<FieldTypeSelector> {
   FieldType? selectedFieldType;
-  CardTemplatedBranch? cardTemplatedBranchToUpdate;
-
-  _FieldTypeSelectorState({required this.cardTemplatedBranchToUpdate});
 
   @override
   Widget build(BuildContext context) {
-    late Widget fieldWidget;
+    Widget? fieldWidget;
 
-      if (selectedFieldType == FieldType.JSON_OBJECT) {
-        fieldWidget = TemplateTemplatingField(
-            fieldPathPiece: cardTemplatedBranchToUpdate!.getPath(cardTemplatedBranchToUpdate!)!.first,
-            isListOfTemplates: false,
-            updateJsonTree: widget.updateJsonTree,
-            cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(cardTemplatedBranchToUpdate!));
-      } else if (selectedFieldType == FieldType.JSON_OBJECT_ARRAY) {
-        fieldWidget = TemplateTemplatingField(
-            fieldPathPiece: cardTemplatedBranchToUpdate!.getPath(cardTemplatedBranchToUpdate!)!.first,
-            isListOfTemplates: true,
-            updateJsonTree: widget.updateJsonTree,
-            cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(cardTemplatedBranchToUpdate!));
-      } else if (selectedFieldType == FieldType.PURE_TEXT) {
-        fieldWidget = PureTextTemplatingField(
-            fieldName: widget.fieldName, updateJsonTree: widget.updateJsonTree);
-      } else {
-        fieldWidget = CustomDropdownMenu<FieldType>(
+    selectedFieldType = widget.cardTemplatedBranchToUpdate
+        ?.getCardTemplatedBranchChildFieldType(widget.pathPiece);
+
+    if (selectedFieldType == FieldType.JSON_OBJECT) {
+      // PathPiece pathPieceFirst = widget.cardTemplatedBranchToUpdate!.getPath(
+      //         path: [widget.pathPiece])!.first;
+      fieldWidget = TemplateTemplatingField(
+          fieldPathPiece: widget.pathPiece,
+          isListOfTemplates: false,
+          updateCard: widget.updateCard,
+          cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(
+              updateCard: widget.updateCard,
+              cardTemplatedBranch: widget.cardTemplatedBranchToUpdate!));
+    } else if (selectedFieldType == FieldType.JSON_OBJECT_ARRAY) {
+      fieldWidget = TemplateTemplatingField(
+          fieldPathPiece: widget.pathPiece,
+          isListOfTemplates: true,
+          updateCard: widget.updateCard,
+          cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(
+              updateCard: widget.updateCard,
+              cardTemplatedBranch: widget.cardTemplatedBranchToUpdate!));
+    } else if (selectedFieldType == FieldType.PURE_TEXT) {
+      fieldWidget = PureTextTemplatingField(
+          fieldName: widget.pathPiece.pathPieceName,
+          cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(
+              updateCard: widget.updateCard,
+              cardTemplatedBranch: widget.cardTemplatedBranchToUpdate!));
+    } else if (!widget.isFieldsWithNoTypeHidden) {
+      fieldWidget = Column(children: [
+        Text(widget.pathPiece.pathPieceName),
+        CustomDropdownMenu<FieldType>(
           items: widget.fieldTypeItems,
-          label: widget.fieldName,
+          label: widget.pathPiece.pathPieceName,
           onSelected: (DropDownItem<FieldType>? item) {
             setState(() {
               selectedFieldType = item?.value;
             });
           },
-        );
-      }
-
-      return Container(
-        padding: const EdgeInsets.all(4),
-        child: Column(children: [Text(widget.fieldName), fieldWidget]));
+        )
+      ]);
+    } else {
+      fieldWidget = null;
     }
 
+    return Container(
+        padding: const EdgeInsets.all(4),
+        child: Column(children: [if (fieldWidget != null) fieldWidget]));
   }
+}

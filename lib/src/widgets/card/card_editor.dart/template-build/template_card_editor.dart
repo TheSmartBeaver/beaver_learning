@@ -63,46 +63,11 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
               tbl.path.equals(AppConstante.templatedCardPreviewNameKey)))
         .getSingle();
   }
+      
+  Future<void> update_card() async {
 
-  // Je ne devrais plus en avoir besoin ??
-  void updateJsonTree(List<PathPiece> fieldPath, dynamic value) {
-    if (fieldPath.isNotEmpty) {
-      PathPiece currentPathBlock = fieldPath.first;
-      String fieldNameWithoutBrackets =
-          removeMarkerBrackets(currentPathBlock.pathPieceName);
-      if (fieldPath.length == 1) {
-        if (value is List<CardTemplatedBranch>) {
-          cardTemplatedBranchToUpdate.jsonObjectsListFields[fieldNameWithoutBrackets] = value;
-        } else if (value is CardTemplatedBranch) {
-          cardTemplatedBranchToUpdate.jsonObjectFields[fieldNameWithoutBrackets] = value;
-        } else if (value is String) {
-          cardTemplatedBranchToUpdate.pureTextFields[fieldNameWithoutBrackets] = value;
-        }
-        var new_json =
-            CardTemplatedBranchToJsonString(cardTemplatedBranchToUpdate);
-        update_card(new_json);
-      } else {
-        // On cherche la suite du chemin, dans quelle branche s'enfoncer
-        CardTemplatedBranch? nextCardTemplatedBranchToExplore;
-        if (cardTemplatedBranchToUpdate.jsonObjectFields
-            .containsKey(fieldNameWithoutBrackets)) {
-          nextCardTemplatedBranchToExplore = cardTemplatedBranchToUpdate
-              .jsonObjectFields[fieldNameWithoutBrackets];
-        } else if (cardTemplatedBranchToUpdate.jsonObjectsListFields
-            .containsKey(fieldNameWithoutBrackets)) {
-          nextCardTemplatedBranchToExplore = cardTemplatedBranchToUpdate
-                  .jsonObjectsListFields[fieldNameWithoutBrackets]
-              ?[currentPathBlock.index];
-        }
+    String value = CardTemplatedBranchToJsonString(cardTemplatedBranchToUpdate); //CardTemplatedBranchToJsonString(cardTemplatedBranchToUpdate)
 
-        if (nextCardTemplatedBranchToExplore != null) {
-          updateJsonTree(fieldPath.sublist(1), value);
-        }
-      }
-    }
-  }
-
-  Future<void> update_card(String value) async {
     // On appelle la fonction de mise à jour de la carte
     await widget.cardDao
         .updateCardTemplatedJson(cardForPreview.htmlContent, value);
@@ -141,8 +106,7 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: 
-                      //htmlCardDisplayer
-                      Text("LOOOOOOOOOOOOOOOOOOOOOL")
+                      htmlCardDisplayer
                       );
                 }
               }),
@@ -155,7 +119,8 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
             child: Container(
               alignment: Alignment.center,
               child: TemplateFormBuilder(
-                    updateJsonTree: updateJsonTree, cardTemplatedBranchToUpdate: cardTemplatedBranchToUpdate)
+                    updateCard: update_card,
+                    cardTemplatedBranchToUpdate: cardTemplatedBranchToUpdate)
             ),
           )),
         ]));

@@ -16,11 +16,14 @@ var previewCardJson = '''
 
 var htmlEmptyTemplate = '''
   <div>
-      <div class="texte">
+      <div>
         <p>{{field1}}</p>
       </div>
-      <div class="texte">
+      <div>
         <p>{{field2}}</p>
+      </div>
+      <div>
+        <p>{{field3}}</p>
       </div>
   ''';
 

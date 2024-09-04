@@ -17,8 +17,8 @@ String CardTemplatedBranchToJsonString(
   }
 
   for (var key in cardTemplatedBranch.jsonObjectFields.keys) {
-    json[key] = CardTemplatedBranchToJsonString(
-        cardTemplatedBranch.jsonObjectFields[key]!);
+    json[key] = jsonDecode(CardTemplatedBranchToJsonString(
+        cardTemplatedBranch.jsonObjectFields[key]!));
   }
 
   for (var key in cardTemplatedBranch.jsonObjectsListFields.keys) {
@@ -27,13 +27,15 @@ String CardTemplatedBranchToJsonString(
       for (var index = 0;
           index < cardTemplatedBranch.jsonObjectsListFields[key]!.length;
           index++) {
-        json[key].add(CardTemplatedBranchToJsonString(
-            cardTemplatedBranch.jsonObjectsListFields[key]![index]));
+        json[key].add(jsonDecode(CardTemplatedBranchToJsonString(
+            cardTemplatedBranch.jsonObjectsListFields[key]![index])));
       }
     }
   }
 
-  return jsonEncode(json);
+  var encodedJson = jsonEncode(json);
+
+  return encodedJson;
 }
 
 String removeMarkerBrackets(String marker) {

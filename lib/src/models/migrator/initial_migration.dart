@@ -161,6 +161,12 @@ Future<void> initial_migrate_batch(
       path: emptyTemplate_name,
       sku: "EMPTY_TEMPLATE",
       template: htmlEmptyTemplate
+    ),
+    CardTemplateCompanion.insert(
+      id: const Value(2),
+      path: "_item_template.html",
+      sku: "EMPTY_TEMPLATE",
+      template: htmlEmptyTemplate
     )
   ]);
 

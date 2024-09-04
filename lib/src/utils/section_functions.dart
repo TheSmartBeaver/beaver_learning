@@ -5,6 +5,7 @@ Widget buildSection(String sectionTitle, List<Widget> body) {
       //width: MediaQuery.of(context).size.width,
       margin: const EdgeInsets.all(5),
       child: Card(
+        color: Colors.white.withOpacity(0),
           child: Column(children: [
         Container(
             padding: const EdgeInsets.all(8),

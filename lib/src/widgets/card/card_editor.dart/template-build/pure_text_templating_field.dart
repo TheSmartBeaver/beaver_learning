@@ -7,12 +7,13 @@ class PureTextTemplatingField extends StatefulWidget {
 
   TextEditingController controller = TextEditingController();
   final String fieldName;
-  final Function(List<PathPiece> fieldPath, dynamic value) updateJsonTree;
+  final CardTemplatedBranchInteracter cardTemplatedBranchInteracter;
 
-  PureTextTemplatingField({super.key, required this.fieldName, required this.updateJsonTree});
+  PureTextTemplatingField({super.key, required this.fieldName, required this.cardTemplatedBranchInteracter});
 
   @override
   State<StatefulWidget> createState() {
+    
     return _PureTextTemplatingFieldState();
   }
 }
@@ -20,11 +21,12 @@ class PureTextTemplatingField extends StatefulWidget {
 class _PureTextTemplatingFieldState extends State<PureTextTemplatingField> {
 
   void onTextChangeListener(String text){
+    widget.cardTemplatedBranchInteracter.updatePureTextField(widget.fieldName, text);
     // widget.updateJsonTree(widget.fieldPath, text);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: CustomTextField(controller: widget.controller, icon: Icons.abc, label: widget.fieldName, maxLength: 999, onChanged: onTextChangeListener));
+    return Container(child: CustomTextField(controller: widget.controller..text = widget.cardTemplatedBranchInteracter.getPureTextFieldValue(widget.fieldName), icon: Icons.abc, label: widget.fieldName, maxLength: 999, onChanged: onTextChangeListener));
   }
 }

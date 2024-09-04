@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 part 'card_classes.g.dart';
 
@@ -40,29 +41,55 @@ class CardTemplatedBranch {
 
   CardTemplatedBranch(this.templateName);
 
-  FieldType getfieldType(){
-    if(parentCardTemplatedBranch != null && parentCardTemplatedBranch!.jsonObjectsListFields.containsValue(this)){
+  FieldType getfieldType() {
+    if (parentCardTemplatedBranch != null &&
+        parentCardTemplatedBranch!.jsonObjectsListFields.containsValue(this)) {
       return FieldType.JSON_OBJECT_ARRAY;
     }
     return FieldType.JSON_OBJECT;
   }
 
-  List<PathPiece>? getPath(CardTemplatedBranch starting, {List<PathPiece>? path}) {
-    path ??= [];
+  FieldType? getCardTemplatedBranchChildFieldType(PathPiece fieldPathPiece) {
+    if (jsonObjectsListFields.containsKey(fieldPathPiece.pathPieceName)) {
+      return FieldType.JSON_OBJECT_ARRAY;
+    } else if (jsonObjectFields.containsKey(fieldPathPiece.pathPieceName)) {
+      return FieldType.JSON_OBJECT;
+    } else if (pureTextFields.containsKey(fieldPathPiece.pathPieceName)) {
+      return FieldType.PURE_TEXT;
+    }
+    return null;
+  }
 
-    if(parentCardTemplatedBranch != null){
+  List<PathPiece>? getPath(
+      {CardTemplatedBranch? starting, List<PathPiece>? path}) {
+    path ??= [];
+    starting ??= this;
+
+    if (parentCardTemplatedBranch != null) {
       path.add(PathPiece("OHOH - ${path.length.toString()}"));
-      parentCardTemplatedBranch!.getPath(starting, path: path);
+      parentCardTemplatedBranch!.getPath(starting: starting, path: path);
     }
     return path;
+  }
+
+  List<Color> colorsArray = [
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.yellow
+  ];
+
+  Color getColor() {
+    int pathLength = getPath()?.length ?? 0;
+    return colorsArray[pathLength % colorsArray.length].withOpacity(0.2);
   }
 }
 
 class PathPiece {
   final String pathPieceName;
-  int index;
+  int? index;
 
-  PathPiece(this.pathPieceName, {this.index = 0});
+  PathPiece(this.pathPieceName, {this.index});
 }
 
 enum FieldType {
@@ -77,16 +104,22 @@ class CardTemplatedBranchInteracterData {
   final bool isNew;
 
   CardTemplatedBranchInteracterData({required this.child, required this.isNew});
-
 }
 
 class CardTemplatedBranchInteracter {
   final CardTemplatedBranch cardTemplatedBranch;
+  final Future<void> Function() updateCard;
 
-  CardTemplatedBranchInteracter(this.cardTemplatedBranch);
+  CardTemplatedBranchInteracter(
+      {required this.cardTemplatedBranch, required this.updateCard});
 
   void updatePureTextField(String fieldName, String value) {
     cardTemplatedBranch.pureTextFields[fieldName] = value;
+    updateCard();
+  }
+
+  String getPureTextFieldValue(String fieldName) {
+    return cardTemplatedBranch.pureTextFields[fieldName] ?? '';
   }
 
   void removePureTextField(String fieldName) {
@@ -94,20 +127,41 @@ class CardTemplatedBranchInteracter {
   }
 
   void removeTemplateTemplatingField(String fieldName, bool isListOfTemplates) {
-    if(isListOfTemplates){
+    if (isListOfTemplates) {
       cardTemplatedBranch.jsonObjectsListFields.remove(fieldName);
     } else {
       cardTemplatedBranch.jsonObjectFields.remove(fieldName);
     }
   }
 
-  CardTemplatedBranchInteracterData getCardTemplatedBranchChild(PathPiece fieldPathPiece, bool isListOfTemplates) {
-    if(isListOfTemplates && cardTemplatedBranch.jsonObjectsListFields.containsKey(fieldPathPiece.pathPieceName)){
-      return CardTemplatedBranchInteracterData(isNew: false ,child: cardTemplatedBranch.jsonObjectsListFields[fieldPathPiece.pathPieceName]![fieldPathPiece.index]);
-    } else if(!isListOfTemplates && cardTemplatedBranch.jsonObjectFields.containsKey(fieldPathPiece.pathPieceName)){
-      return CardTemplatedBranchInteracterData(isNew: false, child: cardTemplatedBranch.jsonObjectFields[fieldPathPiece.pathPieceName]!);
+  CardTemplatedBranchInteracterData getCardTemplatedBranchChild(
+      PathPiece fieldPathPiece, bool isListOfTemplates) {
+    if (isListOfTemplates &&
+        cardTemplatedBranch.jsonObjectsListFields
+            .containsKey(fieldPathPiece.pathPieceName)) {
+      return CardTemplatedBranchInteracterData(
+          isNew: false, child: cardTemplatedBranch);
+    } else if (!isListOfTemplates &&
+        fieldPathPiece.index == null &&
+        cardTemplatedBranch.jsonObjectFields
+            .containsKey(fieldPathPiece.pathPieceName)) {
+      return CardTemplatedBranchInteracterData(
+          isNew: false,
+          child: cardTemplatedBranch
+              .jsonObjectFields[fieldPathPiece.pathPieceName]!);
+    } else if (!isListOfTemplates &&
+        cardTemplatedBranch.parentCardTemplatedBranch != null &&
+        fieldPathPiece.index != null &&
+        cardTemplatedBranch.parentCardTemplatedBranch!.jsonObjectsListFields
+            .containsKey(fieldPathPiece.pathPieceName)) {
+      return CardTemplatedBranchInteracterData(
+          isNew: false,
+          child: cardTemplatedBranch.parentCardTemplatedBranch!.jsonObjectsListFields[
+              fieldPathPiece.pathPieceName]![fieldPathPiece.index!]);
     } else {
-      return CardTemplatedBranchInteracterData(isNew: true, child: CardTemplatedBranch(fieldPathPiece.pathPieceName));
+      return CardTemplatedBranchInteracterData(
+          isNew: true,
+          child: CardTemplatedBranch(fieldPathPiece.pathPieceName));
     }
-  } 
+  }
 }
