@@ -35,13 +35,14 @@ class _TemplateFormBuilderState extends State<TemplateFormBuilder> {
                 updateCard: widget.updateCard,
                 isListOfTemplates: false,
                 cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(updateCard: widget.updateCard,
-                   cardTemplatedBranch: CardTemplatedBranch.createChild(widget.cardTemplatedBranchToUpdate!, PathPiece(AppConstante.rectoFieldName)))),
+                   cardTemplatedBranch: widget.cardTemplatedBranchToUpdate!)),
             TemplateTemplatingField(
                 fieldPathPiece: PathPiece(AppConstante.versoFieldName),
                 updateCard: widget.updateCard,
                 isListOfTemplates: false,
                 cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(updateCard: widget.updateCard,
                     cardTemplatedBranch: widget.cardTemplatedBranchToUpdate!)),
+            Text("Widget : (TemplateFormBuider) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),
           ],
         )));
   }

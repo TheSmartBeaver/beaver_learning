@@ -7,6 +7,7 @@ import 'package:beaver_learning/src/models/data/test_data.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
+import 'package:beaver_learning/src/providers/templated_card_provider.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
@@ -80,6 +81,11 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
+    if(isInitialized == false){
+      ref.read(templatedCardProvider.notifier).initRootCardTemplatedBranch(cardTemplatedBranchToUpdate);
+      isInitialized = true;
+    }
+    
 
     return Container(
         padding: const EdgeInsets.all(8.0),

@@ -2,14 +2,16 @@ import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
+import 'package:beaver_learning/src/providers/templated_card_provider.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/section_functions.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/field_type_selector.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_search_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TemplateTemplatingField extends StatefulWidget {
+class TemplateTemplatingField extends ConsumerStatefulWidget {
   late CardTemplatedBranch cardTemplatedBranchToUpdate;
   late bool isCardTemplatedBranchToUpdateNew;
   final CardTemplatedBranchInteracter cardTemplatedBranchInteracter;
@@ -26,6 +28,7 @@ class TemplateTemplatingField extends StatefulWidget {
       required this.isListOfTemplates,
       required this.updateCard,
       required this.cardTemplatedBranchInteracter}) {
+        
     var result = cardTemplatedBranchInteracter.getCardTemplatedBranchChild(
         fieldPathPiece, isListOfTemplates);
     cardTemplatedBranchToUpdate = result.child;
@@ -35,7 +38,7 @@ class TemplateTemplatingField extends StatefulWidget {
   }
 
   @override
-  State<StatefulWidget> createState() {
+  ConsumerState<TemplateTemplatingField> createState() {
     return _TemplateTemplatingFieldState();
   }
 }
@@ -47,12 +50,12 @@ List<String?> getEveryMarkersInHtmlTemplate(String htmlTemplate) {
   return markersList;
 }
 
-class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
+class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingField> {
   CardTemplateData? activeTemplate;
   Widget widgetReturned = const CircularProgressIndicator();
   bool isInitialized = false;
 
-  Future buildListOfTemplates() async {
+  Future buildListOfTemplates(CardTemplatedBranch cardTemplatedBranchToUpdate) async {
     if (!widget.isCardTemplatedBranchToUpdateNew) {
       List<Widget> listOfTemplates = widget
           .cardTemplatedBranchToUpdate
@@ -96,7 +99,7 @@ class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
     }
   }
 
-  Future buildSingleTemplate() async {
+  Future buildSingleTemplate(CardTemplatedBranch cardTemplatedBranchToUpdate) async {
     Color bgColor = widget.cardTemplatedBranchToUpdate.getColor();
 
     if (!widget.isCardTemplatedBranchToUpdateNew) {
@@ -119,6 +122,7 @@ class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
       ;
     } else {
       if (activeTemplate != null) {
+        cardTemplatedBranchToUpdate.templateName = activeTemplate!.path;
         List<String?> markersList =
             getEveryMarkersInHtmlTemplate(activeTemplate!.template);
 
@@ -171,9 +175,9 @@ class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
   Future<void> init() async {
     if (!isInitialized) {
       if (widget.isListOfTemplates) {
-        await buildListOfTemplates();
+        await buildListOfTemplates(widget.cardTemplatedBranchToUpdate);
       } else {
-        await buildSingleTemplate();
+        await buildSingleTemplate(widget.cardTemplatedBranchToUpdate);
       }
       setState(() {
         isInitialized = true;
@@ -185,6 +189,8 @@ class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
   Widget build(BuildContext context) {
     init();
 
-    return buildSection(widget.fieldPathPiece.pathPieceName, [widgetReturned]);
+    var test = ref.read(templatedCardProvider.notifier).rootCardTemplatedBranch;
+
+    return buildSection(widget.fieldPathPiece.pathPieceName, [Text("Widget : (TTF ${widget.fieldPathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),widgetReturned]);
   }
 }

@@ -72,10 +72,10 @@ class _FieldTypeSelectorState extends State<FieldTypeSelector> {
           items: widget.fieldTypeItems,
           label: widget.pathPiece.pathPieceName,
           onSelected: (DropDownItem<FieldType>? item) {
-
             setState(() {
               selectedFieldType = item?.value;
-              widget.cardTemplatedBranchToUpdate?.changeTypeOfField(widget.pathPiece, selectedFieldType);
+              widget.cardTemplatedBranchToUpdate
+                  ?.changeTypeOfField(widget.pathPiece, selectedFieldType);
             });
           },
         )
@@ -86,6 +86,10 @@ class _FieldTypeSelectorState extends State<FieldTypeSelector> {
 
     return Container(
         padding: const EdgeInsets.all(4),
-        child: Column(children: [if (fieldWidget != null) fieldWidget]));
+        child: Column(children: [
+          Text(
+              "Widget : (TTF ${widget.pathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),
+          if (fieldWidget != null) fieldWidget
+        ]));
   }
 }

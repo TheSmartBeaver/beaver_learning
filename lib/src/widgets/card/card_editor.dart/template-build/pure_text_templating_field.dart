@@ -29,13 +29,15 @@ class _PureTextTemplatingFieldState extends State<PureTextTemplatingField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: CustomTextField(
+        child: Column( children: [
+        Text("Widget : (TTF ${widget.fieldName}) Hashcode : ${widget.cardTemplatedBranchInteracter.cardTemplatedBranch.hashCode}"),
+        CustomTextField(
             controller: widget.controller
               ..text = widget.cardTemplatedBranchInteracter
                   .getPureTextFieldValue(widget.fieldName),
             icon: Icons.abc,
             label: widget.fieldName,
             maxLength: 999,
-            onChanged: onTextChangeListener));
+            onChanged: onTextChangeListener)]));
   }
 }
