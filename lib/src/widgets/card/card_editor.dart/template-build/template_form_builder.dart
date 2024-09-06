@@ -35,7 +35,7 @@ class _TemplateFormBuilderState extends State<TemplateFormBuilder> {
                 updateCard: widget.updateCard,
                 isListOfTemplates: false,
                 cardTemplatedBranchInteracter: CardTemplatedBranchInteracter(updateCard: widget.updateCard,
-                   cardTemplatedBranch:  widget.cardTemplatedBranchToUpdate!)),
+                   cardTemplatedBranch: CardTemplatedBranch.createChild(widget.cardTemplatedBranchToUpdate!, PathPiece(AppConstante.rectoFieldName)))),
             TemplateTemplatingField(
                 fieldPathPiece: PathPiece(AppConstante.versoFieldName),
                 updateCard: widget.updateCard,

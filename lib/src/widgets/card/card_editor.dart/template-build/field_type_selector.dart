@@ -72,8 +72,10 @@ class _FieldTypeSelectorState extends State<FieldTypeSelector> {
           items: widget.fieldTypeItems,
           label: widget.pathPiece.pathPieceName,
           onSelected: (DropDownItem<FieldType>? item) {
+
             setState(() {
               selectedFieldType = item?.value;
+              widget.cardTemplatedBranchToUpdate?.changeTypeOfField(widget.pathPiece, selectedFieldType);
             });
           },
         )

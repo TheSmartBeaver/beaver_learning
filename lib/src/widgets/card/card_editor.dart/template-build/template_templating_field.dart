@@ -30,6 +30,8 @@ class TemplateTemplatingField extends StatefulWidget {
         fieldPathPiece, isListOfTemplates);
     cardTemplatedBranchToUpdate = result.child;
     isCardTemplatedBranchToUpdateNew = result.isNew;
+    var test2 = cardTemplatedBranchToUpdate.getPath();
+    var test = 0;
   }
 
   @override
@@ -156,6 +158,7 @@ class _TemplateTemplatingFieldState extends State<TemplateTemplatingField> {
 
     setState(() {
       activeTemplate = htmlTemplate;
+      isInitialized = false;
     });
   }
 

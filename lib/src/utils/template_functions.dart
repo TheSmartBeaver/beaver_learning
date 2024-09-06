@@ -48,7 +48,6 @@ CardTemplatedBranch buildBranch(Map<String, dynamic> cardJsonBranch,
   //var jsonDecoded = jsonDecode(cardFace);
   if (!cardJsonBranch.containsKey(AppConstante.templateNameKey)) {
     errors?.add(Exception("No template_name key"));
-    //return CardTemplatedBranch(fieldName, "");
   } else {
     //On prépare à la future récupération des templates qui vont nous servir à construire les associations
     htmlTemplates?[cardJsonBranch[AppConstante.templateNameKey]] = "";

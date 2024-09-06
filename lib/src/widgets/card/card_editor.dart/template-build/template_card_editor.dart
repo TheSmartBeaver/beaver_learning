@@ -36,22 +36,20 @@ class TemplateCardEditor extends ConsumerStatefulWidget
 class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   late ReviseCard cardForPreview;
   bool isInitialized = false;
-  CardTemplatedBranch cardTemplatedBranchToUpdate =
-      CardTemplatedBranch(null);
+  CardTemplatedBranch cardTemplatedBranchToUpdate = CardTemplatedBranch(null);
   late HTMLCardDisplayer htmlCardDisplayer;
-  
 
   _TemplateCardEditorState() {
     cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
         AppConstante.rectoFieldName,
-        () => CardTemplatedBranch(null)..parentCardTemplatedBranch = cardTemplatedBranchToUpdate);
+        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate, PathPiece(AppConstante.rectoFieldName)));
     cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
         AppConstante.versoFieldName,
-        () => CardTemplatedBranch(null)..parentCardTemplatedBranch = cardTemplatedBranchToUpdate);
+        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate, PathPiece(AppConstante.versoFieldName)));
 
-    Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
+    // Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
 
-    cardTemplatedBranchToUpdate = buildBranch(json);
+    // cardTemplatedBranchToUpdate = buildBranch(json);
 
     var toto = 0;
   }
@@ -63,10 +61,10 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
               tbl.path.equals(AppConstante.templatedCardPreviewNameKey)))
         .getSingle();
   }
-      
-  Future<void> update_card() async {
 
-    String value = CardTemplatedBranchToJsonString(cardTemplatedBranchToUpdate); //CardTemplatedBranchToJsonString(cardTemplatedBranchToUpdate)
+  Future<void> update_card() async {
+    String value = CardTemplatedBranchToJsonString(
+        cardTemplatedBranchToUpdate); //CardTemplatedBranchToJsonString(cardTemplatedBranchToUpdate)
 
     // On appelle la fonction de mise à jour de la carte
     await widget.cardDao
@@ -99,15 +97,13 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
                   return const CircularProgressIndicator();
                 } else {
                   htmlCardDisplayer = HTMLCardDisplayer(
-                          isPrintAnswer: true, cardToRevise: cardForPreview);
+                      isPrintAnswer: true, cardToRevise: cardForPreview);
                   return Container(
                       decoration: BoxDecoration(
                         color: Colors.blue,
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      child: 
-                      htmlCardDisplayer
-                      );
+                      child: htmlCardDisplayer);
                 }
               }),
           ClipRect(
@@ -117,11 +113,10 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
               sigmaY: 2.0,
             ),
             child: Container(
-              alignment: Alignment.center,
-              child: TemplateFormBuilder(
+                alignment: Alignment.center,
+                child: TemplateFormBuilder(
                     updateCard: update_card,
-                    cardTemplatedBranchToUpdate: cardTemplatedBranchToUpdate)
-            ),
+                    cardTemplatedBranchToUpdate: cardTemplatedBranchToUpdate)),
           )),
         ]));
   }

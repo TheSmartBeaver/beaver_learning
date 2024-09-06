@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 part 'card_classes.g.dart';
@@ -39,15 +40,8 @@ class CardTemplatedBranch {
   Map<String, List<CardTemplatedBranch>> jsonObjectsListFields = {};
   Map<String, String> pureTextFields = {};
 
+  // WARNING : Ne pas utiliser le constructeur hors de la classe
   CardTemplatedBranch(this.templateName);
-
-  FieldType getfieldType() {
-    if (parentCardTemplatedBranch != null &&
-        parentCardTemplatedBranch!.jsonObjectsListFields.containsValue(this)) {
-      return FieldType.JSON_OBJECT_ARRAY;
-    }
-    return FieldType.JSON_OBJECT;
-  }
 
   FieldType? getCardTemplatedBranchChildFieldType(PathPiece fieldPathPiece) {
     if (jsonObjectsListFields.containsKey(fieldPathPiece.pathPieceName)) {
@@ -60,15 +54,60 @@ class CardTemplatedBranch {
     return null;
   }
 
+  void removeFieldWithMatchingPathPiece(PathPiece pathPiece) {
+    if (pathPiece.index != null) {
+      jsonObjectsListFields[pathPiece.pathPieceName]
+          ?.removeAt(pathPiece.index!);
+    } else {
+      jsonObjectsListFields.remove(pathPiece.pathPieceName);
+      jsonObjectFields.remove(pathPiece.pathPieceName);
+      pureTextFields.remove(pathPiece.pathPieceName);
+    }
+  }
+
+  void changeTypeOfField(PathPiece pathPiece, FieldType? fieldType) {
+    if (fieldType != null) {
+      removeFieldWithMatchingPathPiece(pathPiece);
+
+      if (fieldType == FieldType.JSON_OBJECT) {
+        CardTemplatedBranch child = CardTemplatedBranch.createChild(this, pathPiece);
+        jsonObjectFields.putIfAbsent(pathPiece.pathPieceName,
+            () => child);
+      } else if (fieldType == FieldType.JSON_OBJECT_ARRAY) {
+        jsonObjectsListFields.putIfAbsent(pathPiece.pathPieceName, () => []);
+      } else if (fieldType == FieldType.PURE_TEXT) {
+        pureTextFields.putIfAbsent(pathPiece.pathPieceName, () => "");
+      }
+    }
+  }
+
   List<PathPiece>? getPath(
       {CardTemplatedBranch? starting, List<PathPiece>? path}) {
     path ??= [];
     starting ??= this;
 
-    if (parentCardTemplatedBranch != null) {
-      path.add(PathPiece("OHOH - ${path.length.toString()}"));
-      parentCardTemplatedBranch!.getPath(starting: starting, path: path);
+    if (parentCardTemplatedBranch != null && starting != this) {
+      //path.add(PathPiece("OHOH - ${path.length.toString()}"));
+
+      if (jsonObjectFields.containsValue(starting)) {
+        path.add(PathPiece("(${findKeyByValue<CardTemplatedBranch>(parentCardTemplatedBranch!.jsonObjectFields, starting)}) "));
+      } else {
+        int counter = 0;
+        for (var entry in jsonObjectsListFields.entries) {
+          if (entry.value.contains(starting)) {
+            path.add(PathPiece("(${entry.key}/$counter)"));
+          }
+          counter++;
+        }
+      }
+
+      parentCardTemplatedBranch!.getPath(starting: this, path: path);
     }
+
+    if(starting == this){
+      parentCardTemplatedBranch!.getPath(starting: this, path: path);
+    }
+    path.add(PathPiece("${path.length.toString()} "));
     return path;
   }
 
@@ -83,6 +122,19 @@ class CardTemplatedBranch {
     int pathLength = getPath()?.length ?? 0;
     return colorsArray[pathLength % colorsArray.length].withOpacity(0.2);
   }
+
+  static CardTemplatedBranch createChild(CardTemplatedBranch parentBranch, PathPiece pathPiece) {
+    CardTemplatedBranch child = CardTemplatedBranch(null);
+    child.parentCardTemplatedBranch = parentBranch;
+
+    if (pathPiece.index == null) {
+      parentBranch.jsonObjectFields.putIfAbsent(pathPiece.pathPieceName, () => child);
+    } else{
+      parentBranch.jsonObjectsListFields[pathPiece.pathPieceName]?[pathPiece.index!] = child;
+    }
+    return child;
+  }
+
 }
 
 class PathPiece {
@@ -136,32 +188,61 @@ class CardTemplatedBranchInteracter {
 
   CardTemplatedBranchInteracterData getCardTemplatedBranchChild(
       PathPiece fieldPathPiece, bool isListOfTemplates) {
+    /* CAREFUL
+      - bien vérifier que le template_name ne soit pas null dans le cas où on est en création et non modif
+      - isNew = true si on a pas de template_name pour jsonObjectsListFields ou jsonObjectFields
+    */
+    // Le field est de type jsonObject List
     if (isListOfTemplates &&
-        cardTemplatedBranch.jsonObjectsListFields
-            .containsKey(fieldPathPiece.pathPieceName)) {
+            cardTemplatedBranch.jsonObjectsListFields
+                .containsKey(fieldPathPiece.pathPieceName)
+        // && cardTemplatedBranch
+        //     .jsonObjectsListFields[fieldPathPiece.pathPieceName]?[
+        //         fieldPathPiece.index!]
+        //     .templateName != null
+        ) {
       return CardTemplatedBranchInteracterData(
           isNew: false, child: cardTemplatedBranch);
+      // Le field est de type jsonObject
     } else if (!isListOfTemplates &&
         fieldPathPiece.index == null &&
         cardTemplatedBranch.jsonObjectFields
-            .containsKey(fieldPathPiece.pathPieceName)) {
+            .containsKey(fieldPathPiece.pathPieceName) &&
+        cardTemplatedBranch
+                .jsonObjectFields[fieldPathPiece.pathPieceName]?.templateName !=
+            null) {
+      bool isNew = cardTemplatedBranch
+              .jsonObjectFields[fieldPathPiece.pathPieceName]?.templateName ==
+          null;
       return CardTemplatedBranchInteracterData(
-          isNew: false,
+          isNew: isNew,
           child: cardTemplatedBranch
               .jsonObjectFields[fieldPathPiece.pathPieceName]!);
+      // Le field est de type jsonObject faisant partie d'une liste de jsonObject
     } else if (!isListOfTemplates &&
         cardTemplatedBranch.parentCardTemplatedBranch != null &&
         fieldPathPiece.index != null &&
         cardTemplatedBranch.parentCardTemplatedBranch!.jsonObjectsListFields
-            .containsKey(fieldPathPiece.pathPieceName)) {
+            .containsKey(fieldPathPiece.pathPieceName) &&
+        cardTemplatedBranch
+                .parentCardTemplatedBranch!
+                .jsonObjectsListFields[fieldPathPiece.pathPieceName]
+                    ?[fieldPathPiece.index!]
+                .templateName !=
+            null) {
+      bool isNew = cardTemplatedBranch
+              .parentCardTemplatedBranch!
+              .jsonObjectsListFields[fieldPathPiece.pathPieceName]
+                  ?[fieldPathPiece.index!]
+              .templateName ==
+          null;
       return CardTemplatedBranchInteracterData(
-          isNew: false,
-          child: cardTemplatedBranch.parentCardTemplatedBranch!.jsonObjectsListFields[
+          isNew: isNew,
+          child: cardTemplatedBranch
+                  .parentCardTemplatedBranch!.jsonObjectsListFields[
               fieldPathPiece.pathPieceName]![fieldPathPiece.index!]);
-    } else {
-      return CardTemplatedBranchInteracterData(
-          isNew: true,
-          child: CardTemplatedBranch(fieldPathPiece.pathPieceName));
     }
+    return CardTemplatedBranchInteracterData(
+        isNew: true, child: CardTemplatedBranch.createChild(cardTemplatedBranch, fieldPathPiece));
   }
 }
