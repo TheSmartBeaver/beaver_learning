@@ -13,13 +13,17 @@ import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_form_builder.dart';
+import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
+import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TemplateCardEditor extends ConsumerStatefulWidget
     implements CardEditorInterface {
   bool isEditMode = true;
   final cardDao = CardDao(MyDatabaseInstance.getInstance());
+  late ReviseCard cardForPreview;
 
   TemplateCardEditor({super.key, this.isEditMode = true});
 
@@ -32,6 +36,40 @@ class TemplateCardEditor extends ConsumerStatefulWidget
   ConsumerState<ConsumerStatefulWidget> createState() {
     return _TemplateCardEditorState();
   }
+
+  @override
+  Future<void> showCard(BuildContext context) async {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          appBar: CustomAppBar(
+            title: "Card editor",
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.arrow_circle_left_sharp),
+                onPressed: () async {
+                  Navigator.of(ctx).pop();
+                },
+              )
+            ],
+          ),
+          body: HTMLCardDisplayer(
+              isPrintAnswer: true, cardToRevise: cardForPreview),
+          drawer: const AppDrawer(),
+          persistentFooterButtons: [
+            FloatingActionButton(
+              heroTag: "btn1",
+              onPressed: () {},
+              foregroundColor: Colors.blue[900],
+              backgroundColor: Colors.green,
+              shape: const CircleBorder(),
+              child: const Icon(FontAwesomeIcons.chartColumn),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
@@ -43,14 +81,16 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   _TemplateCardEditorState() {
     cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
         AppConstante.rectoFieldName,
-        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate, PathPiece(AppConstante.rectoFieldName)));
+        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
+            PathPiece(AppConstante.rectoFieldName)));
     cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
         AppConstante.versoFieldName,
-        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate, PathPiece(AppConstante.versoFieldName)));
+        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
+            PathPiece(AppConstante.versoFieldName)));
 
-    // Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
+    Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
 
-    // cardTemplatedBranchToUpdate = buildBranch(json);
+    cardTemplatedBranchToUpdate = buildBranch(json);
 
     var toto = 0;
   }
@@ -81,11 +121,14 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
-    if(isInitialized == false){
-      ref.read(templatedCardProvider.notifier).initRootCardTemplatedBranch(cardTemplatedBranchToUpdate);
+    if (isInitialized == false) {
+      ref
+          .read(templatedCardProvider.notifier)
+          .initRootCardTemplatedBranch(cardTemplatedBranchToUpdate);
       isInitialized = true;
     }
-    
+
+    widget.cardForPreview = cardForPreview;
 
     return Container(
         padding: const EdgeInsets.all(8.0),

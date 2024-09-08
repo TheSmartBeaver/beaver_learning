@@ -5,4 +5,5 @@ abstract class CardEditorInterface extends Widget {
   const CardEditorInterface({super.key});
 
   Future<void> createCard(int groupId, CardDisplayerType displayerType);
+  Future<void> showCard(BuildContext context);
 }

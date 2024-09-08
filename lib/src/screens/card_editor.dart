@@ -107,6 +107,12 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
         title: "Card editor",
         actions: [
           IconButton(
+            icon: const Icon(Icons.remove_red_eye_outlined),
+            onPressed: () async {
+              editorToRender.showCard(context);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.check_circle),
             onPressed: () async {
               int groupId = widget.groupDropdown!.getValue()!.value;
