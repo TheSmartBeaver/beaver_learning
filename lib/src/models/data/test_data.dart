@@ -1,6 +1,7 @@
 import 'package:beaver_learning/data/constants.dart';
 
 var emptyTemplate_name = "_empty_template.html";
+var itemTemplate_name = "_item_template.html";
 
 var previewCardJson = '''
   {

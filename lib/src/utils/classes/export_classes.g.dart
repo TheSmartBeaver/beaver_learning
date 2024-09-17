@@ -37,9 +37,11 @@ const _$ExportTypeEnumMap = {
   ExportType.cardHtmlTemplated: 'cardHtmlTemplated',
   ExportType.rectoHtml: 'rectoHtml',
   ExportType.versoHtml: 'versoHtml',
-  ExportType.fileContent: 'fileContent',
+  ExportType.cardFileContent: 'cardFileContent',
+  ExportType.supportFileContent: 'supportFileContent',
   ExportType.unknown: 'unknown',
   ExportType.course: 'course',
   ExportType.topic: 'topic',
   ExportType.support: 'support',
+  ExportType.templatedJsonSupport: 'templatedJsonSupport',
 };

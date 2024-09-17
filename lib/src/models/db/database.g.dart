@@ -309,12 +309,16 @@ class $HTMLContentsTable extends HTMLContents
   @override
   late final GeneratedColumn<String> recto = GeneratedColumn<String>(
       'recto', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(""));
   static const VerificationMeta _versoMeta = const VerificationMeta('verso');
   @override
   late final GeneratedColumn<String> verso = GeneratedColumn<String>(
       'verso', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(""));
   static const VerificationMeta _isTemplatedMeta =
       const VerificationMeta('isTemplated');
   @override
@@ -330,7 +334,9 @@ class $HTMLContentsTable extends HTMLContents
   @override
   late final GeneratedColumn<String> cardTemplatedJson =
       GeneratedColumn<String>('card_templated_json', aliasedName, false,
-          type: DriftSqlType.string, requiredDuringInsert: true);
+          type: DriftSqlType.string,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(""));
   @override
   List<GeneratedColumn> get $columns =>
       [id, recto, verso, isTemplated, cardTemplatedJson];
@@ -350,14 +356,10 @@ class $HTMLContentsTable extends HTMLContents
     if (data.containsKey('recto')) {
       context.handle(
           _rectoMeta, recto.isAcceptableOrUnknown(data['recto']!, _rectoMeta));
-    } else if (isInserting) {
-      context.missing(_rectoMeta);
     }
     if (data.containsKey('verso')) {
       context.handle(
           _versoMeta, verso.isAcceptableOrUnknown(data['verso']!, _versoMeta));
-    } else if (isInserting) {
-      context.missing(_versoMeta);
     }
     if (data.containsKey('is_templated')) {
       context.handle(
@@ -370,8 +372,6 @@ class $HTMLContentsTable extends HTMLContents
           _cardTemplatedJsonMeta,
           cardTemplatedJson.isAcceptableOrUnknown(
               data['card_templated_json']!, _cardTemplatedJsonMeta));
-    } else if (isInserting) {
-      context.missing(_cardTemplatedJsonMeta);
     }
     return context;
   }
@@ -511,13 +511,11 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   });
   HTMLContentsCompanion.insert({
     this.id = const Value.absent(),
-    required String recto,
-    required String verso,
+    this.recto = const Value.absent(),
+    this.verso = const Value.absent(),
     this.isTemplated = const Value.absent(),
-    required String cardTemplatedJson,
-  })  : recto = Value(recto),
-        verso = Value(verso),
-        cardTemplatedJson = Value(cardTemplatedJson);
+    this.cardTemplatedJson = const Value.absent(),
+  });
   static Insertable<HTMLContent> custom({
     Expression<int>? id,
     Expression<String>? recto,
@@ -2051,9 +2049,26 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES file_contents (id)'));
+  static const VerificationMeta _htmlContentIdMeta =
+      const VerificationMeta('htmlContentId');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, path, title, parentId, parentCourseId, groupId, fileId];
+  late final GeneratedColumn<int> htmlContentId = GeneratedColumn<int>(
+      'html_content_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES h_t_m_l_contents (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        path,
+        title,
+        parentId,
+        parentCourseId,
+        groupId,
+        fileId,
+        htmlContentId
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2097,6 +2112,12 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
       context.handle(_fileIdMeta,
           fileId.isAcceptableOrUnknown(data['file_id']!, _fileIdMeta));
     }
+    if (data.containsKey('html_content_id')) {
+      context.handle(
+          _htmlContentIdMeta,
+          htmlContentId.isAcceptableOrUnknown(
+              data['html_content_id']!, _htmlContentIdMeta));
+    }
     return context;
   }
 
@@ -2120,6 +2141,8 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
           .read(DriftSqlType.int, data['${effectivePrefix}group_id']),
       fileId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}file_id']),
+      htmlContentId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}html_content_id']),
     );
   }
 
@@ -2137,6 +2160,7 @@ class Topic extends DataClass implements Insertable<Topic> {
   final int parentCourseId;
   final int? groupId;
   final int? fileId;
+  final int? htmlContentId;
   const Topic(
       {required this.id,
       this.path,
@@ -2144,7 +2168,8 @@ class Topic extends DataClass implements Insertable<Topic> {
       this.parentId,
       required this.parentCourseId,
       this.groupId,
-      this.fileId});
+      this.fileId,
+      this.htmlContentId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2163,6 +2188,9 @@ class Topic extends DataClass implements Insertable<Topic> {
     if (!nullToAbsent || fileId != null) {
       map['file_id'] = Variable<int>(fileId);
     }
+    if (!nullToAbsent || htmlContentId != null) {
+      map['html_content_id'] = Variable<int>(htmlContentId);
+    }
     return map;
   }
 
@@ -2180,6 +2208,9 @@ class Topic extends DataClass implements Insertable<Topic> {
           : Value(groupId),
       fileId:
           fileId == null && nullToAbsent ? const Value.absent() : Value(fileId),
+      htmlContentId: htmlContentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(htmlContentId),
     );
   }
 
@@ -2194,6 +2225,7 @@ class Topic extends DataClass implements Insertable<Topic> {
       parentCourseId: serializer.fromJson<int>(json['parentCourseId']),
       groupId: serializer.fromJson<int?>(json['groupId']),
       fileId: serializer.fromJson<int?>(json['fileId']),
+      htmlContentId: serializer.fromJson<int?>(json['htmlContentId']),
     );
   }
   @override
@@ -2207,6 +2239,7 @@ class Topic extends DataClass implements Insertable<Topic> {
       'parentCourseId': serializer.toJson<int>(parentCourseId),
       'groupId': serializer.toJson<int?>(groupId),
       'fileId': serializer.toJson<int?>(fileId),
+      'htmlContentId': serializer.toJson<int?>(htmlContentId),
     };
   }
 
@@ -2217,7 +2250,8 @@ class Topic extends DataClass implements Insertable<Topic> {
           Value<int?> parentId = const Value.absent(),
           int? parentCourseId,
           Value<int?> groupId = const Value.absent(),
-          Value<int?> fileId = const Value.absent()}) =>
+          Value<int?> fileId = const Value.absent(),
+          Value<int?> htmlContentId = const Value.absent()}) =>
       Topic(
         id: id ?? this.id,
         path: path.present ? path.value : this.path,
@@ -2226,6 +2260,8 @@ class Topic extends DataClass implements Insertable<Topic> {
         parentCourseId: parentCourseId ?? this.parentCourseId,
         groupId: groupId.present ? groupId.value : this.groupId,
         fileId: fileId.present ? fileId.value : this.fileId,
+        htmlContentId:
+            htmlContentId.present ? htmlContentId.value : this.htmlContentId,
       );
   @override
   String toString() {
@@ -2236,14 +2272,15 @@ class Topic extends DataClass implements Insertable<Topic> {
           ..write('parentId: $parentId, ')
           ..write('parentCourseId: $parentCourseId, ')
           ..write('groupId: $groupId, ')
-          ..write('fileId: $fileId')
+          ..write('fileId: $fileId, ')
+          ..write('htmlContentId: $htmlContentId')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, path, title, parentId, parentCourseId, groupId, fileId);
+  int get hashCode => Object.hash(id, path, title, parentId, parentCourseId,
+      groupId, fileId, htmlContentId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2254,7 +2291,8 @@ class Topic extends DataClass implements Insertable<Topic> {
           other.parentId == this.parentId &&
           other.parentCourseId == this.parentCourseId &&
           other.groupId == this.groupId &&
-          other.fileId == this.fileId);
+          other.fileId == this.fileId &&
+          other.htmlContentId == this.htmlContentId);
 }
 
 class TopicsCompanion extends UpdateCompanion<Topic> {
@@ -2265,6 +2303,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   final Value<int> parentCourseId;
   final Value<int?> groupId;
   final Value<int?> fileId;
+  final Value<int?> htmlContentId;
   const TopicsCompanion({
     this.id = const Value.absent(),
     this.path = const Value.absent(),
@@ -2273,6 +2312,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     this.parentCourseId = const Value.absent(),
     this.groupId = const Value.absent(),
     this.fileId = const Value.absent(),
+    this.htmlContentId = const Value.absent(),
   });
   TopicsCompanion.insert({
     this.id = const Value.absent(),
@@ -2282,6 +2322,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     required int parentCourseId,
     this.groupId = const Value.absent(),
     this.fileId = const Value.absent(),
+    this.htmlContentId = const Value.absent(),
   })  : title = Value(title),
         parentCourseId = Value(parentCourseId);
   static Insertable<Topic> custom({
@@ -2292,6 +2333,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     Expression<int>? parentCourseId,
     Expression<int>? groupId,
     Expression<int>? fileId,
+    Expression<int>? htmlContentId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2301,6 +2343,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
       if (parentCourseId != null) 'parent_course_id': parentCourseId,
       if (groupId != null) 'group_id': groupId,
       if (fileId != null) 'file_id': fileId,
+      if (htmlContentId != null) 'html_content_id': htmlContentId,
     });
   }
 
@@ -2311,7 +2354,8 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
       Value<int?>? parentId,
       Value<int>? parentCourseId,
       Value<int?>? groupId,
-      Value<int?>? fileId}) {
+      Value<int?>? fileId,
+      Value<int?>? htmlContentId}) {
     return TopicsCompanion(
       id: id ?? this.id,
       path: path ?? this.path,
@@ -2320,6 +2364,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
       parentCourseId: parentCourseId ?? this.parentCourseId,
       groupId: groupId ?? this.groupId,
       fileId: fileId ?? this.fileId,
+      htmlContentId: htmlContentId ?? this.htmlContentId,
     );
   }
 
@@ -2347,6 +2392,9 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     if (fileId.present) {
       map['file_id'] = Variable<int>(fileId.value);
     }
+    if (htmlContentId.present) {
+      map['html_content_id'] = Variable<int>(htmlContentId.value);
+    }
     return map;
   }
 
@@ -2359,7 +2407,8 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
           ..write('parentId: $parentId, ')
           ..write('parentCourseId: $parentCourseId, ')
           ..write('groupId: $groupId, ')
-          ..write('fileId: $fileId')
+          ..write('fileId: $fileId, ')
+          ..write('htmlContentId: $htmlContentId')
           ..write(')'))
         .toString();
   }

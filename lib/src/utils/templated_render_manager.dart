@@ -7,18 +7,18 @@ import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 
-class TemplatedCardRendererManager {
+class TemplatedRendererManager {
   final HTMLContent htmlContent;
-  final List<HTMLContentObjFiles> hTMLContentObjFiles;
+  final List<FileContent> contentFiles;
   final List<Exception> errors = [];
   final HashMap<String, String> htmlTemplates = HashMap();
 
-  TemplatedCardRendererManager(
-      {required this.htmlContent, required this.hTMLContentObjFiles});
+  TemplatedRendererManager(
+      {required this.htmlContent, required this.contentFiles});
 
-  Future<HTMLContentRectoVerso> render() async {
+  Future<HTMLContentRectoVerso> renderTemplatedCard() async {
     try {
-      RectoVersoJsonFields rectoVersoJsonFields = _getRectoVersoJsonFields();
+      TemplatedCardJsonFields rectoVersoJsonFields = _getRectoVersoJsonFields();
 
       CardTemplatedBranch rectoCardTemplatedBranch =
           _buildTree(AppConstante.rectoFieldName, rectoVersoJsonFields.recto);
@@ -30,14 +30,31 @@ class TemplatedCardRendererManager {
       String verso = buildJsonHtmlAssociation(versoCardTemplatedBranch);
 
       return HTMLContentRectoVerso(
-          recto: recto, verso: verso, files: hTMLContentObjFiles);
+          recto: recto, verso: verso, files: contentFiles);
     } catch (e) {
       throw e;
     }
   }
 
-  RectoVersoJsonFields _getRectoVersoJsonFields() {
-    RectoVersoJsonFields rectoVersoJsonFields = RectoVersoJsonFields.fromJson(
+  Future<HTMLContentCourseSupport> renderTemplatedHtmlSupport() async {
+    try {
+      TemplatedCourseSupportJsonFields templatedCourseSupportJsonFields = _getTemplatedCourseSupportJsonFields();
+
+      CardTemplatedBranch templatedCourseTemplatedBranch =
+          _buildTree(AppConstante.htmlSupportFieldName, templatedCourseSupportJsonFields.support);
+      await fillHtmlTemplateDictionary();
+
+      String htmlSupport = buildJsonHtmlAssociation(templatedCourseTemplatedBranch);
+
+      return HTMLContentCourseSupport(
+          htmlSupport: htmlSupport, files: contentFiles);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  TemplatedCardJsonFields _getRectoVersoJsonFields() {
+    TemplatedCardJsonFields rectoVersoJsonFields = TemplatedCardJsonFields.fromJson(
         jsonDecode(htmlContent.cardTemplatedJson));
     if (rectoVersoJsonFields.verso.isEmpty) {
       //TODO : Rajouter le path de la card
@@ -45,6 +62,16 @@ class TemplatedCardRendererManager {
     }
     if (rectoVersoJsonFields.recto.isEmpty) {
       errors.add(Exception("Recto is empty"));
+    }
+    return rectoVersoJsonFields;
+  }
+
+  TemplatedCourseSupportJsonFields _getTemplatedCourseSupportJsonFields() {
+    TemplatedCourseSupportJsonFields rectoVersoJsonFields = TemplatedCourseSupportJsonFields.fromJson(
+        jsonDecode(htmlContent.cardTemplatedJson));
+    if (rectoVersoJsonFields.support.isEmpty) {
+      //TODO : Rajouter le path de la card
+      errors.add(Exception("TemplatedCourseSupport is empty"));
     }
     return rectoVersoJsonFields;
   }
@@ -60,6 +87,10 @@ class TemplatedCardRendererManager {
     for (var key in htmlTemplates.keys) {
       //TODO: Il me manque le lien avec le SKU !!!!!!
       try {
+        var htmlTemplatesssss = await (db.select(db.cardTemplate)
+              ..where((tbl) => tbl.path.equals(key)))
+            .get();
+
         var htmlTemplate = await (db.select(db.cardTemplate)
               ..where((tbl) => tbl.path.equals(key)))
             .getSingle();

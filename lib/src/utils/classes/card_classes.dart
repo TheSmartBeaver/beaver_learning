@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -8,10 +9,18 @@ part 'card_classes.g.dart';
 class HTMLContentRectoVerso {
   final String recto;
   final String verso;
-  final List<HTMLContentObjFiles> files;
+  final List<FileContent> files;
 
   HTMLContentRectoVerso(
       {required this.files, required this.recto, required this.verso});
+}
+
+class HTMLContentCourseSupport {
+  final String htmlSupport;
+  final List<FileContent> files;
+
+  HTMLContentCourseSupport(
+      {required this.files, required this.htmlSupport});
 }
 
 class HTMLContentObjFiles {
@@ -23,14 +32,24 @@ class HTMLContentObjFiles {
 }
 
 @JsonSerializable(explicitToJson: true)
-class RectoVersoJsonFields {
+class TemplatedCardJsonFields {
   final Map<String, dynamic> recto;
   final Map<String, dynamic> verso;
 
-  RectoVersoJsonFields({required this.recto, required this.verso});
+  TemplatedCardJsonFields({required this.recto, required this.verso});
 
-  factory RectoVersoJsonFields.fromJson(Map<String, dynamic> json) =>
-      _$RectoVersoJsonFieldsFromJson(json);
+  factory TemplatedCardJsonFields.fromJson(Map<String, dynamic> json) =>
+      _$TemplatedCardJsonFieldsFromJson(json);
+}
+
+@JsonSerializable(explicitToJson: true)
+class TemplatedCourseSupportJsonFields {
+  final Map<String, dynamic> support;
+
+  TemplatedCourseSupportJsonFields({required this.support});
+
+  factory TemplatedCourseSupportJsonFields.fromJson(Map<String, dynamic> json) =>
+      _$TemplatedCourseSupportJsonFieldsFromJson(json);
 }
 
 class CardTemplatedBranch {
@@ -70,9 +89,9 @@ class CardTemplatedBranch {
       removeFieldWithMatchingPathPiece(pathPiece);
 
       if (fieldType == FieldType.JSON_OBJECT) {
-        CardTemplatedBranch child = CardTemplatedBranch.createChild(this, pathPiece);
-        jsonObjectFields.putIfAbsent(pathPiece.pathPieceName,
-            () => child);
+        CardTemplatedBranch child =
+            CardTemplatedBranch.createChild(this, pathPiece);
+        jsonObjectFields.putIfAbsent(pathPiece.pathPieceName, () => child);
       } else if (fieldType == FieldType.JSON_OBJECT_ARRAY) {
         jsonObjectsListFields.putIfAbsent(pathPiece.pathPieceName, () => []);
       } else if (fieldType == FieldType.PURE_TEXT) {
@@ -90,7 +109,8 @@ class CardTemplatedBranch {
       //path.add(PathPiece("OHOH - ${path.length.toString()}"));
 
       if (jsonObjectFields.containsValue(starting)) {
-        path.add(PathPiece("(${findKeyByValue<CardTemplatedBranch>(parentCardTemplatedBranch!.jsonObjectFields, starting)}) "));
+        path.add(PathPiece(
+            "(${findKeyByValue<CardTemplatedBranch>(parentCardTemplatedBranch!.jsonObjectFields, starting)}) "));
       } else {
         int counter = 0;
         for (var entry in jsonObjectsListFields.entries) {
@@ -104,7 +124,7 @@ class CardTemplatedBranch {
       parentCardTemplatedBranch!.getPath(starting: this, path: path);
     }
 
-    if(starting == this){
+    if (starting == this) {
       parentCardTemplatedBranch?.getPath(starting: this, path: path);
     }
     path.add(PathPiece("${path.length.toString()} "));
@@ -123,18 +143,20 @@ class CardTemplatedBranch {
     return colorsArray[pathLength % colorsArray.length].withOpacity(0.2);
   }
 
-  static CardTemplatedBranch createChild(CardTemplatedBranch parentBranch, PathPiece pathPiece) {
+  static CardTemplatedBranch createChild(
+      CardTemplatedBranch parentBranch, PathPiece pathPiece) {
     CardTemplatedBranch child = CardTemplatedBranch(null);
     child.parentCardTemplatedBranch = parentBranch;
 
     if (pathPiece.index == null) {
-      parentBranch.jsonObjectFields.putIfAbsent(pathPiece.pathPieceName, () => child);
-    } else{
-      parentBranch.jsonObjectsListFields[pathPiece.pathPieceName]?[pathPiece.index!] = child;
+      parentBranch.jsonObjectFields
+          .putIfAbsent(pathPiece.pathPieceName, () => child);
+    } else {
+      parentBranch.jsonObjectsListFields[pathPiece.pathPieceName]
+          ?[pathPiece.index!] = child;
     }
     return child;
   }
-
 }
 
 class PathPiece {
@@ -205,9 +227,9 @@ class CardTemplatedBranchInteracter {
           isNew: false, child: cardTemplatedBranch);
       // Le field est de type jsonObject
     } else if (!isListOfTemplates &&
-        fieldPathPiece.index == null &&
-        cardTemplatedBranch.jsonObjectFields
-            .containsKey(fieldPathPiece.pathPieceName) 
+            fieldPathPiece.index == null &&
+            cardTemplatedBranch.jsonObjectFields
+                .containsKey(fieldPathPiece.pathPieceName)
         // && cardTemplatedBranch
         //         .jsonObjectFields[fieldPathPiece.pathPieceName]?.templateName !=
         //     null
@@ -221,17 +243,17 @@ class CardTemplatedBranchInteracter {
               .jsonObjectFields[fieldPathPiece.pathPieceName]!);
       // Le field est de type jsonObject faisant partie d'une liste de jsonObject
     } else if (!isListOfTemplates &&
-        cardTemplatedBranch.parentCardTemplatedBranch != null &&
-        fieldPathPiece.index != null &&
-        cardTemplatedBranch.parentCardTemplatedBranch!.jsonObjectsListFields
-            .containsKey(fieldPathPiece.pathPieceName) 
-            // && cardTemplatedBranch
-            //     .parentCardTemplatedBranch!
-            //     .jsonObjectsListFields[fieldPathPiece.pathPieceName]
-            //         ?[fieldPathPiece.index!]
-            //     .templateName !=
-            // null
-            ) {
+            cardTemplatedBranch.parentCardTemplatedBranch != null &&
+            fieldPathPiece.index != null &&
+            cardTemplatedBranch.parentCardTemplatedBranch!.jsonObjectsListFields
+                .containsKey(fieldPathPiece.pathPieceName)
+        // && cardTemplatedBranch
+        //     .parentCardTemplatedBranch!
+        //     .jsonObjectsListFields[fieldPathPiece.pathPieceName]
+        //         ?[fieldPathPiece.index!]
+        //     .templateName !=
+        // null
+        ) {
       bool isNew = cardTemplatedBranch
               .parentCardTemplatedBranch!
               .jsonObjectsListFields[fieldPathPiece.pathPieceName]
@@ -243,13 +265,14 @@ class CardTemplatedBranchInteracter {
           child: cardTemplatedBranch
                   .parentCardTemplatedBranch!.jsonObjectsListFields[
               fieldPathPiece.pathPieceName]![fieldPathPiece.index!]);
-
-    } 
+    }
     // else if(cardTemplatedBranch.parentCardTemplatedBranch == null){
     //   return CardTemplatedBranchInteracterData(
     //       isNew: true, child: cardTemplatedBranch);
     // }
     return CardTemplatedBranchInteracterData(
-        isNew: true, child: CardTemplatedBranch.createChild(cardTemplatedBranch, fieldPathPiece));
+        isNew: true,
+        child: CardTemplatedBranch.createChild(
+            cardTemplatedBranch, fieldPathPiece));
   }
 }

@@ -66,16 +66,25 @@ Future<File> copyImageToServerDirectory2(File fileToCopy, String filename) async
   return fileToCopy.copySync(path);
 }
 
-Future<File> writeHtmlToServerDirectory(String html, String filename) async {
+Future<File> writeHtmlToServerDirectory(String html, String filename, List<FileContent> fileContents) async {
   final directory = await getTemporaryDirectory();
   final path = '${directory.path}/$filename';
   final htmlFile = File(path);
+
+  for(FileContent fileContent in fileContents) {
+    await writeFileContentToFile(fileContent, directory);
+  }
+
   return htmlFile.writeAsString(html);
 }
 
-Future<File> fileContentToFile(FileContent fileContent) async {
-  final tempDir = await getTemporaryDirectory();
-  File file = await File('${tempDir.path}/${fileContent.name}.${fileContent.format}').create();
+Future<void> writeFileContentToFile(FileContent fileContent, Directory directory) async {
+  File file = await File('${directory.path}/${fileContent.name}.${fileContent.format}').create();
   file.writeAsBytesSync(fileContent.content);
-  return file;
+}
+
+Future<void> cleanDirectory(Directory directory) async {
+  if (await directory.exists()) {
+    await directory.delete(recursive: true);
+  }
 }

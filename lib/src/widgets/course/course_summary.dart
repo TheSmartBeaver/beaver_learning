@@ -1,12 +1,16 @@
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/widget/topic2.dart';
+import 'package:beaver_learning/src/utils/templated_render_manager.dart';
+import 'package:beaver_learning/src/widgets/card/card_displayer/html_displayer.dart';
 import 'package:beaver_learning/src/widgets/reviser/reviser.dart';
+import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:typed_data';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CourseSummary extends StatefulWidget {
   static const routeName = '/courseScreen';
@@ -21,7 +25,7 @@ class CourseSummary extends StatefulWidget {
   }
 }
 
-Widget _renderButton(BuildContext context, int? fileId) {
+Widget _renderViewPdfSupportButton(BuildContext context, int? fileId) {
   return fileId != null
       ? GestureDetector(
           onTap: () async {
@@ -43,7 +47,71 @@ Widget _renderButton(BuildContext context, int? fileId) {
       : Container();
 }
 
-Widget _renderButton2(BuildContext context, int? groupId) {
+Widget _renderViewHtmlSupportButton(BuildContext context, int? htmlContentId) {
+  return htmlContentId != null
+      ? GestureDetector(
+          onTap: () async {
+            var database = MyDatabaseInstance.getInstance();
+            var htmlContent = await (database.select(database.hTMLContents)
+                  ..where((tbl) => tbl.id.equals(htmlContentId)))
+                .getSingle();
+
+            List<HTMLContentFile> htmlContentFiles = await (database
+                    .select(database.hTMLContentFiles)
+                  ..where(
+                      (tbl) => tbl.htmlContentParentId.equals(htmlContent.id)))
+                .get();
+
+            List<FileContent> contentFiles =
+                await (database.select(database.fileContents)
+                      ..where((tbl) =>
+                          tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
+                    .get();
+            
+            TemplatedRendererManager templatedCardRendererManager = TemplatedRendererManager(htmlContent: htmlContent, contentFiles: contentFiles);
+            // TODO: Faire la gestion d'erreur pour quand même retourner un résultat ???
+            var result = await templatedCardRendererManager.renderTemplatedHtmlSupport();
+
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (ctx) => Scaffold(
+          appBar: CustomAppBar(
+            title: "Card editor",
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.arrow_circle_left_sharp),
+                onPressed: () async {
+                  Navigator.of(ctx).pop();
+                },
+              )
+            ],
+          ),
+          body: HTMLDisplayer(
+              htmlContentString: result.htmlSupport, fileContents: contentFiles),
+          drawer: const AppDrawer(),
+          persistentFooterButtons: [
+            FloatingActionButton(
+              heroTag: "btn1",
+              onPressed: () {},
+              foregroundColor: Colors.blue[900],
+              backgroundColor: Colors.green,
+              shape: const CircleBorder(),
+              child: const Icon(FontAwesomeIcons.chartColumn),
+            ),
+          ],
+        )),
+            );
+          },
+          child: Container(
+            //width: 30,
+            margin: EdgeInsets.only(left: 4, right: 4),
+            //decoration: BoxDecoration(border: Border.all()),
+            child: const Icon(Icons.html_sharp, color: Colors.redAccent),
+          ))
+      : Container();
+}
+
+Widget _renderReviseTopicButton(BuildContext context, int? groupId) {
   return groupId != null
       ? GestureDetector(
           onTap: () {
@@ -98,9 +166,11 @@ Widget _renderTopicBlock(
                 })
             : const Text(""),
         trailingChildren: [
-          _renderButton(context, topic.fileId),
+          _renderViewHtmlSupportButton(context, topic.htmlContentId),
           SizedBox(width: 8.0),
-          _renderButton2(context, topic.groupId)
+          _renderViewPdfSupportButton(context, topic.fileId),
+          SizedBox(width: 8.0),
+          _renderReviseTopicButton(context, topic.groupId)
         ],
         children: childrenRendered,
         isTileExpanded: isTileExpanded),

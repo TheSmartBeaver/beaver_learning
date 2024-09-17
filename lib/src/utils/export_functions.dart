@@ -206,7 +206,7 @@ Future<GroupExport> recursiveGroupDiscovery(GroupData deck) async {
             verso: content.verso,
             files: content.files
                 .map((e) => FileContentExport(
-                    e.name, e.format, e.file.readAsBytesSync()))
+                    e.name, e.format, e.content))
                 .toList()));
     cardExports.add(cardExport);
   }

@@ -164,7 +164,7 @@ Future<void> initial_migrate_batch(
     ),
     CardTemplateCompanion.insert(
       id: const Value(2),
-      path: "_item_template.html",
+      path: itemTemplate_name,
       sku: "EMPTY_TEMPLATE",
       template: htmlEmptyTemplate
     )
@@ -173,9 +173,7 @@ Future<void> initial_migrate_batch(
   batch.insertAll(dbInfos.hTMLContents, [
     HTMLContentsCompanion.insert(
         id: const Value(1),
-        recto: '',
-        verso: '',
-        cardTemplatedJson: previewCardJson,
+        cardTemplatedJson: Value(previewCardJson),
         isTemplated: const Value(true))
   ]);
   batch.insertAll(dbInfos.reviseCards, [

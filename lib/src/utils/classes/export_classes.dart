@@ -18,11 +18,13 @@ enum ExportType {
   cardHtmlTemplated,
   rectoHtml,
   versoHtml,
-  fileContent,
+  cardFileContent,
+  supportFileContent,
   unknown,
   course,
   topic,
-  support
+  support,
+  templatedJsonSupport
 }
 
 @JsonSerializable(explicitToJson: true)
@@ -65,6 +67,8 @@ class TopicExport {
   int? dbId;
   GroupExport? group;
   Uint8List? topicSupportBytes;
+  HTMLContentExport? topicSupportContent;
+  
   final List<TopicExport> childTopics;
 
   // factory GroupExport.fromJson(Map<String, dynamic> json) =>

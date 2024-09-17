@@ -39,6 +39,7 @@ class TemplateCardEditor extends ConsumerStatefulWidget
 
   @override
   Future<void> showCard(BuildContext context) async {
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => Scaffold(
@@ -73,7 +74,7 @@ class TemplateCardEditor extends ConsumerStatefulWidget
 }
 
 class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
-  late ReviseCard cardForPreview;
+  //late ReviseCard cardForPreview;
   bool isInitialized = false;
   CardTemplatedBranch cardTemplatedBranchToUpdate = CardTemplatedBranch(null);
   late HTMLCardDisplayer htmlCardDisplayer;
@@ -88,19 +89,20 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
         () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
             PathPiece(AppConstante.versoFieldName)));
 
-    Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
+    // Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
 
-    cardTemplatedBranchToUpdate = buildBranch(json);
+    // cardTemplatedBranchToUpdate = buildBranch(json);
 
     var toto = 0;
   }
 
   Future getPreviewCard() async {
     final database = MyDatabaseInstance.getInstance();
-    cardForPreview = await (database.select(database.reviseCards)
+    widget.cardForPreview = await (database.select(database.reviseCards)
           ..where((tbl) =>
               tbl.path.equals(AppConstante.templatedCardPreviewNameKey)))
         .getSingle();
+    var test = 0;
   }
 
   Future<void> update_card() async {
@@ -109,7 +111,7 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
 
     // On appelle la fonction de mise à jour de la carte
     await widget.cardDao
-        .updateCardTemplatedJson(cardForPreview.htmlContent, value);
+        .updateCardTemplatedJson(widget.cardForPreview.htmlContent, value);
 
     // On remet un coup de "getPreviewCard"
     await getPreviewCard();
@@ -128,7 +130,9 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
       isInitialized = true;
     }
 
-    widget.cardForPreview = cardForPreview;
+    // if(cardForPreview != null){
+    //   widget.cardForPreview = cardForPreview;
+    // }
 
     return Container(
         padding: const EdgeInsets.all(8.0),
@@ -146,7 +150,7 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
                   return const CircularProgressIndicator();
                 } else {
                   htmlCardDisplayer = HTMLCardDisplayer(
-                      isPrintAnswer: true, cardToRevise: cardForPreview);
+                      isPrintAnswer: true, cardToRevise: widget.cardForPreview);
                   return Container(
                       decoration: BoxDecoration(
                         color: Colors.blue,

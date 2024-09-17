@@ -79,7 +79,7 @@ class ImportManager extends ImportInterface {
   void fillAllCardExportsFiles() {
     // On ajoute les fichiers aux cartes
     for (var file in entityNatures.entries
-        .where((element) => element.value.type == ExportType.fileContent)) {
+        .where((element) => element.value.type == ExportType.cardFileContent)) {
       List<String> paths = file.key.split('/');
       String cardKey = extractParentFolder(file.key);
       if (paths.length >= 2 && cardExports.containsKey(cardKey)) {
@@ -150,8 +150,10 @@ class ImportManager extends ImportInterface {
   }
 
   var cardReg = RegExp(r"card_\d+.*");
+  var supportRepoReg = RegExp(r".*support.*");
   var htmlReg = RegExp(r".*html");
-  var supportReg = RegExp(r"support.*");
+  var supportPdfReg = RegExp(r"support.*\.pdf");
+  var supportJsonReg = RegExp(r"support.*\.json");
   var templatedJsonReg = RegExp(r"card_template\.json");
 
   @override
@@ -227,18 +229,28 @@ class ImportManager extends ImportInterface {
           entityNatures[htmlTemplateNameName] = EntityNature(
               htmlTemplateNameName, ExportType.cardHtmlTemplated,
               bytes: bytes);
+        } else if (supportJsonReg.hasMatch(paths[paths.length - 1])) {
+          // On identifie en tant que support JSON d'un topic
+          entityNatures[archEntity.name] = EntityNature(
+              archEntity.name, ExportType.templatedJsonSupport,
+              bytes: bytes);
         }
       } else if (paths[paths.length - 1].contains('.') &&
           !paths[paths.length - 1].startsWith('.')) {
         if (cardReg.hasMatch(paths[paths.length - 2])) {
           // On identifie en tant que fileContent d'une carte
           entityNatures[archEntity.name] = EntityNature(
-              archEntity.name, ExportType.fileContent,
+              archEntity.name, ExportType.cardFileContent,
               bytes: bytes);
-        } else if (supportReg.hasMatch(paths[paths.length - 1])) {
-          // On identifie en tant que support d'un topic
+        } else if (supportPdfReg.hasMatch(paths[paths.length - 1])) {
+          // On identifie en tant que support PDF d'un topic
           entityNatures[archEntity.name] =
               EntityNature(archEntity.name, ExportType.support, bytes: bytes);
+        } else if (supportRepoReg.hasMatch(paths[paths.length - 2])) {
+          // On identifie en tant que fileContent d'un support
+          entityNatures[archEntity.name] = EntityNature(
+              archEntity.name, ExportType.supportFileContent,
+              bytes: bytes);
         }
       }
     } else {
@@ -310,10 +322,10 @@ class ImportManager extends ImportInterface {
 
   @override
   void linkAllSupportsToTopicExports() {
-    //On mets les support dans leur topic
-    for (var support in entityNatures.entries
+    //On mets les support PDF dans leur topic
+    for (var pdfSupport in entityNatures.entries
         .where((element) => element.value.type == ExportType.support)) {
-      List<String> paths = support.key.split('/');
+      List<String> paths = pdfSupport.key.split('/');
       for (int index = paths.length - 2; index >= 0; index--) {
         var topicEntityNature = entityNatures.values
             .where((element) =>
@@ -322,7 +334,48 @@ class ImportManager extends ImportInterface {
             .firstOrNull;
         if (topicEntityNature != null) {
           topicExports[topicEntityNature.path]!.topicSupportBytes =
-              support.value.bytes;
+              pdfSupport.value.bytes;
+          break;
+        }
+      }
+    }
+
+    //On mets les support JSON dans leur topic
+    for (var jsonSupport in entityNatures.entries.where(
+        (element) => element.value.type == ExportType.templatedJsonSupport)) {
+      List<String> paths = jsonSupport.key.split('/');
+      for (int index = paths.length - 2; index >= 0; index--) {
+        var topicEntityNature = entityNatures.values
+            .where((element) =>
+                element.name == paths[index] &&
+                element.type == ExportType.topic)
+            .firstOrNull;
+        if (topicEntityNature != null) {
+          topicExports[topicEntityNature.path]!.topicSupportContent =
+              HTMLContentExport(
+                  files: [],
+                  cardTemplatedJson: utf8.decode(jsonSupport.value.bytes!),
+                  isTemplated: true);
+          break;
+        }
+      }
+    }
+
+    //On mets les ContentSupportFiles dans leur topic
+    for (var fileContentSupport in entityNatures.entries.where(
+        (element) => element.value.type == ExportType.supportFileContent)) {
+      List<String> paths = fileContentSupport.key.split('/');
+      for (int index = paths.length - 2; index >= 0; index--) {
+        var topicEntityNature = entityNatures.values
+            .where((element) =>
+                element.name == paths[index] &&
+                element.type == ExportType.topic)
+            .firstOrNull;
+        if (topicEntityNature != null) {
+          topicExports[topicEntityNature.path]?.topicSupportContent?.files.add(FileContentExport(
+            paths[paths.length - 1].split('.')[0],
+            paths[paths.length - 1].split('.')[1],
+            fileContentSupport.value.bytes!));
           break;
         }
       }
@@ -422,10 +475,10 @@ class ImportManager extends ImportInterface {
       await (db.update(db.hTMLContents)
             ..where((tbl) => tbl.id.equals(contentId)))
           .write(HTMLContentsCompanion.insert(
-              recto: cardExport.content.recto,
-              verso: cardExport.content.verso,
+              recto: Value(cardExport.content.recto),
+              verso: Value(cardExport.content.verso),
               isTemplated: const Value(false),
-              cardTemplatedJson: ""));
+              cardTemplatedJson: const Value("")));
     }
 
     Future<void> updateTemplatedCard() async {
@@ -433,10 +486,8 @@ class ImportManager extends ImportInterface {
       await (db.update(db.hTMLContents)
             ..where((tbl) => tbl.id.equals(contentId)))
           .write(HTMLContentsCompanion.insert(
-              recto: "",
-              verso: "",
               isTemplated: const Value(true),
-              cardTemplatedJson: cardExport.content.cardTemplatedJson));
+              cardTemplatedJson: Value(cardExport.content.cardTemplatedJson)));
     }
 
     if (cardExport.content.isTemplated) {
@@ -468,10 +519,10 @@ class ImportManager extends ImportInterface {
           CardDisplayerType.html,
           cardExport.path!,
           HTMLContentsCompanion.insert(
-              recto: cardExport.content.recto,
-              verso: cardExport.content.verso,
+              recto: Value(cardExport.content.recto),
+              verso: Value(cardExport.content.verso),
               isTemplated: const Value(false),
-              cardTemplatedJson: ""));
+              cardTemplatedJson: const Value("")));
     }
 
     Future<void> createTemplatedCard() async {
@@ -480,10 +531,8 @@ class ImportManager extends ImportInterface {
           CardDisplayerType.html,
           cardExport.path!,
           HTMLContentsCompanion.insert(
-              recto: "",
-              verso: "",
               isTemplated: const Value(true),
-              cardTemplatedJson: cardExport.content.cardTemplatedJson));
+              cardTemplatedJson: Value(cardExport.content.cardTemplatedJson)));
     }
 
     if (cardExport.content.isTemplated) {
@@ -523,15 +572,30 @@ class ImportManager extends ImportInterface {
         .firstOrNull
         ?.dbId;
     int? supportId;
+    int? htmlContentId;
     late int topicId;
     var db = MyDatabaseInstance.getInstance();
 
     Future<void> createFileContent() async {
+      // On crée le support de cours PDF si il existe
       if (topicExport.topicSupportBytes != null) {
         supportId = await createFileContentInDb(FileContentsCompanion.insert(
             name: "support",
             format: "pdf",
             content: topicExport.topicSupportBytes!));
+      }
+
+      // On crée le support de cours HTML si il existe
+      if (topicExport.topicSupportContent != null) {
+        htmlContentId = await createHtmlContentInDb(HTMLContentsCompanion.insert(cardTemplatedJson: Value(topicExport.topicSupportContent?.cardTemplatedJson ?? ""), isTemplated: const Value(true)));
+        if (topicExport.topicSupportContent?.files != null) {
+          for (var file in topicExport.topicSupportContent!.files) {
+            await createHtmlContentFileContentInDb(
+                htmlContentId!,
+                FileContentsCompanion.insert(
+                    name: file.name, format: file.format, content: file.content));
+          }
+        }
       }
     }
 
@@ -550,6 +614,9 @@ class ImportManager extends ImportInterface {
               .go();
         }
       }
+      if (existingTopic.htmlContentId != null) {
+        //TODO: Faire le nécessaire pour tout supprimer htmlContent + files 
+      }
       await createFileContent();
       topicId = existingTopic.id;
       await (db.update(db.topics)..where((tbl) => tbl.id.equals(topicId)))
@@ -559,6 +626,7 @@ class ImportManager extends ImportInterface {
               parentCourseId: parentCourseId,
               groupId: Value(groupId),
               fileId: Value(supportId),
+              htmlContentId: Value(htmlContentId),
               parentId: Value(parentId)));
     } else {
       await createFileContent();
@@ -568,6 +636,7 @@ class ImportManager extends ImportInterface {
           parentCourseId: parentCourseId,
           groupId: Value(groupId),
           fileId: Value(supportId),
+          htmlContentId: Value(htmlContentId),
           parentId: Value(parentId)));
     }
     for (var childTopic in topicExport.childTopics) {
@@ -579,12 +648,14 @@ class ImportManager extends ImportInterface {
   @override
   void fillAllHtmlTemplatesExports() {
     // On crée les templates html des cartes templated
-    for (MapEntry<String, EntityNature> cardHtmlTemplate in entityNatures.entries.where(
-        (element) => element.value.type == ExportType.cardHtmlTemplated)) {
+    for (MapEntry<String, EntityNature> cardHtmlTemplate
+        in entityNatures.entries.where(
+            (element) => element.value.type == ExportType.cardHtmlTemplated)) {
       if (!htmlTemplateExports.containsKey(cardHtmlTemplate.value.path)) {
         List<String> paths = cardHtmlTemplate.value.path.split('/');
         htmlTemplateExports[cardHtmlTemplate.value.path] = HtmlTemplateExport(
-            path: paths[paths.length - 1], // ICI on ne prend que le nom de la template, pas le chemin entier
+            path: paths[paths.length -
+                1], // ICI on ne prend que le nom de la template, pas le chemin entier
             template: utf8.decode(cardHtmlTemplate.value.bytes!),
             sku: sku);
       }

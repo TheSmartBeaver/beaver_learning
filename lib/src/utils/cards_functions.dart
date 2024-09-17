@@ -55,6 +55,12 @@ Future<int> createFileContentInDb(FileContentsCompanion fileContentsCompanion) a
   return fileId;
 }
 
+Future<int> createHtmlContentInDb(HTMLContentsCompanion htmlContentsCompanion) async {
+  var fileId =
+      await database.into(database.hTMLContents).insert(htmlContentsCompanion);
+  return fileId;
+}
+
 Future<int> createCourseInDb(CoursesCompanion courseCompanion) async {
   var id = await database.into(database.courses).insert(courseCompanion);
   return id;

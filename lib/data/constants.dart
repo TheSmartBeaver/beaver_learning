@@ -10,5 +10,6 @@ class AppConstante {
 
   static String rectoFieldName = "recto";
   static String versoFieldName = "verso";
+  static String htmlSupportFieldName = "support";
   static String templateFieldName = "template_name";
 }

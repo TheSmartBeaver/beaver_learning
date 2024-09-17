@@ -3,7 +3,7 @@ import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/images_functions.dart';
-import 'package:beaver_learning/src/utils/templated_card_render_manager.dart';
+import 'package:beaver_learning/src/utils/templated_render_manager.dart';
 import 'package:drift/drift.dart';
 
 part 'html_dao.g.dart';
@@ -36,23 +36,23 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
           ..where((tbl) => tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
         .get();
 
-    List<HTMLContentObjFiles> hTMLContentObjFiles = [];
-    for (var e in contentFiles) {
-      hTMLContentObjFiles.add(
-          HTMLContentObjFiles(e.name, e.format, (await fileContentToFile(e))));
-    }
+    // List<HTMLContentObjFiles> hTMLContentObjFiles = [];
+    // for (var e in contentFiles) {
+    //   hTMLContentObjFiles.add(
+    //       HTMLContentObjFiles(e.name, e.format, (await fileContentToFile(e))));
+    // }
 
     HTMLContentRectoVerso result;
 
     if(htmlContent.isTemplated) {
-      TemplatedCardRendererManager templatedCardRendererManager = TemplatedCardRendererManager(htmlContent: htmlContent, hTMLContentObjFiles: hTMLContentObjFiles);
+      TemplatedRendererManager templatedCardRendererManager = TemplatedRendererManager(htmlContent: htmlContent, contentFiles: contentFiles);
       // TODO: Faire la gestion d'erreur pour quand même retourner un résultat ???
-      result = await templatedCardRendererManager.render();
+      result = await templatedCardRendererManager.renderTemplatedCard();
     } else {
       result = HTMLContentRectoVerso(
           recto: htmlContent.recto,
           verso: htmlContent.verso,
-          files: hTMLContentObjFiles);
+          files: contentFiles);
     }
 
     return result;
