@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:beaver_learning/src/dao/image_dao.dart';
+import 'package:beaver_learning/src/models/db/assemblyCategoryTable.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/cardTemplateTable.dart';
 import 'package:beaver_learning/src/models/db/courseTable.dart';
@@ -30,7 +31,8 @@ part 'database.g.dart';
   HTMLContents,
   HTMLContentFiles,
   Topics,
-  CardTemplate
+  CardTemplate,
+  AssemblyCategory
 ], views: [], daos: [
   ImageDao
 ])

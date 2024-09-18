@@ -337,9 +337,19 @@ class $HTMLContentsTable extends HTMLContents
           type: DriftSqlType.string,
           requiredDuringInsert: false,
           defaultValue: const Constant(""));
+  static const VerificationMeta _isAssemblyMeta =
+      const VerificationMeta('isAssembly');
+  @override
+  late final GeneratedColumn<bool> isAssembly = GeneratedColumn<bool>(
+      'is_assembly', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_assembly" IN (0, 1))'),
+      defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, recto, verso, isTemplated, cardTemplatedJson];
+      [id, recto, verso, isTemplated, cardTemplatedJson, isAssembly];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -373,6 +383,12 @@ class $HTMLContentsTable extends HTMLContents
           cardTemplatedJson.isAcceptableOrUnknown(
               data['card_templated_json']!, _cardTemplatedJsonMeta));
     }
+    if (data.containsKey('is_assembly')) {
+      context.handle(
+          _isAssemblyMeta,
+          isAssembly.isAcceptableOrUnknown(
+              data['is_assembly']!, _isAssemblyMeta));
+    }
     return context;
   }
 
@@ -392,6 +408,8 @@ class $HTMLContentsTable extends HTMLContents
           .read(DriftSqlType.bool, data['${effectivePrefix}is_templated'])!,
       cardTemplatedJson: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}card_templated_json'])!,
+      isAssembly: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_assembly'])!,
     );
   }
 
@@ -407,12 +425,14 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   final String verso;
   final bool isTemplated;
   final String cardTemplatedJson;
+  final bool isAssembly;
   const HTMLContent(
       {required this.id,
       required this.recto,
       required this.verso,
       required this.isTemplated,
-      required this.cardTemplatedJson});
+      required this.cardTemplatedJson,
+      required this.isAssembly});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -421,6 +441,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
     map['verso'] = Variable<String>(verso);
     map['is_templated'] = Variable<bool>(isTemplated);
     map['card_templated_json'] = Variable<String>(cardTemplatedJson);
+    map['is_assembly'] = Variable<bool>(isAssembly);
     return map;
   }
 
@@ -431,6 +452,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       verso: Value(verso),
       isTemplated: Value(isTemplated),
       cardTemplatedJson: Value(cardTemplatedJson),
+      isAssembly: Value(isAssembly),
     );
   }
 
@@ -443,6 +465,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       verso: serializer.fromJson<String>(json['verso']),
       isTemplated: serializer.fromJson<bool>(json['isTemplated']),
       cardTemplatedJson: serializer.fromJson<String>(json['cardTemplatedJson']),
+      isAssembly: serializer.fromJson<bool>(json['isAssembly']),
     );
   }
   @override
@@ -454,6 +477,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       'verso': serializer.toJson<String>(verso),
       'isTemplated': serializer.toJson<bool>(isTemplated),
       'cardTemplatedJson': serializer.toJson<String>(cardTemplatedJson),
+      'isAssembly': serializer.toJson<bool>(isAssembly),
     };
   }
 
@@ -462,13 +486,15 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
           String? recto,
           String? verso,
           bool? isTemplated,
-          String? cardTemplatedJson}) =>
+          String? cardTemplatedJson,
+          bool? isAssembly}) =>
       HTMLContent(
         id: id ?? this.id,
         recto: recto ?? this.recto,
         verso: verso ?? this.verso,
         isTemplated: isTemplated ?? this.isTemplated,
         cardTemplatedJson: cardTemplatedJson ?? this.cardTemplatedJson,
+        isAssembly: isAssembly ?? this.isAssembly,
       );
   @override
   String toString() {
@@ -477,14 +503,15 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
           ..write('recto: $recto, ')
           ..write('verso: $verso, ')
           ..write('isTemplated: $isTemplated, ')
-          ..write('cardTemplatedJson: $cardTemplatedJson')
+          ..write('cardTemplatedJson: $cardTemplatedJson, ')
+          ..write('isAssembly: $isAssembly')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, recto, verso, isTemplated, cardTemplatedJson);
+      Object.hash(id, recto, verso, isTemplated, cardTemplatedJson, isAssembly);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -493,7 +520,8 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
           other.recto == this.recto &&
           other.verso == this.verso &&
           other.isTemplated == this.isTemplated &&
-          other.cardTemplatedJson == this.cardTemplatedJson);
+          other.cardTemplatedJson == this.cardTemplatedJson &&
+          other.isAssembly == this.isAssembly);
 }
 
 class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
@@ -502,12 +530,14 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   final Value<String> verso;
   final Value<bool> isTemplated;
   final Value<String> cardTemplatedJson;
+  final Value<bool> isAssembly;
   const HTMLContentsCompanion({
     this.id = const Value.absent(),
     this.recto = const Value.absent(),
     this.verso = const Value.absent(),
     this.isTemplated = const Value.absent(),
     this.cardTemplatedJson = const Value.absent(),
+    this.isAssembly = const Value.absent(),
   });
   HTMLContentsCompanion.insert({
     this.id = const Value.absent(),
@@ -515,6 +545,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     this.verso = const Value.absent(),
     this.isTemplated = const Value.absent(),
     this.cardTemplatedJson = const Value.absent(),
+    this.isAssembly = const Value.absent(),
   });
   static Insertable<HTMLContent> custom({
     Expression<int>? id,
@@ -522,6 +553,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     Expression<String>? verso,
     Expression<bool>? isTemplated,
     Expression<String>? cardTemplatedJson,
+    Expression<bool>? isAssembly,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -529,6 +561,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
       if (verso != null) 'verso': verso,
       if (isTemplated != null) 'is_templated': isTemplated,
       if (cardTemplatedJson != null) 'card_templated_json': cardTemplatedJson,
+      if (isAssembly != null) 'is_assembly': isAssembly,
     });
   }
 
@@ -537,13 +570,15 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
       Value<String>? recto,
       Value<String>? verso,
       Value<bool>? isTemplated,
-      Value<String>? cardTemplatedJson}) {
+      Value<String>? cardTemplatedJson,
+      Value<bool>? isAssembly}) {
     return HTMLContentsCompanion(
       id: id ?? this.id,
       recto: recto ?? this.recto,
       verso: verso ?? this.verso,
       isTemplated: isTemplated ?? this.isTemplated,
       cardTemplatedJson: cardTemplatedJson ?? this.cardTemplatedJson,
+      isAssembly: isAssembly ?? this.isAssembly,
     );
   }
 
@@ -565,6 +600,9 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     if (cardTemplatedJson.present) {
       map['card_templated_json'] = Variable<String>(cardTemplatedJson.value);
     }
+    if (isAssembly.present) {
+      map['is_assembly'] = Variable<bool>(isAssembly.value);
+    }
     return map;
   }
 
@@ -575,7 +613,8 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
           ..write('recto: $recto, ')
           ..write('verso: $verso, ')
           ..write('isTemplated: $isTemplated, ')
-          ..write('cardTemplatedJson: $cardTemplatedJson')
+          ..write('cardTemplatedJson: $cardTemplatedJson, ')
+          ..write('isAssembly: $isAssembly')
           ..write(')'))
         .toString();
   }
@@ -2662,6 +2701,227 @@ class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
   }
 }
 
+class $AssemblyCategoryTable extends AssemblyCategory
+    with TableInfo<$AssemblyCategoryTable, AssemblyCategoryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AssemblyCategoryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _categoryNameMeta =
+      const VerificationMeta('categoryName');
+  @override
+  late final GeneratedColumn<String> categoryName = GeneratedColumn<String>(
+      'category_name', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _templateIdMeta =
+      const VerificationMeta('templateId');
+  @override
+  late final GeneratedColumn<int> templateId = GeneratedColumn<int>(
+      'template_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES card_template (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [id, categoryName, templateId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'assembly_category';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<AssemblyCategoryData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('category_name')) {
+      context.handle(
+          _categoryNameMeta,
+          categoryName.isAcceptableOrUnknown(
+              data['category_name']!, _categoryNameMeta));
+    } else if (isInserting) {
+      context.missing(_categoryNameMeta);
+    }
+    if (data.containsKey('template_id')) {
+      context.handle(
+          _templateIdMeta,
+          templateId.isAcceptableOrUnknown(
+              data['template_id']!, _templateIdMeta));
+    } else if (isInserting) {
+      context.missing(_templateIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AssemblyCategoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AssemblyCategoryData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      categoryName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category_name'])!,
+      templateId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}template_id'])!,
+    );
+  }
+
+  @override
+  $AssemblyCategoryTable createAlias(String alias) {
+    return $AssemblyCategoryTable(attachedDatabase, alias);
+  }
+}
+
+class AssemblyCategoryData extends DataClass
+    implements Insertable<AssemblyCategoryData> {
+  final int id;
+  final String categoryName;
+  final int templateId;
+  const AssemblyCategoryData(
+      {required this.id, required this.categoryName, required this.templateId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['category_name'] = Variable<String>(categoryName);
+    map['template_id'] = Variable<int>(templateId);
+    return map;
+  }
+
+  AssemblyCategoryCompanion toCompanion(bool nullToAbsent) {
+    return AssemblyCategoryCompanion(
+      id: Value(id),
+      categoryName: Value(categoryName),
+      templateId: Value(templateId),
+    );
+  }
+
+  factory AssemblyCategoryData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AssemblyCategoryData(
+      id: serializer.fromJson<int>(json['id']),
+      categoryName: serializer.fromJson<String>(json['categoryName']),
+      templateId: serializer.fromJson<int>(json['templateId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'categoryName': serializer.toJson<String>(categoryName),
+      'templateId': serializer.toJson<int>(templateId),
+    };
+  }
+
+  AssemblyCategoryData copyWith(
+          {int? id, String? categoryName, int? templateId}) =>
+      AssemblyCategoryData(
+        id: id ?? this.id,
+        categoryName: categoryName ?? this.categoryName,
+        templateId: templateId ?? this.templateId,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('AssemblyCategoryData(')
+          ..write('id: $id, ')
+          ..write('categoryName: $categoryName, ')
+          ..write('templateId: $templateId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, categoryName, templateId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AssemblyCategoryData &&
+          other.id == this.id &&
+          other.categoryName == this.categoryName &&
+          other.templateId == this.templateId);
+}
+
+class AssemblyCategoryCompanion extends UpdateCompanion<AssemblyCategoryData> {
+  final Value<int> id;
+  final Value<String> categoryName;
+  final Value<int> templateId;
+  const AssemblyCategoryCompanion({
+    this.id = const Value.absent(),
+    this.categoryName = const Value.absent(),
+    this.templateId = const Value.absent(),
+  });
+  AssemblyCategoryCompanion.insert({
+    this.id = const Value.absent(),
+    required String categoryName,
+    required int templateId,
+  })  : categoryName = Value(categoryName),
+        templateId = Value(templateId);
+  static Insertable<AssemblyCategoryData> custom({
+    Expression<int>? id,
+    Expression<String>? categoryName,
+    Expression<int>? templateId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (categoryName != null) 'category_name': categoryName,
+      if (templateId != null) 'template_id': templateId,
+    });
+  }
+
+  AssemblyCategoryCompanion copyWith(
+      {Value<int>? id, Value<String>? categoryName, Value<int>? templateId}) {
+    return AssemblyCategoryCompanion(
+      id: id ?? this.id,
+      categoryName: categoryName ?? this.categoryName,
+      templateId: templateId ?? this.templateId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (categoryName.present) {
+      map['category_name'] = Variable<String>(categoryName.value);
+    }
+    if (templateId.present) {
+      map['template_id'] = Variable<int>(templateId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AssemblyCategoryCompanion(')
+          ..write('id: $id, ')
+          ..write('categoryName: $categoryName, ')
+          ..write('templateId: $templateId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   late final $GroupTable group = $GroupTable(this);
@@ -2674,6 +2934,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $HTMLContentFilesTable(this);
   late final $TopicsTable topics = $TopicsTable(this);
   late final $CardTemplateTable cardTemplate = $CardTemplateTable(this);
+  late final $AssemblyCategoryTable assemblyCategory =
+      $AssemblyCategoryTable(this);
   late final ImageDao imageDao = ImageDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -2688,6 +2950,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         fileContents,
         hTMLContentFiles,
         topics,
-        cardTemplate
+        cardTemplate,
+        assemblyCategory
       ];
 }

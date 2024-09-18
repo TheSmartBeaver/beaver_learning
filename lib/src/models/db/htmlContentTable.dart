@@ -7,4 +7,5 @@ class HTMLContents extends Table {
   TextColumn get verso => text().withDefault(const Constant(""))();
   BoolColumn get isTemplated => boolean().withDefault(const Constant(false))();
   TextColumn get cardTemplatedJson => text().withDefault(const Constant(""))();
+  BoolColumn get isAssembly => boolean().withDefault(const Constant(false))();
 }

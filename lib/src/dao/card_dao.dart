@@ -61,4 +61,13 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
 
     return cardTemplateToReturn;
   }
+
+  Future insertAssembly(HTMLContent htmlContent, int assemblyCategoryId, bool bool) async {
+      await into(hTMLContents).insert(htmlContent);
+      await into(hTMLContents).insert(htmlContent);
+  }
+
+  Future updateAssembly(HTMLContent htmlContent, int templateCategoryId) async {
+      await update(hTMLContents).replace(htmlContent);
+  }
 }
