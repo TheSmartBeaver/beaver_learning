@@ -3,6 +3,7 @@ import 'package:beaver_learning/src/providers/app_bar_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/course_creator.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
+import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/marketplace.dart';
 import 'package:beaver_learning/src/screens/settings_screen.dart';
@@ -24,8 +25,7 @@ class AppDrawer extends ConsumerStatefulWidget {
 }
 
 enum DrawerItem {
-  groups,
-  cards,
+  editors,
   statistics,
   revisor,
   courses,
@@ -39,17 +39,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     ref.read(appbarProvider.notifier).changeSelectedDrawerIndex(item);
     //Navigator.pop(context);
     switch (item) {
-      case DrawerItem.groups:
-        Navigator.pushReplacementNamed(context, GroupScreen.routeName);
-        break;
-      case DrawerItem.cards:
-        Navigator.pushReplacementNamed(context, CardList.routeName);
-
-        // Navigator.of(context).push(
-        //   MaterialPageRoute(
-        //     builder: (ctx) => CardEditorScreen(),
-        //   ),
-        // );
+      case DrawerItem.editors:
+        Navigator.pushReplacementNamed(context, EditorsScreen.routeName);
         break;
       case DrawerItem.statistics:
         Navigator.pushReplacementNamed(context, StatisticsScreen.routeName);
@@ -90,21 +81,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             child: Text(AppConstante.AppTitle),
           ),
           ListTile(
-            title: const Text('Groupes'),
+            title: const Text('Editors'),
             selected:
                 ref.watch(appbarProvider.notifier).state.currentDrawerIndex ==
-                    DrawerItem.groups,
+                    DrawerItem.editors,
             onTap: () {
-              _internalOnItemTapped(DrawerItem.groups);
-            },
-          ),
-          ListTile(
-            title: const Text('Cartes'),
-            selected:
-                ref.read(appbarProvider.notifier).state.currentDrawerIndex ==
-                    DrawerItem.cards,
-            onTap: () {
-              _internalOnItemTapped(DrawerItem.cards);
+              _internalOnItemTapped(DrawerItem.editors);
             },
           ),
           ListTile(

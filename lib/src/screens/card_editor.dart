@@ -5,6 +5,7 @@ import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/html_card_editor.dart';
+import 'package:beaver_learning/src/widgets/card/card_editor.dart/mnemotechnic_dialog.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_card_editor.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
@@ -164,7 +165,7 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
         FloatingActionButton(
             heroTag: "btn2",
             onPressed: () {
-              Navigator.pushNamed(context, CardEditorScreen.routeName);
+              //Navigator.pushNamed(context, CardEditorScreen.routeName);
             },
             foregroundColor: Colors.yellow[400],
             backgroundColor: Colors.redAccent,
@@ -172,7 +173,12 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
             child: const Icon(FontAwesomeIcons.lightbulb)),
         FloatingActionButton(
             onPressed: () {
-              Navigator.pushNamed(context, CardEditorScreen.routeName);
+              if(widget.cardToEditId != null){
+                showDialog(
+                  context: context,
+                  builder: (context) => MnemotechnicDialog(cardId: widget.cardToEditId!),
+                );
+              }
             },
             foregroundColor: Colors.yellow[400],
             backgroundColor: Colors.blueGrey,

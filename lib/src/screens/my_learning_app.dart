@@ -1,6 +1,7 @@
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/course_creator.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
+import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/interactive_speech.dart';
 import 'package:beaver_learning/src/screens/marketplace.dart';
@@ -87,26 +88,24 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
                 switch (routeSettings.name) {
                   case CardEditorScreen.routeName:
                     return CardEditorScreen();
-                  case GroupScreen.routeName:
-                    return GroupScreen();
                   case RevisorDisplayer.routeName:
                     return RevisorDisplayer();
-                  case CardList.routeName:
-                    return CardList();
+                  case EditorsScreen.routeName:
+                    return const EditorsScreen();
                   case MarketPlaceScreen.routeName:
-                    return MarketPlaceScreen();
+                    return const MarketPlaceScreen();
                   case SettingsScreen.routeName:
-                    return SettingsScreen();
+                    return const SettingsScreen();
                   case StatisticsScreen.routeName:
                     return ChatScreenPage();
                   case GroupEditor.routeName:
                     return GroupEditor();
                   case CoursesScreen.routeName:
-                    return CoursesScreen();
+                    return const CoursesScreen();
                   case CourseCreatorScreen.routeName:
                     return CourseCreatorScreen();
                   default:
-                    return CoursesScreen();
+                    return const CoursesScreen();
                 }
               },
             );

@@ -3,6 +3,7 @@ import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
+import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:drift/drift.dart' as drift;
@@ -13,8 +14,13 @@ class CardList extends ConsumerStatefulWidget {
   static const routeName = '/cardListScreen';
   final GroupData? initialGroup;
   bool isInitialized = false;
+  Function(EditorsState editorsState)?
+      setActiveEditorScaffoldPropsInEditorsScreen;
 
-  CardList({super.key, this.initialGroup});
+  CardList(
+      {super.key,
+      this.initialGroup,
+      this.setActiveEditorScaffoldPropsInEditorsScreen});
 
   @override
   ConsumerState<CardList> createState() {
@@ -113,7 +119,8 @@ class _CardListState extends ConsumerState<CardList> {
     }
 
     var cardsRequest = database.select(database.reviseCards);
-    cardsRequest.where((card) => card.path.isNotValue(AppConstante.templatedCardPreviewNameKey));
+    cardsRequest.where((card) =>
+        card.path.isNotValue(AppConstante.templatedCardPreviewNameKey));
     if (widget.initialGroup != null) {
       cardsRequest
           .where((card) => card.groupId.equals(widget.initialGroup!.id));
@@ -132,103 +139,100 @@ class _CardListState extends ConsumerState<CardList> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cards List'),
-      ),
-      drawer: const AppDrawer(),
-      body: Center(
-        child: Column(
-          children: [
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //   children: [
-            //     CustomDropdownMenu(
-            //       items: items,
-            //       label: "Group",
-            //       onSelected: onGroupSelected,
-            //       width: MediaQuery.of(context).size.width / 2,
-            //     ),
-            //     CustomDropdownMenu(
-            //       items: items,
-            //       label: "Cards",
-            //       onSelected: onCardSelected,
-            //       width: MediaQuery.of(context).size.width / 2,
-            //     ),
-            //   ],
-            // ),
-            getDropDowns(ref, context),
-            const SizedBox(height: 6),
-            Container(
-              margin: const EdgeInsets.all(4),
-              child: TextField(
-                obscureText: true,
-                controller: wordController,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  labelText: 'Words',
-                ),
-              ),
-            ),
-            FutureBuilder(
-              future: init(ref, context),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else {
-                  return Expanded(
-                    child: ListView.builder(
-                      // Providing a restorationId allows the ListView to restore the
-                      // scroll position when a user leaves and returns to the app after it
-                      // has been killed while running in the background.
-                      restorationId: 'sampleItemListView',
-                      itemCount: cards.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (ctx) => CardEditorScreen(
-                                        cardToEditId: cards[index].id)),
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              margin: const EdgeInsets.all(2),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  packInBox(Text(
-                                      "cardId : ${cards[index].id} isAssembly : ${htmlContents[cards[index].id]?.isAssembly}")),
-                                  packInBox(Text(htmlContents[cards[index].id]
-                                          ?.cardTemplatedJson ??
-                                      '')),
-                                ],
-                              ),
-                            ));
-                      },
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _afterBuild();
+    });
+  }
+
+  void _afterBuild() {
+    var floatingActionButton = [
+      FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, CardEditorScreen.routeName);
         },
         foregroundColor: Colors.white,
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.red,
         shape: const CircleBorder(),
         child: const Icon(Icons.add),
+      )
+    ];
+
+    if (widget.setActiveEditorScaffoldPropsInEditorsScreen != null) {
+      widget.setActiveEditorScaffoldPropsInEditorsScreen!(EditorsState(
+          actions: null,
+          currentEditorTitle: "Cards List",
+          persistentFooterButtons: floatingActionButton));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        children: [
+          getDropDowns(ref, context),
+          const SizedBox(height: 6),
+          Container(
+            margin: const EdgeInsets.all(4),
+            child: TextField(
+              obscureText: true,
+              controller: wordController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                labelText: 'Words',
+              ),
+            ),
+          ),
+          FutureBuilder(
+            future: init(ref, context),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else {
+                return Expanded(
+                  child: ListView.builder(
+                    // Providing a restorationId allows the ListView to restore the
+                    // scroll position when a user leaves and returns to the app after it
+                    // has been killed while running in the background.
+                    restorationId: 'sampleItemListView',
+                    itemCount: cards.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (ctx) => CardEditorScreen(
+                                      cardToEditId: cards[index].id)),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            margin: const EdgeInsets.all(2),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                packInBox(Text(
+                                    "cardId : ${cards[index].id} isAssembly : ${htmlContents[cards[index].id]?.isAssembly}")),
+                                packInBox(Text(htmlContents[cards[index].id]
+                                        ?.cardTemplatedJson ??
+                                    '')),
+                              ],
+                            ),
+                          ));
+                    },
+                  ),
+                );
+              }
+            },
+          ),
+        ],
       ),
     );
   }

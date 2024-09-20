@@ -1,11 +1,20 @@
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/widgets/group/group_detail.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class GroupList extends StatelessWidget {
+class GroupList extends ConsumerStatefulWidget {
   final List<GroupData> groups;
 
   GroupList({required this.groups});
+  
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() {
+    return GroupListState();
+  }
+}
+
+class GroupListState extends ConsumerState<GroupList> {
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +26,7 @@ class GroupList extends StatelessWidget {
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
-        itemCount: groups.length,
+        itemCount: widget.groups.length,
         itemBuilder: (context, index) {
           return Card(
             child: Column(
@@ -25,7 +34,7 @@ class GroupList extends StatelessWidget {
                 Expanded(
                     child: Column(
                   children: [
-                    Text(groups[index].title),
+                    Text(widget.groups[index].title),
                     const SizedBox(height: 6),
                     const Text('4 / 3 / 5'),
                   ],
@@ -36,7 +45,7 @@ class GroupList extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (ctx) => GroupDetail(group: groups[index]),
+                            builder: (ctx) => GroupDetail(group: widget.groups[index]),
                           ),
                         );
                       },

@@ -54,7 +54,7 @@ class _GroupEditorState extends State<GroupEditor> {
             icon: const Icon(Icons.check_circle),
             onPressed: () async {
               await createGroup();
-              Navigator.pushReplacementNamed(context, GroupScreen.routeName);
+              Navigator.pushReplacementNamed(context, GroupsList.routeName);
             },
           )
         ],
