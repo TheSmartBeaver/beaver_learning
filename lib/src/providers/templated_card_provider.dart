@@ -8,6 +8,14 @@ class TemplatedCardNotifier extends StateNotifier<TemplatedCardState> {
     state.rootCardTemplatedBranch = cardTemplatedBranch;
   }
 
+  bool hasRootCardTemplatedBranchChanged(bool hasChanged) {
+    return state.rootCardTemplatedBranchChangedMarker != hasChanged;
+  }
+
+  void makeRootCardTemplatedBranchChange() {
+    state.rootCardTemplatedBranchChangedMarker = !state.rootCardTemplatedBranchChangedMarker;
+  }
+
   get rootCardTemplatedBranch => state.rootCardTemplatedBranch;
 }
 
@@ -18,4 +26,5 @@ final templatedCardProvider =
 
 class TemplatedCardState {
   CardTemplatedBranch? rootCardTemplatedBranch;
+  bool rootCardTemplatedBranchChangedMarker = false;
 } 

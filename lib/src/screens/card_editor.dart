@@ -1,4 +1,6 @@
+import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
@@ -14,10 +16,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:beaver_learning/data/constants.dart';
 
 class CardEditorScreen extends ConsumerStatefulWidget {
-  CardEditorScreen({super.key});
+  CardEditorScreen({super.key, this.cardToEditId});
 
   final String title = AppConstante.AppTitle;
   static const routeName = '/cardEditorScreen';
+  final int? cardToEditId;
 
   late List<DropDownItem<int>> groupItems;
   CustomDropdownMenu<int>? groupDropdown;
@@ -27,28 +30,6 @@ class CardEditorScreen extends ConsumerStatefulWidget {
   final TextEditingController cardTypeController = TextEditingController();
 
   bool isInitialized = false;
-
-  Future<void> init(WidgetRef ref, BuildContext context) async {
-    if (!isInitialized) {
-      //Group
-      var groups = await ref.read(appDatabaseProvider.notifier).getAllGroups();
-      groupItems = groups.map<DropDownItem<int>>(
-        (GroupData gData) {
-          return DropDownItem<int>(gData.title, gData.id);
-        },
-      ).toList();
-
-      //Card displayer types
-      cardDiplayerTypeItems =
-          CardDisplayerType.values.map<DropDownItem<CardDisplayerType>>(
-        (CardDisplayerType cdt) {
-          return DropDownItem<CardDisplayerType>(cdt.name, cdt);
-        },
-      ).toList();
-
-      isInitialized = true;
-    }
-  }
 
   @override
   ConsumerState<CardEditorScreen> createState() => _CardEditorScreenState();
@@ -60,11 +41,48 @@ List<DropDownItem> items = [
 ];
 
 class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
+  int? initialCardGroupId;
+
+  Future<void> init(WidgetRef ref, BuildContext context) async {
+    if (!widget.isInitialized) {
+      //Group
+      var groups = await ref.read(appDatabaseProvider.notifier).getAllGroups();
+      widget.groupItems = groups.map<DropDownItem<int>>(
+        (GroupData gData) {
+          return DropDownItem<int>(gData.title, gData.id);
+        },
+      ).toList();
+
+      //Card displayer types
+      widget.cardDiplayerTypeItems =
+          CardDisplayerType.values.map<DropDownItem<CardDisplayerType>>(
+        (CardDisplayerType cdt) {
+          return DropDownItem<CardDisplayerType>(cdt.name, cdt);
+        },
+      ).toList();
+
+      if (widget.cardToEditId != null) {
+        CardDao cardDao = CardDao(MyDatabaseInstance.getInstance());
+        ReviseCard card = await cardDao.getCardById(widget.cardToEditId!);
+        initialCardGroupId = card.groupId;
+      }
+
+      widget.isInitialized = true;
+    }
+  }
+
   Widget getDropDowns(WidgetRef ref, BuildContext context) {
     List<Widget> getDropDowns2() {
+      DropDownItem<int>? dropDownItem;
+      try {
+        dropDownItem = widget.groupItems.firstWhere(
+            (element) => element.value == initialCardGroupId);
+      } catch (e) {}
+
       widget.groupDropdown = CustomDropdownMenu(
         items: widget.groupItems,
         label: "Group",
+        value: dropDownItem,
         width: MediaQuery.of(context).size.width,
       );
 
@@ -84,7 +102,7 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
 
     if (!widget.isInitialized) {
       return FutureBuilder(
-          future: widget.init(ref, context),
+          future: init(ref, context),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator();
@@ -100,7 +118,8 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
   @override
   Widget build(BuildContext context) {
     //CardEditorInterface editorToRender = HtmlCardEditor();
-    CardEditorInterface editorToRender = TemplateCardEditor();
+    CardEditorInterface editorToRender =
+        TemplateCardEditor(cardToEditId: widget.cardToEditId);
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -115,10 +134,14 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
           IconButton(
             icon: const Icon(Icons.check_circle),
             onPressed: () async {
-              int groupId = widget.groupDropdown!.getValue()!.value;
-              await editorToRender.createCard(
-                  groupId, widget.cardDiplayerTypeDropdown!.getValue()!.value);
-              Navigator.pushNamed(context, CardList.routeName);
+              int? groupId = widget.groupDropdown?.getValue()?.value;
+              if (groupId != null) {
+                await editorToRender.createOrUpdateCard(groupId);
+                Navigator.pushNamed(context, CardList.routeName);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Please select a group")));
+              }
             },
           )
         ],

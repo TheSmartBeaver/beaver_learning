@@ -1,9 +1,11 @@
+import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -62,7 +64,8 @@ class _CardListState extends ConsumerState<CardList> {
     List<Widget> getDropDowns2() {
       groupDropdown = CustomDropdownMenu(
         value: widget.initialGroup != null
-            ? DropDownItem<int>(widget.initialGroup!.title, widget.initialGroup!.id)
+            ? DropDownItem<int>(
+                widget.initialGroup!.title, widget.initialGroup!.id)
             : null,
         items: groupItems,
         label: "Group",
@@ -110,14 +113,18 @@ class _CardListState extends ConsumerState<CardList> {
     }
 
     var cardsRequest = database.select(database.reviseCards);
-    if(widget.initialGroup != null) {
-      cardsRequest.where((card) => card.groupId.equals(widget.initialGroup!.id));
+    cardsRequest.where((card) => card.path.isNotValue(AppConstante.templatedCardPreviewNameKey));
+    if (widget.initialGroup != null) {
+      cardsRequest
+          .where((card) => card.groupId.equals(widget.initialGroup!.id));
     }
 
     cards = await cardsRequest.get();
     htmlContents = {};
     for (var card in cards) {
-      htmlContents[card.id] = await (database.select(database.hTMLContents)..where((tbl) => tbl.id.equals(card.id))).getSingle();
+      htmlContents[card.id] = await (database.select(database.hTMLContents)
+            ..where((tbl) => tbl.id.equals(card.id)))
+          .getSingle();
       var toto = 0;
     }
     var toto = 0;
@@ -180,20 +187,31 @@ class _CardListState extends ConsumerState<CardList> {
                       restorationId: 'sampleItemListView',
                       itemCount: cards.length,
                       itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          margin: const EdgeInsets.all(2),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              packInBox(Text(htmlContents[cards[index].id]?.recto ?? '')),
-                              packInBox(Text(htmlContents[cards[index].id]?.verso ?? '')),
-                            ],
-                          ),
-                        );
+                        return GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (ctx) => CardEditorScreen(
+                                        cardToEditId: cards[index].id)),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              margin: const EdgeInsets.all(2),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  packInBox(Text(
+                                      "cardId : ${cards[index].id} isAssembly : ${htmlContents[cards[index].id]?.isAssembly}")),
+                                  packInBox(Text(htmlContents[cards[index].id]
+                                          ?.cardTemplatedJson ??
+                                      '')),
+                                ],
+                              ),
+                            ));
                       },
                     ),
                   );

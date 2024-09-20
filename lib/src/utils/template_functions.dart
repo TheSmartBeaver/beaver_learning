@@ -43,14 +43,15 @@ String removeMarkerBrackets(String marker) {
 }
 
 CardTemplatedBranch buildBranch(Map<String, dynamic> cardJsonBranch,
-    {List<Exception>? errors,
-    Map<String, String>? htmlTemplates }) {
+    {List<Exception>? errors, Map<String, String>? htmlTemplates}) {
   //var jsonDecoded = jsonDecode(cardFace);
   if (!cardJsonBranch.containsKey(AppConstante.templateNameKey)) {
     errors?.add(Exception("No template_name key"));
   } else {
     //On prépare à la future récupération des templates qui vont nous servir à construire les associations
-    htmlTemplates?[cardJsonBranch[AppConstante.templateNameKey]] = "";
+    if (cardJsonBranch[AppConstante.templateNameKey] != null) {
+      htmlTemplates?[cardJsonBranch[AppConstante.templateNameKey]] = "";
+    }
   }
 
   CardTemplatedBranch cardTemplatedBranch =
@@ -62,11 +63,15 @@ CardTemplatedBranch buildBranch(Map<String, dynamic> cardJsonBranch,
       if (cardJsonBranch[key] is List) {
         try {
           List<CardTemplatedBranch> cardTemplatedBranchReturnedList = [];
-          for (Map<String, dynamic> cardTemplatedBranchItem in cardJsonBranch[key]) {
-            CardTemplatedBranch cardTemplatedBranchReturned =
-                buildBranch(cardTemplatedBranchItem, errors: errors, htmlTemplates: htmlTemplates);
-                // on set la branche parente
-                cardTemplatedBranchReturned.parentCardTemplatedBranch = cardTemplatedBranch;
+          for (Map<String, dynamic> cardTemplatedBranchItem
+              in cardJsonBranch[key]) {
+            CardTemplatedBranch cardTemplatedBranchReturned = buildBranch(
+                cardTemplatedBranchItem,
+                errors: errors,
+                htmlTemplates: htmlTemplates);
+            // on set la branche parente
+            cardTemplatedBranchReturned.parentCardTemplatedBranch =
+                cardTemplatedBranch;
             cardTemplatedBranchReturnedList.add(cardTemplatedBranchReturned);
           }
           cardTemplatedBranch.jsonObjectsListFields[key] =
@@ -75,11 +80,11 @@ CardTemplatedBranch buildBranch(Map<String, dynamic> cardJsonBranch,
           errors?.add(e);
         }
       } else if (cardJsonBranch[key] is Map<String, dynamic>) {
-        CardTemplatedBranch branchObject = buildBranch(cardJsonBranch[key], errors: errors, htmlTemplates: htmlTemplates);
+        CardTemplatedBranch branchObject = buildBranch(cardJsonBranch[key],
+            errors: errors, htmlTemplates: htmlTemplates);
         // on set la branche parente
-                branchObject.parentCardTemplatedBranch = cardTemplatedBranch;
+        branchObject.parentCardTemplatedBranch = cardTemplatedBranch;
         cardTemplatedBranch.jsonObjectFields[key] = branchObject;
-            
       } else if (cardJsonBranch[key] is String) {
         cardTemplatedBranch.pureTextFields[key] = cardJsonBranch[key];
       } else {

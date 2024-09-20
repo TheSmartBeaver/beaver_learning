@@ -1,3 +1,4 @@
+import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
@@ -22,6 +23,20 @@ Future<CardCreatedReturns> createCardInDb(
           htmlContent: contentId,
           tags: 'toto;ahah'));
   return CardCreatedReturns(cardId, contentId);
+}
+
+Future<void> updateCardInDb(int groupId, CardDisplayerType displayerType,
+    String? path, HTMLContentsCompanion hTMLContentsCompanion) async {
+  var cardId = await database
+      .update(database.reviseCards)
+      .write(ReviseCardsCompanion(groupId: Value(groupId)));
+
+  final cardDao = CardDao(MyDatabaseInstance.getInstance());
+  var htmlContent = await cardDao.getHtmlContentByCardId(cardId);
+
+  (database.update(database.hTMLContents)
+        ..where((t) => t.id.equals(htmlContent.id)))
+      .write(hTMLContentsCompanion);
 }
 
 class CardCreatedReturns {
@@ -49,13 +64,15 @@ Future<int> createTopicInDb(TopicsCompanion topicCompanion) async {
   return id;
 }
 
-Future<int> createFileContentInDb(FileContentsCompanion fileContentsCompanion) async {
+Future<int> createFileContentInDb(
+    FileContentsCompanion fileContentsCompanion) async {
   var fileId =
       await database.into(database.fileContents).insert(fileContentsCompanion);
   return fileId;
 }
 
-Future<int> createHtmlContentInDb(HTMLContentsCompanion htmlContentsCompanion) async {
+Future<int> createHtmlContentInDb(
+    HTMLContentsCompanion htmlContentsCompanion) async {
   var fileId =
       await database.into(database.hTMLContents).insert(htmlContentsCompanion);
   return fileId;
@@ -66,7 +83,9 @@ Future<int> createCourseInDb(CoursesCompanion courseCompanion) async {
   return id;
 }
 
-Future<int> createHtmlTemplateInDb(CardTemplateCompanion htmlTemplateCompanion) async {
-  var id = await database.into(database.cardTemplate).insert(htmlTemplateCompanion);
+Future<int> createHtmlTemplateInDb(
+    CardTemplateCompanion htmlTemplateCompanion) async {
+  var id =
+      await database.into(database.cardTemplate).insert(htmlTemplateCompanion);
   return id;
 }

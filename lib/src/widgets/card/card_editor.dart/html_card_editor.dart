@@ -21,8 +21,8 @@ class HtmlCardEditor extends StatefulWidget implements CardEditorInterface {
   }
 
   @override
-  Future<void> createCard(int groupId, CardDisplayerType displayerType, {String? path}) async {
-    await createCardInDb(groupId, displayerType, path, HTMLContentsCompanion.insert(recto: drift.Value(rectoController.text), verso: drift.Value(versoController.text), cardTemplatedJson: const drift.Value(""), isTemplated: const drift.Value(false)));
+  Future<void> createOrUpdateCard(int groupId, {String? path}) async {
+    await createCardInDb(groupId, CardDisplayerType.html, path, HTMLContentsCompanion.insert(recto: drift.Value(rectoController.text), verso: drift.Value(versoController.text), cardTemplatedJson: const drift.Value(""), isTemplated: const drift.Value(false)));
   }
   
   @override

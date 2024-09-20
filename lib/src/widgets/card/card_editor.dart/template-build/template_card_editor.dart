@@ -8,6 +8,7 @@ import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/templated_card_provider.dart';
+import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
@@ -18,28 +19,55 @@ import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:drift/drift.dart' as drift;
 
 class TemplateCardEditor extends ConsumerStatefulWidget
     implements CardEditorInterface {
   bool isEditMode = true;
   final cardDao = CardDao(MyDatabaseInstance.getInstance());
   late ReviseCard cardForPreview;
+  final int? cardToEditId;
+  late TemplateCardEditorState widgetState;
 
-  TemplateCardEditor({super.key, this.isEditMode = true});
+  TemplateCardEditor({super.key, this.isEditMode = true, this.cardToEditId});
 
   @override
-  Future<void> createCard(int groupId, CardDisplayerType displayerType) async {
-    throw UnimplementedError();
+  Future<void> createOrUpdateCard(int groupId) async {
+    var cardForPreviewHtmlContent = await (MyDatabaseInstance.getInstance()
+            .select(MyDatabaseInstance.getInstance().hTMLContents)
+          ..where((tbl) => tbl.id.equals(cardForPreview.htmlContent)))
+        .getSingle();
+
+    if (cardToEditId == null) {
+      await createCardInDb(
+          groupId,
+          CardDisplayerType.html,
+          null,
+          HTMLContentsCompanion.insert(
+              cardTemplatedJson:
+                  drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
+              isTemplated: const drift.Value(false)));
+    } else {
+      await updateCardInDb(
+          groupId,
+          CardDisplayerType.html,
+          null,
+          HTMLContentsCompanion.insert(
+              cardTemplatedJson:
+                  drift.Value(cardForPreviewHtmlContent.cardTemplatedJson)));
+    }
+
+    var ahah = 0;
   }
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
-    return _TemplateCardEditorState();
+    widgetState = TemplateCardEditorState();
+    return widgetState;
   }
 
   @override
   Future<void> showCard(BuildContext context) async {
-
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => Scaffold(
@@ -73,28 +101,11 @@ class TemplateCardEditor extends ConsumerStatefulWidget
   }
 }
 
-class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
+class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   //late ReviseCard cardForPreview;
   bool isInitialized = false;
   CardTemplatedBranch cardTemplatedBranchToUpdate = CardTemplatedBranch(null);
   late HTMLCardDisplayer htmlCardDisplayer;
-
-  _TemplateCardEditorState() {
-    cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
-        AppConstante.rectoFieldName,
-        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
-            PathPiece(AppConstante.rectoFieldName)));
-    cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
-        AppConstante.versoFieldName,
-        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
-            PathPiece(AppConstante.versoFieldName)));
-
-    // Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
-
-    // cardTemplatedBranchToUpdate = buildBranch(json);
-
-    var toto = 0;
-  }
 
   Future getPreviewCard() async {
     final database = MyDatabaseInstance.getInstance();
@@ -119,15 +130,73 @@ class _TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
     htmlCardDisplayer.refresh();
   }
 
+  Future<void> init() async {
+    await getPreviewCard();
+    if (!isInitialized) {
+      if (widget.cardToEditId != null) {
+        var cardToEdit = await (MyDatabaseInstance.getInstance()
+                .select(MyDatabaseInstance.getInstance().reviseCards)
+              ..where((tbl) => tbl.id.equals(widget.cardToEditId!)))
+            .getSingle();
+
+        var cardToEditHtmlContent = await (MyDatabaseInstance.getInstance()
+                .select(MyDatabaseInstance.getInstance().hTMLContents)
+              ..where((tbl) => tbl.id.equals(cardToEdit.htmlContent)))
+            .getSingle();
+
+        await widget.cardDao.updateCardTemplatedJson(
+            widget.cardForPreview.htmlContent,
+            cardToEditHtmlContent.cardTemplatedJson);
+
+        setState(() {
+          cardTemplatedBranchToUpdate =
+              buildBranch(jsonDecode(cardToEditHtmlContent.cardTemplatedJson));
+          cardTemplatedBranchToUpdate.templateName = "NOT NEW";
+          ref
+              .read(templatedCardProvider.notifier)
+              .makeRootCardTemplatedBranchChange();
+        });
+
+        var test = 0;
+      }
+
+      setState(() {
+        isInitialized = true;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
+        AppConstante.rectoFieldName,
+        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
+            PathPiece(AppConstante.rectoFieldName)));
+    cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
+        AppConstante.versoFieldName,
+        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
+            PathPiece(AppConstante.versoFieldName)));
+
+    // Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
+
+    // cardTemplatedBranchToUpdate = buildBranch(json);
+
+    var toto = 0;
+  }
+
   @override
   Widget build(BuildContext context) {
+    init();
+
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
     if (isInitialized == false) {
       ref
           .read(templatedCardProvider.notifier)
           .initRootCardTemplatedBranch(cardTemplatedBranchToUpdate);
-      isInitialized = true;
+      //isInitialized = true;
     }
 
     // if(cardForPreview != null){

@@ -54,6 +54,7 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
   CardTemplateData? activeTemplate;
   Widget widgetReturned = const CircularProgressIndicator();
   bool isInitialized = false;
+  bool rootCardTemplatedBranchChangedMarker = false;
 
   Future buildListOfTemplates(CardTemplatedBranch cardTemplatedBranchToUpdate) async {
     if (!widget.isCardTemplatedBranchToUpdateNew) {
@@ -173,13 +174,14 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
   }
 
   Future<void> init() async {
-    if (!isInitialized) {
+    if (!isInitialized || ref.watch(templatedCardProvider.notifier).hasRootCardTemplatedBranchChanged(rootCardTemplatedBranchChangedMarker)) {
       if (widget.isListOfTemplates) {
         await buildListOfTemplates(widget.cardTemplatedBranchToUpdate);
       } else {
         await buildSingleTemplate(widget.cardTemplatedBranchToUpdate);
       }
       setState(() {
+        rootCardTemplatedBranchChangedMarker = ref.read(templatedCardProvider.notifier).state.rootCardTemplatedBranchChangedMarker;
         isInitialized = true;
       });
     }
@@ -187,6 +189,8 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
 
   @override
   Widget build(BuildContext context) {
+
+    ref.watch(templatedCardProvider.notifier).state.rootCardTemplatedBranchChangedMarker;
     init();
 
     var test = ref.read(templatedCardProvider.notifier).rootCardTemplatedBranch;
