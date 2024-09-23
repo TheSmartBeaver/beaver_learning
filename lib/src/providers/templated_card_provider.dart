@@ -4,10 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class TemplatedCardNotifier extends StateNotifier<TemplatedCardState> {
   TemplatedCardNotifier() : super(TemplatedCardState());
 
-  void initRootCardTemplatedBranch(CardTemplatedBranch cardTemplatedBranch) {
-    state.rootCardTemplatedBranch = cardTemplatedBranch;
-  }
-
   bool hasRootCardTemplatedBranchChanged(bool hasChanged) {
     return state.rootCardTemplatedBranchChangedMarker != hasChanged;
   }
@@ -15,8 +11,6 @@ class TemplatedCardNotifier extends StateNotifier<TemplatedCardState> {
   void makeRootCardTemplatedBranchChange() {
     state.rootCardTemplatedBranchChangedMarker = !state.rootCardTemplatedBranchChangedMarker;
   }
-
-  get rootCardTemplatedBranch => state.rootCardTemplatedBranch;
 }
 
 final templatedCardProvider =
@@ -25,6 +19,5 @@ final templatedCardProvider =
 });
 
 class TemplatedCardState {
-  CardTemplatedBranch? rootCardTemplatedBranch;
   bool rootCardTemplatedBranchChangedMarker = false;
 } 

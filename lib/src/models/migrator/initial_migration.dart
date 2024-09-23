@@ -8,8 +8,7 @@ import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/utils/images_functions.dart';
 import 'package:drift/drift.dart';
 
-Future<void> initial_migrate_batch(
-    Batch batch, AppDatabase dbInfos) async {
+Future<void> initial_migrate_batch(Batch batch, AppDatabase dbInfos) async {
   batch.insertAll(dbInfos.courses, [
     CoursesCompanion.insert(
         id: const Value(1),
@@ -157,29 +156,33 @@ Future<void> initial_migrate_batch(
 
   batch.insertAll(dbInfos.cardTemplate, [
     CardTemplateCompanion.insert(
-      id: const Value(1),
-      path: emptyTemplate_name,
-      sku: "EMPTY_TEMPLATE",
-      template: htmlEmptyTemplate
-    ),
+        id: const Value(1),
+        path: emptyTemplate_name,
+        sku: "EMPTY_TEMPLATE",
+        template: htmlEmptyTemplate),
     CardTemplateCompanion.insert(
-      id: const Value(2),
-      path: itemTemplate_name,
-      sku: "EMPTY_TEMPLATE",
-      template: htmlEmptyTemplate
-    )
+        id: const Value(2),
+        path: itemTemplate_name,
+        sku: "EMPTY_TEMPLATE",
+        template: htmlEmptyTemplate)
   ]);
 
   batch.insertAll(dbInfos.hTMLContents, [
     HTMLContentsCompanion.insert(
         id: const Value(1),
         cardTemplatedJson: Value(previewCardJson),
-        isTemplated: const Value(true))
+        isTemplated: const Value(true)),
+    HTMLContentsCompanion.insert(
+        id: const Value(2),
+        path: const Value(AppConstante.templatedPreviewNameKey),
+        cardTemplatedJson: Value(previewCardJson),
+        isTemplated: const Value(true),
+        isAssembly: const Value(true))
   ]);
   batch.insertAll(dbInfos.reviseCards, [
     ReviseCardsCompanion.insert(
       id: const Value(1),
-      path: const Value(AppConstante.templatedCardPreviewNameKey),
+      path: const Value(AppConstante.templatedPreviewNameKey),
       groupId: -1,
       htmlContent: 1,
       tags: '',

@@ -3,11 +3,10 @@ import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
+import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
-import 'package:beaver_learning/src/widgets/card/card_editor.dart/html_card_editor.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/mnemotechnic_dialog.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_card_editor.dart';
-import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
@@ -138,7 +137,11 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
               int? groupId = widget.groupDropdown?.getValue()?.value;
               if (groupId != null) {
                 await editorToRender.createOrUpdateCard(groupId);
-                Navigator.pushNamed(context, CardList.routeName);
+                Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (ctx) => EditorsScreen(
+                        initialMenuItem: InternMenuItemEnum.card)),
+              );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Please select a group")));

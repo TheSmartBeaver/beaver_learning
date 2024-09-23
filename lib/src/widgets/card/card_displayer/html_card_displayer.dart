@@ -93,10 +93,10 @@ String _getCustomHtml(String recto, String verso, bool isPrintAnswer) {
 
 class HTMLCardDisplayer extends StatefulWidget {
   final bool isPrintAnswer;
-  final ReviseCard cardToRevise;
+  final int htmlContentId;
   _HTMLCardDisplayerState hTMLCardDisplayerState= _HTMLCardDisplayerState();
 
-  HTMLCardDisplayer({super.key, required this.isPrintAnswer, required this.cardToRevise});
+  HTMLCardDisplayer({super.key, required this.isPrintAnswer, required this.htmlContentId});
 
   void refresh() {
     hTMLCardDisplayerState.refresh();
@@ -126,7 +126,7 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
   
   Future<void> init() async {
     final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
-    var content = await htmlDao.getHtmlContents(widget.cardToRevise.htmlContent);
+    var content = await htmlDao.getHtmlContents(widget.htmlContentId);
     recto = content.recto;
     verso = content.verso;
 

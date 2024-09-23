@@ -15,12 +15,18 @@ class HTMLContentRectoVerso {
       {required this.files, required this.recto, required this.verso});
 }
 
+class HTMLContentWithFileContents {
+  final HTMLContent htmlContent;
+  final List<FileContent> files;
+
+  HTMLContentWithFileContents({required this.files, required this.htmlContent});
+}
+
 class HTMLContentCourseSupport {
   final String htmlSupport;
   final List<FileContent> files;
 
-  HTMLContentCourseSupport(
-      {required this.files, required this.htmlSupport});
+  HTMLContentCourseSupport({required this.files, required this.htmlSupport});
 }
 
 class HTMLContentObjFiles {
@@ -48,7 +54,8 @@ class TemplatedCourseSupportJsonFields {
 
   TemplatedCourseSupportJsonFields({required this.support});
 
-  factory TemplatedCourseSupportJsonFields.fromJson(Map<String, dynamic> json) =>
+  factory TemplatedCourseSupportJsonFields.fromJson(
+          Map<String, dynamic> json) =>
       _$TemplatedCourseSupportJsonFieldsFromJson(json);
 }
 

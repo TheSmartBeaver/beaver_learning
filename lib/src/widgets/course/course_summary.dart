@@ -1,6 +1,8 @@
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/widget/topic2.dart';
+import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/utils/templated_render_manager.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_displayer.dart';
 import 'package:beaver_learning/src/widgets/reviser/reviser.dart';
@@ -51,26 +53,12 @@ Widget _renderViewHtmlSupportButton(BuildContext context, int? htmlContentId) {
   return htmlContentId != null
       ? GestureDetector(
           onTap: () async {
-            var database = MyDatabaseInstance.getInstance();
-            var htmlContent = await (database.select(database.hTMLContents)
-                  ..where((tbl) => tbl.id.equals(htmlContentId)))
-                .getSingle();
 
-            List<HTMLContentFile> htmlContentFiles = await (database
-                    .select(database.hTMLContentFiles)
-                  ..where(
-                      (tbl) => tbl.htmlContentParentId.equals(htmlContent.id)))
-                .get();
-
-            List<FileContent> contentFiles =
-                await (database.select(database.fileContents)
-                      ..where((tbl) =>
-                          tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
-                    .get();
+            HTMLContentWithFileContents hTMLContentWithFileContents = await getHtmlContentAndFileContentByHtmlContentId(htmlContentId);
             
-            TemplatedRendererManager templatedCardRendererManager = TemplatedRendererManager(htmlContent: htmlContent, contentFiles: contentFiles);
+            TemplatedRendererManager templatedCardRendererManager = TemplatedRendererManager(htmlContent: hTMLContentWithFileContents.htmlContent, contentFiles: hTMLContentWithFileContents.files);
             // TODO: Faire la gestion d'erreur pour quand même retourner un résultat ???
-            var result = await templatedCardRendererManager.renderTemplatedHtmlSupport();
+            HTMLContentCourseSupport result = await templatedCardRendererManager.renderTemplatedHtmlSupport();
 
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -87,7 +75,7 @@ Widget _renderViewHtmlSupportButton(BuildContext context, int? htmlContentId) {
             ],
           ),
           body: HTMLDisplayer(
-              htmlContentString: result.htmlSupport, fileContents: contentFiles),
+              htmlContentString: result.htmlSupport, fileContents: result.files),
           drawer: const AppDrawer(),
           persistentFooterButtons: [
             FloatingActionButton(

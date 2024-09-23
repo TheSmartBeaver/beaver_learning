@@ -2,6 +2,8 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:beaver_learning/data/constants.dart';
+import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 
 String CardTemplatedBranchToJsonString(
@@ -94,4 +96,36 @@ CardTemplatedBranch buildBranch(Map<String, dynamic> cardJsonBranch,
   }
 
   return cardTemplatedBranch;
+}
+
+void initCardTemplatedBranch(CardTemplatedBranch cardTemplatedBranchToUpdate) {
+  cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
+      AppConstante.rectoFieldName,
+      () => CardTemplatedBranch.createChild(
+          cardTemplatedBranchToUpdate, PathPiece(AppConstante.rectoFieldName)));
+  cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
+      AppConstante.versoFieldName,
+      () => CardTemplatedBranch.createChild(
+          cardTemplatedBranchToUpdate, PathPiece(AppConstante.versoFieldName)));
+}
+
+Future<HTMLContentWithFileContents> getHtmlContentAndFileContentByHtmlContentId(
+    int htmlContentId) async {
+  var database = MyDatabaseInstance.getInstance();
+
+  var htmlContent = await (database.select(database.hTMLContents)
+        ..where((tbl) => tbl.id.equals(htmlContentId)))
+      .getSingle();
+
+  List<HTMLContentFile> htmlContentFiles =
+      await (database.select(database.hTMLContentFiles)
+            ..where((tbl) => tbl.htmlContentParentId.equals(htmlContent.id)))
+          .get();
+
+  List<FileContent> contentFiles = await (database.select(database.fileContents)
+        ..where((tbl) => tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
+      .get();
+
+  return HTMLContentWithFileContents(
+      htmlContent: htmlContent, files: contentFiles);
 }

@@ -2,6 +2,7 @@ import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
+import 'package:beaver_learning/src/screens/assembly_editor.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
@@ -10,39 +11,18 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CardList extends ConsumerStatefulWidget {
-  static const routeName = '/cardListScreen';
-  final GroupData? initialGroup;
+class AssembliesList extends ConsumerStatefulWidget {
+  static const routeName = '/assembliesListScreen';
   bool isInitialized = false;
   Function(EditorsState editorsState)?
       setActiveEditorScaffoldPropsInEditorsScreen;
 
-  CardList(
-      {super.key,
-      this.initialGroup,
-      this.setActiveEditorScaffoldPropsInEditorsScreen});
+  AssembliesList({super.key, this.setActiveEditorScaffoldPropsInEditorsScreen});
 
   @override
-  ConsumerState<CardList> createState() {
-    return _CardListState();
+  ConsumerState<AssembliesList> createState() {
+    return _AssembliesListState();
   }
-}
-
-List<DropDownItem> items = [
-  const DropDownItem("item1", "ITEM 1"),
-  const DropDownItem("item2", "ITEM 2")
-];
-
-void onGroupSelected(DropDownItem? item) {
-  var toto = 0;
-}
-
-void onWordSelected(DropDownItem? item) {
-  var toto = 0;
-}
-
-void onCardSelected(DropDownItem? item) {
-  var toto = 0;
 }
 
 Widget packInBox(Widget child) {
@@ -59,83 +39,33 @@ Widget packInBox(Widget child) {
   );
 }
 
-class _CardListState extends ConsumerState<CardList> {
+class _AssembliesListState extends ConsumerState<AssembliesList> {
   final TextEditingController wordController = TextEditingController();
-  late List<ReviseCard> cards;
+  late List<HTMLContent> assemblies;
   late List<DropDownItem<int>> groupItems;
   CustomDropdownMenu<int>? groupDropdown;
   Map<int, HTMLContent> htmlContents = {};
-
-  Widget getDropDowns(WidgetRef ref, BuildContext context) {
-    List<Widget> getDropDowns2() {
-      groupDropdown = CustomDropdownMenu(
-        value: widget.initialGroup != null
-            ? DropDownItem<int>(
-                widget.initialGroup!.title, widget.initialGroup!.id)
-            : null,
-        items: groupItems,
-        label: "Group",
-        width: MediaQuery.of(context).size.width,
-      );
-
-      return [
-        Container(
-            margin: const EdgeInsets.all(4),
-            child: CustomDropdownMenu(
-              items: items,
-              label: "Card Type",
-              width: MediaQuery.of(context).size.width,
-            )),
-        Container(margin: const EdgeInsets.all(4), child: groupDropdown)
-      ];
-    }
-
-    if (!widget.isInitialized) {
-      return FutureBuilder(
-          future: init(ref, context),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
-            } else {
-              return Column(children: getDropDowns2());
-            }
-          });
-    } else {
-      return Column(children: getDropDowns2());
-    }
-  }
 
   Future<void> init(WidgetRef ref, BuildContext context) async {
     var database = MyDatabaseInstance.getInstance();
 
     if (!widget.isInitialized) {
-      var groups = await ref.read(appDatabaseProvider.notifier).getAllGroups();
-      groupItems = groups.map<DropDownItem<int>>(
-        (GroupData gData) {
-          return DropDownItem<int>(gData.title, gData.id);
-        },
-      ).toList();
       widget.isInitialized = true;
     }
 
-    var cardsRequest = database.select(database.reviseCards);
-    cardsRequest.where((card) =>
-        card.path.isNotValue(AppConstante.templatedPreviewNameKey));
-    if (widget.initialGroup != null) {
-      cardsRequest
-          .where((card) => card.groupId.equals(widget.initialGroup!.id));
-    }
+    var htmlContentsRequest = database.select(database.hTMLContents);
+    htmlContentsRequest.where(
+        (assembly) => assembly.isAssembly.equals(true));
+    htmlContentsRequest.where(
+        (assembly) => assembly.path.isNotValue(AppConstante.templatedPreviewNameKey));
 
-    cards = await cardsRequest.get();
+    assemblies = await htmlContentsRequest.get();
     htmlContents = {};
-    for (var card in cards) {
-      htmlContents[card.id] = await (database.select(database.hTMLContents)
-            ..where((tbl) => tbl.id.equals(card.htmlContent)))
+    for (var assembly in assemblies) {
+      htmlContents[assembly.id] = await (database.select(database.hTMLContents)
+            ..where((tbl) => tbl.id.equals(assembly.id)))
           .getSingle();
-      var toto = 0;
     }
-    var toto = 0;
-    //TODO: Pourquoi refait t'on cette appel quand on est dans écran création carte
   }
 
   @override
@@ -150,7 +80,9 @@ class _CardListState extends ConsumerState<CardList> {
     var floatingActionButton = [
       FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, CardEditorScreen.routeName);
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (ctx) => AssemblyEditor()),
+          );
         },
         foregroundColor: Colors.white,
         backgroundColor: Colors.red,
@@ -162,7 +94,7 @@ class _CardListState extends ConsumerState<CardList> {
     if (widget.setActiveEditorScaffoldPropsInEditorsScreen != null) {
       widget.setActiveEditorScaffoldPropsInEditorsScreen!(EditorsState(
           actions: null,
-          currentEditorTitle: "Cards List",
+          currentEditorTitle: "Assemblies List",
           persistentFooterButtons: floatingActionButton));
     }
   }
@@ -172,8 +104,6 @@ class _CardListState extends ConsumerState<CardList> {
     return Center(
       child: Column(
         children: [
-          getDropDowns(ref, context),
-          const SizedBox(height: 6),
           Container(
             margin: const EdgeInsets.all(4),
             child: TextField(
@@ -198,15 +128,15 @@ class _CardListState extends ConsumerState<CardList> {
                     // Providing a restorationId allows the ListView to restore the
                     // scroll position when a user leaves and returns to the app after it
                     // has been killed while running in the background.
-                    restorationId: 'sampleItemListView',
-                    itemCount: cards.length,
+                    restorationId: 'assembliesListView',
+                    itemCount: assemblies.length,
                     itemBuilder: (BuildContext context, int index) {
                       return GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                  builder: (ctx) => CardEditorScreen(
-                                      cardToEditId: cards[index].id)),
+                                  builder: (ctx) => AssemblyEditor(
+                                      assemblyToEditId: assemblies[index].id)),
                             );
                           },
                           child: Container(
@@ -219,10 +149,11 @@ class _CardListState extends ConsumerState<CardList> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 packInBox(Text(
-                                    "cardId : ${cards[index].id} isAssembly : ${htmlContents[cards[index].id]?.isAssembly}")),
-                                packInBox(Text(htmlContents[cards[index].id]
-                                        ?.cardTemplatedJson ??
-                                    '')),
+                                    "cardId : ${assemblies[index].id} isAssembly : ${htmlContents[assemblies[index].id]?.isAssembly}")),
+                                packInBox(Text(
+                                    htmlContents[assemblies[index].id]
+                                            ?.cardTemplatedJson ??
+                                        '')),
                               ],
                             ),
                           ));

@@ -55,11 +55,11 @@ class _CardDisplayerState extends State<CardDisplayer> {
             isPrintAnswer: isPrintAnswer, cardToRevise: widget.cardToRevise);
       case CardDisplayerType.html:
         return HTMLCardDisplayer(
-            isPrintAnswer: isPrintAnswer, cardToRevise: widget.cardToRevise);
+            isPrintAnswer: isPrintAnswer, htmlContentId: widget.cardToRevise.htmlContent);
       default:
     }
     return HTMLCardDisplayer(
-        isPrintAnswer: isPrintAnswer, cardToRevise: widget.cardToRevise);
+        isPrintAnswer: isPrintAnswer, htmlContentId: widget.cardToRevise.htmlContent);
   }
 
   @override

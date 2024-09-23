@@ -25,6 +25,25 @@ Future<CardCreatedReturns> createCardInDb(
   return CardCreatedReturns(cardId, contentId);
 }
 
+Future<void> createAssemblyInDb(
+    HTMLContentsCompanion hTMLContentsCompanion) async {
+  var contentId =
+      await database.into(database.hTMLContents).insert(hTMLContentsCompanion);
+}
+
+Future<void> updateAssemblyInDb(
+    HTMLContentsCompanion hTMLContentsCompanion) async {
+  var cardId =
+      await database.update(database.hTMLContents).write(hTMLContentsCompanion);
+
+  final cardDao = CardDao(MyDatabaseInstance.getInstance());
+  var htmlContent = await cardDao.getHtmlContentByCardId(cardId);
+
+  (database.update(database.hTMLContents)
+        ..where((t) => t.id.equals(htmlContent.id)))
+      .write(hTMLContentsCompanion);
+}
+
 Future<void> updateCardInDb(int groupId, CardDisplayerType displayerType,
     String? path, HTMLContentsCompanion hTMLContentsCompanion) async {
   var cardId = await database

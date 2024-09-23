@@ -305,6 +305,11 @@ class $HTMLContentsTable extends HTMLContents
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _rectoMeta = const VerificationMeta('recto');
   @override
   late final GeneratedColumn<String> recto = GeneratedColumn<String>(
@@ -349,7 +354,7 @@ class $HTMLContentsTable extends HTMLContents
       defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, recto, verso, isTemplated, cardTemplatedJson, isAssembly];
+      [id, path, recto, verso, isTemplated, cardTemplatedJson, isAssembly];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -362,6 +367,10 @@ class $HTMLContentsTable extends HTMLContents
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
     }
     if (data.containsKey('recto')) {
       context.handle(
@@ -400,6 +409,8 @@ class $HTMLContentsTable extends HTMLContents
     return HTMLContent(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path']),
       recto: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}recto'])!,
       verso: attachedDatabase.typeMapping
@@ -421,6 +432,7 @@ class $HTMLContentsTable extends HTMLContents
 
 class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   final int id;
+  final String? path;
   final String recto;
   final String verso;
   final bool isTemplated;
@@ -428,6 +440,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   final bool isAssembly;
   const HTMLContent(
       {required this.id,
+      this.path,
       required this.recto,
       required this.verso,
       required this.isTemplated,
@@ -437,6 +450,9 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || path != null) {
+      map['path'] = Variable<String>(path);
+    }
     map['recto'] = Variable<String>(recto);
     map['verso'] = Variable<String>(verso);
     map['is_templated'] = Variable<bool>(isTemplated);
@@ -448,6 +464,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   HTMLContentsCompanion toCompanion(bool nullToAbsent) {
     return HTMLContentsCompanion(
       id: Value(id),
+      path: path == null && nullToAbsent ? const Value.absent() : Value(path),
       recto: Value(recto),
       verso: Value(verso),
       isTemplated: Value(isTemplated),
@@ -461,6 +478,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return HTMLContent(
       id: serializer.fromJson<int>(json['id']),
+      path: serializer.fromJson<String?>(json['path']),
       recto: serializer.fromJson<String>(json['recto']),
       verso: serializer.fromJson<String>(json['verso']),
       isTemplated: serializer.fromJson<bool>(json['isTemplated']),
@@ -473,6 +491,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'path': serializer.toJson<String?>(path),
       'recto': serializer.toJson<String>(recto),
       'verso': serializer.toJson<String>(verso),
       'isTemplated': serializer.toJson<bool>(isTemplated),
@@ -483,6 +502,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
 
   HTMLContent copyWith(
           {int? id,
+          Value<String?> path = const Value.absent(),
           String? recto,
           String? verso,
           bool? isTemplated,
@@ -490,6 +510,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
           bool? isAssembly}) =>
       HTMLContent(
         id: id ?? this.id,
+        path: path.present ? path.value : this.path,
         recto: recto ?? this.recto,
         verso: verso ?? this.verso,
         isTemplated: isTemplated ?? this.isTemplated,
@@ -500,6 +521,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   String toString() {
     return (StringBuffer('HTMLContent(')
           ..write('id: $id, ')
+          ..write('path: $path, ')
           ..write('recto: $recto, ')
           ..write('verso: $verso, ')
           ..write('isTemplated: $isTemplated, ')
@@ -510,13 +532,14 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, recto, verso, isTemplated, cardTemplatedJson, isAssembly);
+  int get hashCode => Object.hash(
+      id, path, recto, verso, isTemplated, cardTemplatedJson, isAssembly);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is HTMLContent &&
           other.id == this.id &&
+          other.path == this.path &&
           other.recto == this.recto &&
           other.verso == this.verso &&
           other.isTemplated == this.isTemplated &&
@@ -526,6 +549,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
 
 class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   final Value<int> id;
+  final Value<String?> path;
   final Value<String> recto;
   final Value<String> verso;
   final Value<bool> isTemplated;
@@ -533,6 +557,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   final Value<bool> isAssembly;
   const HTMLContentsCompanion({
     this.id = const Value.absent(),
+    this.path = const Value.absent(),
     this.recto = const Value.absent(),
     this.verso = const Value.absent(),
     this.isTemplated = const Value.absent(),
@@ -541,6 +566,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   });
   HTMLContentsCompanion.insert({
     this.id = const Value.absent(),
+    this.path = const Value.absent(),
     this.recto = const Value.absent(),
     this.verso = const Value.absent(),
     this.isTemplated = const Value.absent(),
@@ -549,6 +575,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   });
   static Insertable<HTMLContent> custom({
     Expression<int>? id,
+    Expression<String>? path,
     Expression<String>? recto,
     Expression<String>? verso,
     Expression<bool>? isTemplated,
@@ -557,6 +584,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (path != null) 'path': path,
       if (recto != null) 'recto': recto,
       if (verso != null) 'verso': verso,
       if (isTemplated != null) 'is_templated': isTemplated,
@@ -567,6 +595,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
 
   HTMLContentsCompanion copyWith(
       {Value<int>? id,
+      Value<String?>? path,
       Value<String>? recto,
       Value<String>? verso,
       Value<bool>? isTemplated,
@@ -574,6 +603,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
       Value<bool>? isAssembly}) {
     return HTMLContentsCompanion(
       id: id ?? this.id,
+      path: path ?? this.path,
       recto: recto ?? this.recto,
       verso: verso ?? this.verso,
       isTemplated: isTemplated ?? this.isTemplated,
@@ -587,6 +617,9 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
     }
     if (recto.present) {
       map['recto'] = Variable<String>(recto.value);
@@ -610,6 +643,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   String toString() {
     return (StringBuffer('HTMLContentsCompanion(')
           ..write('id: $id, ')
+          ..write('path: $path, ')
           ..write('recto: $recto, ')
           ..write('verso: $verso, ')
           ..write('isTemplated: $isTemplated, ')

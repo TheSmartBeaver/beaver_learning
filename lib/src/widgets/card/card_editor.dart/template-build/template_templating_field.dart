@@ -193,8 +193,6 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
     ref.watch(templatedCardProvider.notifier).state.rootCardTemplatedBranchChangedMarker;
     init();
 
-    var test = ref.read(templatedCardProvider.notifier).rootCardTemplatedBranch;
-
     return buildSection(widget.fieldPathPiece.pathPieceName, [Text("Widget : (TTF ${widget.fieldPathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),widgetReturned]);
   }
 }

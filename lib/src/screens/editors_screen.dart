@@ -1,3 +1,5 @@
+import 'package:beaver_learning/src/screens/assemblies_list.dart';
+import 'package:beaver_learning/src/screens/assembly_editor.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
@@ -9,9 +11,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EditorsScreen extends ConsumerStatefulWidget {
-  const EditorsScreen({Key? key}) : super(key: key);
+  EditorsScreen({super.key, this.initialMenuItem});
 
   static const routeName = '/editorsScreen';
+  InternMenuItemEnum? initialMenuItem;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
@@ -20,7 +23,7 @@ class EditorsScreen extends ConsumerStatefulWidget {
 }
 
 class InternMenuItem {
-  InternMenuItemMenu id;
+  InternMenuItemEnum id;
   String title;
   Color color;
   bool isActivated;
@@ -31,7 +34,7 @@ class InternMenuItem {
 }
 
 class InternMenuItemWidget extends ConsumerStatefulWidget {
-  InternMenuItemMenu id;
+  InternMenuItemEnum id;
   String title;
   Color color;
   bool isActivated;
@@ -74,7 +77,7 @@ class InternMenuItemWidgetState extends ConsumerState<InternMenuItemWidget> {
   }
 }
 
-enum InternMenuItemMenu { card, group, template, assembly }
+enum InternMenuItemEnum { card, group, template, assembly }
 
 class EditorsScreenState extends ConsumerState<EditorsScreen> {
   late List<InternMenuItem> items;
@@ -86,22 +89,21 @@ class EditorsScreenState extends ConsumerState<EditorsScreen> {
   void initState() {
     super.initState();
     items = [
-      InternMenuItem(InternMenuItemMenu.card, 'Card', Colors.blue, true, this),
+      InternMenuItem(InternMenuItemEnum.card, 'Card', Colors.blue, true, this),
       InternMenuItem(
-          InternMenuItemMenu.group, 'Group', Colors.green, false, this),
+          InternMenuItemEnum.group, 'Group', Colors.green, false, this),
       InternMenuItem(
-          InternMenuItemMenu.template, 'Template', Colors.red, false, this),
+          InternMenuItemEnum.template, 'Template', Colors.red, false, this),
       InternMenuItem(
-          InternMenuItemMenu.assembly, 'Assembly', Colors.yellow, false, this),
-      InternMenuItem(InternMenuItemMenu.card, 'Card', Colors.blue, true, this),
-      InternMenuItem(
-          InternMenuItemMenu.group, 'Group', Colors.green, false, this),
-      InternMenuItem(
-          InternMenuItemMenu.template, 'Template', Colors.red, false, this),
+          InternMenuItemEnum.assembly, 'Assembly', Colors.yellow, false, this),
     ];
+
+    if(widget.initialMenuItem != null) {
+      onMenuItemSelected(widget.initialMenuItem!);
+    }
   }
 
-  void onMenuItemSelected(InternMenuItemMenu id) {
+  void onMenuItemSelected(InternMenuItemEnum id) {
     setState(() {
       items.forEach((element) {
         element.isActivated = element.id == id;
@@ -120,19 +122,20 @@ class EditorsScreenState extends ConsumerState<EditorsScreen> {
     var selectedInternMenuItem =
         items.firstWhere((element) => element.isActivated).id;
     switch (selectedInternMenuItem) {
-      case InternMenuItemMenu.card:
-        rightEditor = CardList(setActiveEditorScaffoldPropsInEditorsScreen:
+      case InternMenuItemEnum.card:
+        rightEditor = CardList(
+            setActiveEditorScaffoldPropsInEditorsScreen:
                 setActiveEditorScaffoldPropsInEditorsScreen);
-      case InternMenuItemMenu.group:
+      case InternMenuItemEnum.group:
         rightEditor = GroupsList(
             setActiveEditorScaffoldPropsInEditorsScreen:
                 setActiveEditorScaffoldPropsInEditorsScreen);
-      case InternMenuItemMenu.template:
-        rightEditor = CardList(setActiveEditorScaffoldPropsInEditorsScreen:
-                setActiveEditorScaffoldPropsInEditorsScreen);
-      case InternMenuItemMenu.assembly:
-        rightEditor = GroupsList(
+      case InternMenuItemEnum.template:
+        rightEditor = CardList(
             setActiveEditorScaffoldPropsInEditorsScreen:
+                setActiveEditorScaffoldPropsInEditorsScreen);
+      case InternMenuItemEnum.assembly:
+        rightEditor = AssembliesList(setActiveEditorScaffoldPropsInEditorsScreen:
                 setActiveEditorScaffoldPropsInEditorsScreen);
     }
   }

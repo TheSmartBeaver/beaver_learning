@@ -46,7 +46,7 @@ class TemplateCardEditor extends ConsumerStatefulWidget
           HTMLContentsCompanion.insert(
               cardTemplatedJson:
                   drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
-              isTemplated: const drift.Value(false)));
+              isTemplated: const drift.Value(false), isAssembly: const drift.Value(false)));
     } else {
       await updateCardInDb(
           groupId,
@@ -83,7 +83,7 @@ class TemplateCardEditor extends ConsumerStatefulWidget
             ],
           ),
           body: HTMLCardDisplayer(
-              isPrintAnswer: true, cardToRevise: cardForPreview),
+              isPrintAnswer: true, htmlContentId: cardForPreview.htmlContent),
           drawer: const AppDrawer(),
           persistentFooterButtons: [
             FloatingActionButton(
@@ -111,7 +111,7 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
     final database = MyDatabaseInstance.getInstance();
     widget.cardForPreview = await (database.select(database.reviseCards)
           ..where((tbl) =>
-              tbl.path.equals(AppConstante.templatedCardPreviewNameKey)))
+              tbl.path.equals(AppConstante.templatedPreviewNameKey)))
         .getSingle();
     var test = 0;
   }
@@ -170,14 +170,7 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   void initState() {
     super.initState();
 
-    cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
-        AppConstante.rectoFieldName,
-        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
-            PathPiece(AppConstante.rectoFieldName)));
-    cardTemplatedBranchToUpdate.jsonObjectFields.putIfAbsent(
-        AppConstante.versoFieldName,
-        () => CardTemplatedBranch.createChild(cardTemplatedBranchToUpdate,
-            PathPiece(AppConstante.versoFieldName)));
+    initCardTemplatedBranch(cardTemplatedBranchToUpdate);
 
     // Map<String, dynamic> json = jsonDecode(completeJsonCardTest);
 
@@ -192,12 +185,6 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
 
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
-    if (isInitialized == false) {
-      ref
-          .read(templatedCardProvider.notifier)
-          .initRootCardTemplatedBranch(cardTemplatedBranchToUpdate);
-      //isInitialized = true;
-    }
 
     // if(cardForPreview != null){
     //   widget.cardForPreview = cardForPreview;
@@ -219,7 +206,7 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
                   return const CircularProgressIndicator();
                 } else {
                   htmlCardDisplayer = HTMLCardDisplayer(
-                      isPrintAnswer: true, cardToRevise: widget.cardForPreview);
+                      isPrintAnswer: true, htmlContentId: widget.cardForPreview.htmlContent);
                   return Container(
                       decoration: BoxDecoration(
                         color: Colors.blue,
