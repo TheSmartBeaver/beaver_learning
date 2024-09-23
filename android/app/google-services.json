@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "359689257729",
+    "project_id": "flash-memorize-pro",
+    "storage_bucket": "flash-memorize-pro.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359689257729:android:04bea24b54b8554c84d100",
+        "android_client_info": {
+          "package_name": "com.example.beaver_learning"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "359689257729-tot7cf70c64et46kancd7eraa982scd0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.beaver_learning",
+            "certificate_hash": "26a68c103c02073453e8e682c11d38db7709b6fe"
+          }
+        },
+        {
+          "client_id": "359689257729-3gtbe0r94knlqehd1u30o81hlmooekg4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyGgd04frjFdmufZnF4KlDNzHdFvXb2F8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "359689257729-3gtbe0r94knlqehd1u30o81hlmooekg4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

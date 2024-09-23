@@ -1,3 +1,4 @@
+import 'package:beaver_learning/src/providers/firebase_auth_provider.dart';
 import 'package:beaver_learning/src/screens/assemblies_list.dart';
 import 'package:beaver_learning/src/screens/assembly_editor.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
@@ -5,6 +6,7 @@ import 'package:beaver_learning/src/screens/course_creator.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
 import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/screens/interactive_speech.dart';
+import 'package:beaver_learning/src/screens/login_screen.dart';
 import 'package:beaver_learning/src/screens/marketplace.dart';
 import 'package:beaver_learning/src/screens/settings_screen.dart';
 import 'package:beaver_learning/src/screens/statistics.dart';
@@ -23,7 +25,7 @@ class MyLearningApp extends ConsumerStatefulWidget {
 
   static const appTitle = 'Drawer Demo';
   final SettingsController settingsController;
-  
+
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
     return _MyLearningAppState();
@@ -83,31 +85,37 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
             return MaterialPageRoute<void>(
               settings: routeSettings,
               builder: (BuildContext context) {
-                switch (routeSettings.name) {
-                  case CardEditorScreen.routeName:
-                    return CardEditorScreen();
-                  case AssemblyEditor.routeName:
-                    return AssemblyEditor();
-                  case AssembliesList.routeName:
-                    return AssembliesList();
-                  case RevisorDisplayer.routeName:
-                    return RevisorDisplayer();
-                  case EditorsScreen.routeName:
-                    return EditorsScreen();
-                  case MarketPlaceScreen.routeName:
-                    return const MarketPlaceScreen();
-                  case SettingsScreen.routeName:
-                    return const SettingsScreen();
-                  case StatisticsScreen.routeName:
-                    return ChatScreenPage();
-                  case GroupEditor.routeName:
-                    return GroupEditor();
-                  case CoursesScreen.routeName:
-                    return const CoursesScreen();
-                  case CourseCreatorScreen.routeName:
-                    return CourseCreatorScreen();
-                  default:
-                    return const CoursesScreen();
+                var isUserLogged =
+                    ref.read(authProvider.notifier).checkIfUserLogged();
+                if (isUserLogged) {
+                  switch (routeSettings.name) {
+                    case CardEditorScreen.routeName:
+                      return CardEditorScreen();
+                    case AssemblyEditor.routeName:
+                      return AssemblyEditor();
+                    case AssembliesList.routeName:
+                      return AssembliesList();
+                    case RevisorDisplayer.routeName:
+                      return RevisorDisplayer();
+                    case EditorsScreen.routeName:
+                      return EditorsScreen();
+                    case MarketPlaceScreen.routeName:
+                      return const MarketPlaceScreen();
+                    case SettingsScreen.routeName:
+                      return const SettingsScreen();
+                    case StatisticsScreen.routeName:
+                      return ChatScreenPage();
+                    case GroupEditor.routeName:
+                      return GroupEditor();
+                    case CoursesScreen.routeName:
+                      return const CoursesScreen();
+                    case CourseCreatorScreen.routeName:
+                      return CourseCreatorScreen();
+                    default:
+                      return const CoursesScreen();
+                  }
+                } else {
+                  return LoginScreen();
                 }
               },
             );

@@ -12,4 +12,6 @@ class AppConstante {
   static String versoFieldName = "verso";
   static String htmlSupportFieldName = "support";
   static String templateFieldName = "template_name";
+
+    static const String profileProviderStateKey = "profileProviderStateKey";
 }

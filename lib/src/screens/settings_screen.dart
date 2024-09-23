@@ -1,16 +1,20 @@
+import 'package:beaver_learning/src/providers/firebase_auth_provider.dart';
+import 'package:beaver_learning/src/screens/courses.dart';
+import 'package:beaver_learning/src/screens/login_screen.dart';
 import 'package:beaver_learning/src/utils/export_functions.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:beaver_learning/data/constants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   final String title = AppConstante.AppTitle;
   static const routeName = '/SettingsScreen';
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 Widget buildSection(String sectionTitle, List<Widget> body, BuildContext context) {
@@ -38,7 +42,7 @@ Widget buildSection(String sectionTitle, List<Widget> body, BuildContext context
       ])));
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Image? imageWidget;
   Image? imageWidget2;
   @override
@@ -58,7 +62,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: const ButtonStyle(
                     backgroundColor: MaterialStatePropertyAll(Colors.purple)),
                 child: const Text("Import Deck",
-                    style: TextStyle(color: Colors.black)))
+                    style: TextStyle(color: Colors.black))),
+                    if (ref.read(authProvider.notifier).checkIfUserLogged())
+              ElevatedButton(
+                child: const Text("Logout"),
+                onPressed: () {
+                  ref.read(authProvider.notifier).signOut(context);
+                  Navigator.pushNamed(context, CoursesScreen.routeName);
+                },
+              ),
           ],
         )),
         drawer: const AppDrawer());
