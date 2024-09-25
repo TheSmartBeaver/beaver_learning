@@ -2,6 +2,7 @@ import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:drift/drift.dart';
 
 final database = MyDatabaseInstance.getInstance();
@@ -21,7 +22,8 @@ Future<CardCreatedReturns> createCardInDb(
           displayerType: displayerType,
           nextRevisionDateMultiplicator: 0.2,
           htmlContent: contentId,
-          tags: 'toto;ahah'));
+          tags: 'toto;ahah',
+          lastUpdated: getUpdateDateNow()));
   return CardCreatedReturns(cardId, contentId);
 }
 
@@ -75,7 +77,7 @@ Future<void> createHtmlContentFileContentInDb(int htmlContentParentId,
       await database.into(database.fileContents).insert(fileContentsCompanion);
   await database.into(database.hTMLContentFiles).insert(
       HTMLContentFilesCompanion.insert(
-          htmlContentParentId: htmlContentParentId, fileId: fileId));
+          htmlContentParentId: htmlContentParentId, fileId: fileId, lastUpdated: getUpdateDateNow()));
 }
 
 Future<int> createTopicInDb(TopicsCompanion topicCompanion) async {

@@ -2,6 +2,7 @@ import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/form-tools/custom-text-field.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/form-tools/form-styles.dart';
@@ -41,7 +42,8 @@ class _GroupEditorState extends State<GroupEditor> {
         path: const drift.Value(null),
         title: nameController.text,
         tags: 'toto;ahah',
-        parentId: drift.Value(_selectedParent?.id)));
+        parentId: drift.Value(_selectedParent?.id),
+        lastUpdated: getUpdateDateNow()));
   }
 
   @override

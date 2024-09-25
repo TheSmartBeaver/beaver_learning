@@ -6,4 +6,5 @@ class Courses extends Table {
   TextColumn get imageUrl => text()();
   TextColumn get title => text()();
   TextColumn get description => text()();
+  DateTimeColumn get lastUpdated => dateTime()();
 }

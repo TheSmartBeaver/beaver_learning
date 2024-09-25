@@ -13,4 +13,5 @@ class Topics extends Table {
   IntColumn get groupId => integer().references(Group, #id).nullable()();
   IntColumn get fileId => integer().references(FileContents, #id).nullable()();
   IntColumn get htmlContentId => integer().references(HTMLContents, #id).nullable()();
+  DateTimeColumn get lastUpdated => dateTime()();
 }

@@ -10,6 +10,7 @@ import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/templated_card_provider.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
@@ -46,7 +47,9 @@ class TemplateCardEditor extends ConsumerStatefulWidget
           HTMLContentsCompanion.insert(
               cardTemplatedJson:
                   drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
-              isTemplated: const drift.Value(false), isAssembly: const drift.Value(false)));
+              isTemplated: const drift.Value(false),
+              isAssembly: const drift.Value(false),
+              lastUpdated: getUpdateDateNow()));
     } else {
       await updateCardInDb(
           groupId,
@@ -54,7 +57,8 @@ class TemplateCardEditor extends ConsumerStatefulWidget
           null,
           HTMLContentsCompanion.insert(
               cardTemplatedJson:
-                  drift.Value(cardForPreviewHtmlContent.cardTemplatedJson)));
+                  drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
+              lastUpdated: getUpdateDateNow()));
     }
 
     var ahah = 0;
@@ -110,8 +114,8 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   Future getPreviewCard() async {
     final database = MyDatabaseInstance.getInstance();
     widget.cardForPreview = await (database.select(database.reviseCards)
-          ..where((tbl) =>
-              tbl.path.equals(AppConstante.templatedPreviewNameKey)))
+          ..where(
+              (tbl) => tbl.path.equals(AppConstante.templatedPreviewNameKey)))
         .getSingle();
     var test = 0;
   }
@@ -206,7 +210,8 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
                   return const CircularProgressIndicator();
                 } else {
                   htmlCardDisplayer = HTMLCardDisplayer(
-                      isPrintAnswer: true, htmlContentId: widget.cardForPreview.htmlContent);
+                      isPrintAnswer: true,
+                      htmlContentId: widget.cardForPreview.htmlContent);
                   return Container(
                       decoration: BoxDecoration(
                         color: Colors.blue,

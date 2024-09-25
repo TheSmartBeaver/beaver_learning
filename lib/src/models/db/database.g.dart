@@ -41,8 +41,15 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES "group" (id)'));
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
   @override
-  List<GeneratedColumn> get $columns => [id, title, path, tags, parentId];
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, title, path, tags, parentId, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -76,6 +83,14 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
       context.handle(_parentIdMeta,
           parentId.isAcceptableOrUnknown(data['parent_id']!, _parentIdMeta));
     }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
     return context;
   }
 
@@ -95,6 +110,8 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
           .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
       parentId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}parent_id']),
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -110,12 +127,14 @@ class GroupData extends DataClass implements Insertable<GroupData> {
   final String? path;
   final String tags;
   final int? parentId;
+  final DateTime lastUpdated;
   const GroupData(
       {required this.id,
       required this.title,
       this.path,
       required this.tags,
-      this.parentId});
+      this.parentId,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -128,6 +147,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
     if (!nullToAbsent || parentId != null) {
       map['parent_id'] = Variable<int>(parentId);
     }
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
@@ -140,6 +160,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
       parentId: parentId == null && nullToAbsent
           ? const Value.absent()
           : Value(parentId),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -152,6 +173,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
       path: serializer.fromJson<String?>(json['path']),
       tags: serializer.fromJson<String>(json['tags']),
       parentId: serializer.fromJson<int?>(json['parentId']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -163,6 +185,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
       'path': serializer.toJson<String?>(path),
       'tags': serializer.toJson<String>(tags),
       'parentId': serializer.toJson<int?>(parentId),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
@@ -171,13 +194,15 @@ class GroupData extends DataClass implements Insertable<GroupData> {
           String? title,
           Value<String?> path = const Value.absent(),
           String? tags,
-          Value<int?> parentId = const Value.absent()}) =>
+          Value<int?> parentId = const Value.absent(),
+          DateTime? lastUpdated}) =>
       GroupData(
         id: id ?? this.id,
         title: title ?? this.title,
         path: path.present ? path.value : this.path,
         tags: tags ?? this.tags,
         parentId: parentId.present ? parentId.value : this.parentId,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
@@ -186,13 +211,14 @@ class GroupData extends DataClass implements Insertable<GroupData> {
           ..write('title: $title, ')
           ..write('path: $path, ')
           ..write('tags: $tags, ')
-          ..write('parentId: $parentId')
+          ..write('parentId: $parentId, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, path, tags, parentId);
+  int get hashCode => Object.hash(id, title, path, tags, parentId, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -201,7 +227,8 @@ class GroupData extends DataClass implements Insertable<GroupData> {
           other.title == this.title &&
           other.path == this.path &&
           other.tags == this.tags &&
-          other.parentId == this.parentId);
+          other.parentId == this.parentId &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class GroupCompanion extends UpdateCompanion<GroupData> {
@@ -210,12 +237,14 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
   final Value<String?> path;
   final Value<String> tags;
   final Value<int?> parentId;
+  final Value<DateTime> lastUpdated;
   const GroupCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.path = const Value.absent(),
     this.tags = const Value.absent(),
     this.parentId = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   GroupCompanion.insert({
     this.id = const Value.absent(),
@@ -223,14 +252,17 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
     this.path = const Value.absent(),
     required String tags,
     this.parentId = const Value.absent(),
+    required DateTime lastUpdated,
   })  : title = Value(title),
-        tags = Value(tags);
+        tags = Value(tags),
+        lastUpdated = Value(lastUpdated);
   static Insertable<GroupData> custom({
     Expression<int>? id,
     Expression<String>? title,
     Expression<String>? path,
     Expression<String>? tags,
     Expression<int>? parentId,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -238,6 +270,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
       if (path != null) 'path': path,
       if (tags != null) 'body': tags,
       if (parentId != null) 'parent_id': parentId,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
@@ -246,13 +279,15 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
       Value<String>? title,
       Value<String?>? path,
       Value<String>? tags,
-      Value<int?>? parentId}) {
+      Value<int?>? parentId,
+      Value<DateTime>? lastUpdated}) {
     return GroupCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       path: path ?? this.path,
       tags: tags ?? this.tags,
       parentId: parentId ?? this.parentId,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -274,6 +309,9 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
     if (parentId.present) {
       map['parent_id'] = Variable<int>(parentId.value);
     }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -284,7 +322,8 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
           ..write('title: $title, ')
           ..write('path: $path, ')
           ..write('tags: $tags, ')
-          ..write('parentId: $parentId')
+          ..write('parentId: $parentId, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -352,9 +391,23 @@ class $HTMLContentsTable extends HTMLContents
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_assembly" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, path, recto, verso, isTemplated, cardTemplatedJson, isAssembly];
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        path,
+        recto,
+        verso,
+        isTemplated,
+        cardTemplatedJson,
+        isAssembly,
+        lastUpdated
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -398,6 +451,14 @@ class $HTMLContentsTable extends HTMLContents
           isAssembly.isAcceptableOrUnknown(
               data['is_assembly']!, _isAssemblyMeta));
     }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
     return context;
   }
 
@@ -421,6 +482,8 @@ class $HTMLContentsTable extends HTMLContents
           DriftSqlType.string, data['${effectivePrefix}card_templated_json'])!,
       isAssembly: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_assembly'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -438,6 +501,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   final bool isTemplated;
   final String cardTemplatedJson;
   final bool isAssembly;
+  final DateTime lastUpdated;
   const HTMLContent(
       {required this.id,
       this.path,
@@ -445,7 +509,8 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       required this.verso,
       required this.isTemplated,
       required this.cardTemplatedJson,
-      required this.isAssembly});
+      required this.isAssembly,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -458,6 +523,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
     map['is_templated'] = Variable<bool>(isTemplated);
     map['card_templated_json'] = Variable<String>(cardTemplatedJson);
     map['is_assembly'] = Variable<bool>(isAssembly);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
@@ -470,6 +536,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       isTemplated: Value(isTemplated),
       cardTemplatedJson: Value(cardTemplatedJson),
       isAssembly: Value(isAssembly),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -484,6 +551,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       isTemplated: serializer.fromJson<bool>(json['isTemplated']),
       cardTemplatedJson: serializer.fromJson<String>(json['cardTemplatedJson']),
       isAssembly: serializer.fromJson<bool>(json['isAssembly']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -497,6 +565,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
       'isTemplated': serializer.toJson<bool>(isTemplated),
       'cardTemplatedJson': serializer.toJson<String>(cardTemplatedJson),
       'isAssembly': serializer.toJson<bool>(isAssembly),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
@@ -507,7 +576,8 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
           String? verso,
           bool? isTemplated,
           String? cardTemplatedJson,
-          bool? isAssembly}) =>
+          bool? isAssembly,
+          DateTime? lastUpdated}) =>
       HTMLContent(
         id: id ?? this.id,
         path: path.present ? path.value : this.path,
@@ -516,6 +586,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
         isTemplated: isTemplated ?? this.isTemplated,
         cardTemplatedJson: cardTemplatedJson ?? this.cardTemplatedJson,
         isAssembly: isAssembly ?? this.isAssembly,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
@@ -526,14 +597,15 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
           ..write('verso: $verso, ')
           ..write('isTemplated: $isTemplated, ')
           ..write('cardTemplatedJson: $cardTemplatedJson, ')
-          ..write('isAssembly: $isAssembly')
+          ..write('isAssembly: $isAssembly, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, path, recto, verso, isTemplated, cardTemplatedJson, isAssembly);
+  int get hashCode => Object.hash(id, path, recto, verso, isTemplated,
+      cardTemplatedJson, isAssembly, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -544,7 +616,8 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
           other.verso == this.verso &&
           other.isTemplated == this.isTemplated &&
           other.cardTemplatedJson == this.cardTemplatedJson &&
-          other.isAssembly == this.isAssembly);
+          other.isAssembly == this.isAssembly &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
@@ -555,6 +628,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   final Value<bool> isTemplated;
   final Value<String> cardTemplatedJson;
   final Value<bool> isAssembly;
+  final Value<DateTime> lastUpdated;
   const HTMLContentsCompanion({
     this.id = const Value.absent(),
     this.path = const Value.absent(),
@@ -563,6 +637,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     this.isTemplated = const Value.absent(),
     this.cardTemplatedJson = const Value.absent(),
     this.isAssembly = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   HTMLContentsCompanion.insert({
     this.id = const Value.absent(),
@@ -572,7 +647,8 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     this.isTemplated = const Value.absent(),
     this.cardTemplatedJson = const Value.absent(),
     this.isAssembly = const Value.absent(),
-  });
+    required DateTime lastUpdated,
+  }) : lastUpdated = Value(lastUpdated);
   static Insertable<HTMLContent> custom({
     Expression<int>? id,
     Expression<String>? path,
@@ -581,6 +657,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     Expression<bool>? isTemplated,
     Expression<String>? cardTemplatedJson,
     Expression<bool>? isAssembly,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -590,6 +667,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
       if (isTemplated != null) 'is_templated': isTemplated,
       if (cardTemplatedJson != null) 'card_templated_json': cardTemplatedJson,
       if (isAssembly != null) 'is_assembly': isAssembly,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
@@ -600,7 +678,8 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
       Value<String>? verso,
       Value<bool>? isTemplated,
       Value<String>? cardTemplatedJson,
-      Value<bool>? isAssembly}) {
+      Value<bool>? isAssembly,
+      Value<DateTime>? lastUpdated}) {
     return HTMLContentsCompanion(
       id: id ?? this.id,
       path: path ?? this.path,
@@ -609,6 +688,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
       isTemplated: isTemplated ?? this.isTemplated,
       cardTemplatedJson: cardTemplatedJson ?? this.cardTemplatedJson,
       isAssembly: isAssembly ?? this.isAssembly,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -636,6 +716,9 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     if (isAssembly.present) {
       map['is_assembly'] = Variable<bool>(isAssembly.value);
     }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -648,7 +731,8 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
           ..write('verso: $verso, ')
           ..write('isTemplated: $isTemplated, ')
           ..write('cardTemplatedJson: $cardTemplatedJson, ')
-          ..write('isAssembly: $isAssembly')
+          ..write('isAssembly: $isAssembly, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -724,6 +808,12 @@ class $ReviseCardsTable extends ReviseCards
   late final GeneratedColumn<String> mnemotechnicHint = GeneratedColumn<String>(
       'mnemotechnic_hint', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -734,7 +824,8 @@ class $ReviseCardsTable extends ReviseCards
         nextRevisionDateMultiplicator,
         nextRevisionDate,
         path,
-        mnemotechnicHint
+        mnemotechnicHint,
+        lastUpdated
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -795,6 +886,14 @@ class $ReviseCardsTable extends ReviseCards
           mnemotechnicHint.isAcceptableOrUnknown(
               data['mnemotechnic_hint']!, _mnemotechnicHintMeta));
     }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
     return context;
   }
 
@@ -824,6 +923,8 @@ class $ReviseCardsTable extends ReviseCards
           .read(DriftSqlType.string, data['${effectivePrefix}path']),
       mnemotechnicHint: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}mnemotechnic_hint']),
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -847,6 +948,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final DateTime? nextRevisionDate;
   final String? path;
   final String? mnemotechnicHint;
+  final DateTime lastUpdated;
   const ReviseCard(
       {required this.id,
       required this.groupId,
@@ -856,7 +958,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       required this.nextRevisionDateMultiplicator,
       this.nextRevisionDate,
       this.path,
-      this.mnemotechnicHint});
+      this.mnemotechnicHint,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -879,6 +982,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     if (!nullToAbsent || mnemotechnicHint != null) {
       map['mnemotechnic_hint'] = Variable<String>(mnemotechnicHint);
     }
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
@@ -897,6 +1001,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       mnemotechnicHint: mnemotechnicHint == null && nullToAbsent
           ? const Value.absent()
           : Value(mnemotechnicHint),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -916,6 +1021,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           serializer.fromJson<DateTime?>(json['nextRevisionDate']),
       path: serializer.fromJson<String?>(json['path']),
       mnemotechnicHint: serializer.fromJson<String?>(json['mnemotechnicHint']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -933,6 +1039,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       'nextRevisionDate': serializer.toJson<DateTime?>(nextRevisionDate),
       'path': serializer.toJson<String?>(path),
       'mnemotechnicHint': serializer.toJson<String?>(mnemotechnicHint),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
@@ -945,7 +1052,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           double? nextRevisionDateMultiplicator,
           Value<DateTime?> nextRevisionDate = const Value.absent(),
           Value<String?> path = const Value.absent(),
-          Value<String?> mnemotechnicHint = const Value.absent()}) =>
+          Value<String?> mnemotechnicHint = const Value.absent(),
+          DateTime? lastUpdated}) =>
       ReviseCard(
         id: id ?? this.id,
         groupId: groupId ?? this.groupId,
@@ -961,6 +1069,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
         mnemotechnicHint: mnemotechnicHint.present
             ? mnemotechnicHint.value
             : this.mnemotechnicHint,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
@@ -974,14 +1083,24 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
               'nextRevisionDateMultiplicator: $nextRevisionDateMultiplicator, ')
           ..write('nextRevisionDate: $nextRevisionDate, ')
           ..write('path: $path, ')
-          ..write('mnemotechnicHint: $mnemotechnicHint')
+          ..write('mnemotechnicHint: $mnemotechnicHint, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, groupId, htmlContent, displayerType, tags,
-      nextRevisionDateMultiplicator, nextRevisionDate, path, mnemotechnicHint);
+  int get hashCode => Object.hash(
+      id,
+      groupId,
+      htmlContent,
+      displayerType,
+      tags,
+      nextRevisionDateMultiplicator,
+      nextRevisionDate,
+      path,
+      mnemotechnicHint,
+      lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -995,7 +1114,8 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
               this.nextRevisionDateMultiplicator &&
           other.nextRevisionDate == this.nextRevisionDate &&
           other.path == this.path &&
-          other.mnemotechnicHint == this.mnemotechnicHint);
+          other.mnemotechnicHint == this.mnemotechnicHint &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
@@ -1008,6 +1128,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<DateTime?> nextRevisionDate;
   final Value<String?> path;
   final Value<String?> mnemotechnicHint;
+  final Value<DateTime> lastUpdated;
   const ReviseCardsCompanion({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
@@ -1018,6 +1139,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     this.nextRevisionDate = const Value.absent(),
     this.path = const Value.absent(),
     this.mnemotechnicHint = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   ReviseCardsCompanion.insert({
     this.id = const Value.absent(),
@@ -1029,11 +1151,13 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     this.nextRevisionDate = const Value.absent(),
     this.path = const Value.absent(),
     this.mnemotechnicHint = const Value.absent(),
+    required DateTime lastUpdated,
   })  : groupId = Value(groupId),
         htmlContent = Value(htmlContent),
         displayerType = Value(displayerType),
         tags = Value(tags),
-        nextRevisionDateMultiplicator = Value(nextRevisionDateMultiplicator);
+        nextRevisionDateMultiplicator = Value(nextRevisionDateMultiplicator),
+        lastUpdated = Value(lastUpdated);
   static Insertable<ReviseCard> custom({
     Expression<int>? id,
     Expression<int>? groupId,
@@ -1044,6 +1168,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     Expression<DateTime>? nextRevisionDate,
     Expression<String>? path,
     Expression<String>? mnemotechnicHint,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1056,6 +1181,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       if (nextRevisionDate != null) 'next_revision_date': nextRevisionDate,
       if (path != null) 'path': path,
       if (mnemotechnicHint != null) 'mnemotechnic_hint': mnemotechnicHint,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
@@ -1068,7 +1194,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       Value<double>? nextRevisionDateMultiplicator,
       Value<DateTime?>? nextRevisionDate,
       Value<String?>? path,
-      Value<String?>? mnemotechnicHint}) {
+      Value<String?>? mnemotechnicHint,
+      Value<DateTime>? lastUpdated}) {
     return ReviseCardsCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
@@ -1080,6 +1207,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       nextRevisionDate: nextRevisionDate ?? this.nextRevisionDate,
       path: path ?? this.path,
       mnemotechnicHint: mnemotechnicHint ?? this.mnemotechnicHint,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -1115,6 +1243,9 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     if (mnemotechnicHint.present) {
       map['mnemotechnic_hint'] = Variable<String>(mnemotechnicHint.value);
     }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -1130,7 +1261,8 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
               'nextRevisionDateMultiplicator: $nextRevisionDateMultiplicator, ')
           ..write('nextRevisionDate: $nextRevisionDate, ')
           ..write('path: $path, ')
-          ..write('mnemotechnicHint: $mnemotechnicHint')
+          ..write('mnemotechnicHint: $mnemotechnicHint, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -1344,8 +1476,15 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
   @override
-  List<GeneratedColumn> get $columns => [id, sku, imageUrl, title, description];
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, sku, imageUrl, title, description, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1385,6 +1524,14 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
     } else if (isInserting) {
       context.missing(_descriptionMeta);
     }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
     return context;
   }
 
@@ -1404,6 +1551,8 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -1419,12 +1568,14 @@ class Course extends DataClass implements Insertable<Course> {
   final String imageUrl;
   final String title;
   final String description;
+  final DateTime lastUpdated;
   const Course(
       {required this.id,
       required this.sku,
       required this.imageUrl,
       required this.title,
-      required this.description});
+      required this.description,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1433,6 +1584,7 @@ class Course extends DataClass implements Insertable<Course> {
     map['image_url'] = Variable<String>(imageUrl);
     map['title'] = Variable<String>(title);
     map['description'] = Variable<String>(description);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
@@ -1443,6 +1595,7 @@ class Course extends DataClass implements Insertable<Course> {
       imageUrl: Value(imageUrl),
       title: Value(title),
       description: Value(description),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -1455,6 +1608,7 @@ class Course extends DataClass implements Insertable<Course> {
       imageUrl: serializer.fromJson<String>(json['imageUrl']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String>(json['description']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -1466,6 +1620,7 @@ class Course extends DataClass implements Insertable<Course> {
       'imageUrl': serializer.toJson<String>(imageUrl),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String>(description),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
@@ -1474,13 +1629,15 @@ class Course extends DataClass implements Insertable<Course> {
           String? sku,
           String? imageUrl,
           String? title,
-          String? description}) =>
+          String? description,
+          DateTime? lastUpdated}) =>
       Course(
         id: id ?? this.id,
         sku: sku ?? this.sku,
         imageUrl: imageUrl ?? this.imageUrl,
         title: title ?? this.title,
         description: description ?? this.description,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
@@ -1489,13 +1646,15 @@ class Course extends DataClass implements Insertable<Course> {
           ..write('sku: $sku, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('title: $title, ')
-          ..write('description: $description')
+          ..write('description: $description, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, sku, imageUrl, title, description);
+  int get hashCode =>
+      Object.hash(id, sku, imageUrl, title, description, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1504,7 +1663,8 @@ class Course extends DataClass implements Insertable<Course> {
           other.sku == this.sku &&
           other.imageUrl == this.imageUrl &&
           other.title == this.title &&
-          other.description == this.description);
+          other.description == this.description &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class CoursesCompanion extends UpdateCompanion<Course> {
@@ -1513,12 +1673,14 @@ class CoursesCompanion extends UpdateCompanion<Course> {
   final Value<String> imageUrl;
   final Value<String> title;
   final Value<String> description;
+  final Value<DateTime> lastUpdated;
   const CoursesCompanion({
     this.id = const Value.absent(),
     this.sku = const Value.absent(),
     this.imageUrl = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   CoursesCompanion.insert({
     this.id = const Value.absent(),
@@ -1526,16 +1688,19 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     required String imageUrl,
     required String title,
     required String description,
+    required DateTime lastUpdated,
   })  : sku = Value(sku),
         imageUrl = Value(imageUrl),
         title = Value(title),
-        description = Value(description);
+        description = Value(description),
+        lastUpdated = Value(lastUpdated);
   static Insertable<Course> custom({
     Expression<int>? id,
     Expression<String>? sku,
     Expression<String>? imageUrl,
     Expression<String>? title,
     Expression<String>? description,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1543,6 +1708,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
       if (imageUrl != null) 'image_url': imageUrl,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
@@ -1551,13 +1717,15 @@ class CoursesCompanion extends UpdateCompanion<Course> {
       Value<String>? sku,
       Value<String>? imageUrl,
       Value<String>? title,
-      Value<String>? description}) {
+      Value<String>? description,
+      Value<DateTime>? lastUpdated}) {
     return CoursesCompanion(
       id: id ?? this.id,
       sku: sku ?? this.sku,
       imageUrl: imageUrl ?? this.imageUrl,
       title: title ?? this.title,
       description: description ?? this.description,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -1579,6 +1747,9 @@ class CoursesCompanion extends UpdateCompanion<Course> {
     if (description.present) {
       map['description'] = Variable<String>(description.value);
     }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -1589,7 +1760,8 @@ class CoursesCompanion extends UpdateCompanion<Course> {
           ..write('sku: $sku, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('title: $title, ')
-          ..write('description: $description')
+          ..write('description: $description, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -1626,8 +1798,15 @@ class $FileContentsTable extends FileContents
   late final GeneratedColumn<Uint8List> content = GeneratedColumn<Uint8List>(
       'content', aliasedName, false,
       type: DriftSqlType.blob, requiredDuringInsert: true);
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
   @override
-  List<GeneratedColumn> get $columns => [id, name, format, content];
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, format, content, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1659,6 +1838,14 @@ class $FileContentsTable extends FileContents
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
     return context;
   }
 
@@ -1676,6 +1863,8 @@ class $FileContentsTable extends FileContents
           .read(DriftSqlType.string, data['${effectivePrefix}format'])!,
       content: attachedDatabase.typeMapping
           .read(DriftSqlType.blob, data['${effectivePrefix}content'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -1690,11 +1879,13 @@ class FileContent extends DataClass implements Insertable<FileContent> {
   final String name;
   final String format;
   final Uint8List content;
+  final DateTime lastUpdated;
   const FileContent(
       {required this.id,
       required this.name,
       required this.format,
-      required this.content});
+      required this.content,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1702,6 +1893,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
     map['name'] = Variable<String>(name);
     map['format'] = Variable<String>(format);
     map['content'] = Variable<Uint8List>(content);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
@@ -1711,6 +1903,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
       name: Value(name),
       format: Value(format),
       content: Value(content),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -1722,6 +1915,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
       name: serializer.fromJson<String>(json['name']),
       format: serializer.fromJson<String>(json['format']),
       content: serializer.fromJson<Uint8List>(json['content']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -1732,16 +1926,22 @@ class FileContent extends DataClass implements Insertable<FileContent> {
       'name': serializer.toJson<String>(name),
       'format': serializer.toJson<String>(format),
       'content': serializer.toJson<Uint8List>(content),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
   FileContent copyWith(
-          {int? id, String? name, String? format, Uint8List? content}) =>
+          {int? id,
+          String? name,
+          String? format,
+          Uint8List? content,
+          DateTime? lastUpdated}) =>
       FileContent(
         id: id ?? this.id,
         name: name ?? this.name,
         format: format ?? this.format,
         content: content ?? this.content,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
@@ -1749,14 +1949,15 @@ class FileContent extends DataClass implements Insertable<FileContent> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('format: $format, ')
-          ..write('content: $content')
+          ..write('content: $content, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, format, $driftBlobEquality.hash(content));
+  int get hashCode => Object.hash(
+      id, name, format, $driftBlobEquality.hash(content), lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1764,7 +1965,8 @@ class FileContent extends DataClass implements Insertable<FileContent> {
           other.id == this.id &&
           other.name == this.name &&
           other.format == this.format &&
-          $driftBlobEquality.equals(other.content, this.content));
+          $driftBlobEquality.equals(other.content, this.content) &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class FileContentsCompanion extends UpdateCompanion<FileContent> {
@@ -1772,31 +1974,37 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
   final Value<String> name;
   final Value<String> format;
   final Value<Uint8List> content;
+  final Value<DateTime> lastUpdated;
   const FileContentsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.format = const Value.absent(),
     this.content = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   FileContentsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     required String format,
     required Uint8List content,
+    required DateTime lastUpdated,
   })  : name = Value(name),
         format = Value(format),
-        content = Value(content);
+        content = Value(content),
+        lastUpdated = Value(lastUpdated);
   static Insertable<FileContent> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? format,
     Expression<Uint8List>? content,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (format != null) 'format': format,
       if (content != null) 'content': content,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
@@ -1804,12 +2012,14 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
       {Value<int>? id,
       Value<String>? name,
       Value<String>? format,
-      Value<Uint8List>? content}) {
+      Value<Uint8List>? content,
+      Value<DateTime>? lastUpdated}) {
     return FileContentsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       format: format ?? this.format,
       content: content ?? this.content,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -1828,6 +2038,9 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
     if (content.present) {
       map['content'] = Variable<Uint8List>(content.value);
     }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -1837,7 +2050,8 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('format: $format, ')
-          ..write('content: $content')
+          ..write('content: $content, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -1875,8 +2089,15 @@ class $HTMLContentFilesTable extends HTMLContentFiles
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways(
           'REFERENCES h_t_m_l_contents (id)'));
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
   @override
-  List<GeneratedColumn> get $columns => [id, fileId, htmlContentParentId];
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, fileId, htmlContentParentId, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1904,6 +2125,14 @@ class $HTMLContentFilesTable extends HTMLContentFiles
     } else if (isInserting) {
       context.missing(_htmlContentParentIdMeta);
     }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
     return context;
   }
 
@@ -1919,6 +2148,8 @@ class $HTMLContentFilesTable extends HTMLContentFiles
           .read(DriftSqlType.int, data['${effectivePrefix}file_id'])!,
       htmlContentParentId: attachedDatabase.typeMapping.read(
           DriftSqlType.int, data['${effectivePrefix}html_content_parent_id'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -1932,16 +2163,19 @@ class HTMLContentFile extends DataClass implements Insertable<HTMLContentFile> {
   final int id;
   final int fileId;
   final int htmlContentParentId;
+  final DateTime lastUpdated;
   const HTMLContentFile(
       {required this.id,
       required this.fileId,
-      required this.htmlContentParentId});
+      required this.htmlContentParentId,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['file_id'] = Variable<int>(fileId);
     map['html_content_parent_id'] = Variable<int>(htmlContentParentId);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
@@ -1950,6 +2184,7 @@ class HTMLContentFile extends DataClass implements Insertable<HTMLContentFile> {
       id: Value(id),
       fileId: Value(fileId),
       htmlContentParentId: Value(htmlContentParentId),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -1961,6 +2196,7 @@ class HTMLContentFile extends DataClass implements Insertable<HTMLContentFile> {
       fileId: serializer.fromJson<int>(json['fileId']),
       htmlContentParentId:
           serializer.fromJson<int>(json['htmlContentParentId']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -1970,70 +2206,88 @@ class HTMLContentFile extends DataClass implements Insertable<HTMLContentFile> {
       'id': serializer.toJson<int>(id),
       'fileId': serializer.toJson<int>(fileId),
       'htmlContentParentId': serializer.toJson<int>(htmlContentParentId),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
-  HTMLContentFile copyWith({int? id, int? fileId, int? htmlContentParentId}) =>
+  HTMLContentFile copyWith(
+          {int? id,
+          int? fileId,
+          int? htmlContentParentId,
+          DateTime? lastUpdated}) =>
       HTMLContentFile(
         id: id ?? this.id,
         fileId: fileId ?? this.fileId,
         htmlContentParentId: htmlContentParentId ?? this.htmlContentParentId,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
     return (StringBuffer('HTMLContentFile(')
           ..write('id: $id, ')
           ..write('fileId: $fileId, ')
-          ..write('htmlContentParentId: $htmlContentParentId')
+          ..write('htmlContentParentId: $htmlContentParentId, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, fileId, htmlContentParentId);
+  int get hashCode => Object.hash(id, fileId, htmlContentParentId, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is HTMLContentFile &&
           other.id == this.id &&
           other.fileId == this.fileId &&
-          other.htmlContentParentId == this.htmlContentParentId);
+          other.htmlContentParentId == this.htmlContentParentId &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class HTMLContentFilesCompanion extends UpdateCompanion<HTMLContentFile> {
   final Value<int> id;
   final Value<int> fileId;
   final Value<int> htmlContentParentId;
+  final Value<DateTime> lastUpdated;
   const HTMLContentFilesCompanion({
     this.id = const Value.absent(),
     this.fileId = const Value.absent(),
     this.htmlContentParentId = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   HTMLContentFilesCompanion.insert({
     this.id = const Value.absent(),
     required int fileId,
     required int htmlContentParentId,
+    required DateTime lastUpdated,
   })  : fileId = Value(fileId),
-        htmlContentParentId = Value(htmlContentParentId);
+        htmlContentParentId = Value(htmlContentParentId),
+        lastUpdated = Value(lastUpdated);
   static Insertable<HTMLContentFile> custom({
     Expression<int>? id,
     Expression<int>? fileId,
     Expression<int>? htmlContentParentId,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (fileId != null) 'file_id': fileId,
       if (htmlContentParentId != null)
         'html_content_parent_id': htmlContentParentId,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
   HTMLContentFilesCompanion copyWith(
-      {Value<int>? id, Value<int>? fileId, Value<int>? htmlContentParentId}) {
+      {Value<int>? id,
+      Value<int>? fileId,
+      Value<int>? htmlContentParentId,
+      Value<DateTime>? lastUpdated}) {
     return HTMLContentFilesCompanion(
       id: id ?? this.id,
       fileId: fileId ?? this.fileId,
       htmlContentParentId: htmlContentParentId ?? this.htmlContentParentId,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -2049,6 +2303,9 @@ class HTMLContentFilesCompanion extends UpdateCompanion<HTMLContentFile> {
     if (htmlContentParentId.present) {
       map['html_content_parent_id'] = Variable<int>(htmlContentParentId.value);
     }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -2057,7 +2314,8 @@ class HTMLContentFilesCompanion extends UpdateCompanion<HTMLContentFile> {
     return (StringBuffer('HTMLContentFilesCompanion(')
           ..write('id: $id, ')
           ..write('fileId: $fileId, ')
-          ..write('htmlContentParentId: $htmlContentParentId')
+          ..write('htmlContentParentId: $htmlContentParentId, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -2131,6 +2389,12 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
       requiredDuringInsert: false,
       defaultConstraints: GeneratedColumn.constraintIsAlways(
           'REFERENCES h_t_m_l_contents (id)'));
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2140,7 +2404,8 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
         parentCourseId,
         groupId,
         fileId,
-        htmlContentId
+        htmlContentId,
+        lastUpdated
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2191,6 +2456,14 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
           htmlContentId.isAcceptableOrUnknown(
               data['html_content_id']!, _htmlContentIdMeta));
     }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
     return context;
   }
 
@@ -2216,6 +2489,8 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
           .read(DriftSqlType.int, data['${effectivePrefix}file_id']),
       htmlContentId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}html_content_id']),
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -2234,6 +2509,7 @@ class Topic extends DataClass implements Insertable<Topic> {
   final int? groupId;
   final int? fileId;
   final int? htmlContentId;
+  final DateTime lastUpdated;
   const Topic(
       {required this.id,
       this.path,
@@ -2242,7 +2518,8 @@ class Topic extends DataClass implements Insertable<Topic> {
       required this.parentCourseId,
       this.groupId,
       this.fileId,
-      this.htmlContentId});
+      this.htmlContentId,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2264,6 +2541,7 @@ class Topic extends DataClass implements Insertable<Topic> {
     if (!nullToAbsent || htmlContentId != null) {
       map['html_content_id'] = Variable<int>(htmlContentId);
     }
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
@@ -2284,6 +2562,7 @@ class Topic extends DataClass implements Insertable<Topic> {
       htmlContentId: htmlContentId == null && nullToAbsent
           ? const Value.absent()
           : Value(htmlContentId),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -2299,6 +2578,7 @@ class Topic extends DataClass implements Insertable<Topic> {
       groupId: serializer.fromJson<int?>(json['groupId']),
       fileId: serializer.fromJson<int?>(json['fileId']),
       htmlContentId: serializer.fromJson<int?>(json['htmlContentId']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -2313,6 +2593,7 @@ class Topic extends DataClass implements Insertable<Topic> {
       'groupId': serializer.toJson<int?>(groupId),
       'fileId': serializer.toJson<int?>(fileId),
       'htmlContentId': serializer.toJson<int?>(htmlContentId),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
@@ -2324,7 +2605,8 @@ class Topic extends DataClass implements Insertable<Topic> {
           int? parentCourseId,
           Value<int?> groupId = const Value.absent(),
           Value<int?> fileId = const Value.absent(),
-          Value<int?> htmlContentId = const Value.absent()}) =>
+          Value<int?> htmlContentId = const Value.absent(),
+          DateTime? lastUpdated}) =>
       Topic(
         id: id ?? this.id,
         path: path.present ? path.value : this.path,
@@ -2335,6 +2617,7 @@ class Topic extends DataClass implements Insertable<Topic> {
         fileId: fileId.present ? fileId.value : this.fileId,
         htmlContentId:
             htmlContentId.present ? htmlContentId.value : this.htmlContentId,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
@@ -2346,14 +2629,15 @@ class Topic extends DataClass implements Insertable<Topic> {
           ..write('parentCourseId: $parentCourseId, ')
           ..write('groupId: $groupId, ')
           ..write('fileId: $fileId, ')
-          ..write('htmlContentId: $htmlContentId')
+          ..write('htmlContentId: $htmlContentId, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, path, title, parentId, parentCourseId,
-      groupId, fileId, htmlContentId);
+      groupId, fileId, htmlContentId, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2365,7 +2649,8 @@ class Topic extends DataClass implements Insertable<Topic> {
           other.parentCourseId == this.parentCourseId &&
           other.groupId == this.groupId &&
           other.fileId == this.fileId &&
-          other.htmlContentId == this.htmlContentId);
+          other.htmlContentId == this.htmlContentId &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class TopicsCompanion extends UpdateCompanion<Topic> {
@@ -2377,6 +2662,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   final Value<int?> groupId;
   final Value<int?> fileId;
   final Value<int?> htmlContentId;
+  final Value<DateTime> lastUpdated;
   const TopicsCompanion({
     this.id = const Value.absent(),
     this.path = const Value.absent(),
@@ -2386,6 +2672,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     this.groupId = const Value.absent(),
     this.fileId = const Value.absent(),
     this.htmlContentId = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   TopicsCompanion.insert({
     this.id = const Value.absent(),
@@ -2396,8 +2683,10 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     this.groupId = const Value.absent(),
     this.fileId = const Value.absent(),
     this.htmlContentId = const Value.absent(),
+    required DateTime lastUpdated,
   })  : title = Value(title),
-        parentCourseId = Value(parentCourseId);
+        parentCourseId = Value(parentCourseId),
+        lastUpdated = Value(lastUpdated);
   static Insertable<Topic> custom({
     Expression<int>? id,
     Expression<String>? path,
@@ -2407,6 +2696,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     Expression<int>? groupId,
     Expression<int>? fileId,
     Expression<int>? htmlContentId,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2417,6 +2707,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
       if (groupId != null) 'group_id': groupId,
       if (fileId != null) 'file_id': fileId,
       if (htmlContentId != null) 'html_content_id': htmlContentId,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
@@ -2428,7 +2719,8 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
       Value<int>? parentCourseId,
       Value<int?>? groupId,
       Value<int?>? fileId,
-      Value<int?>? htmlContentId}) {
+      Value<int?>? htmlContentId,
+      Value<DateTime>? lastUpdated}) {
     return TopicsCompanion(
       id: id ?? this.id,
       path: path ?? this.path,
@@ -2438,6 +2730,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
       groupId: groupId ?? this.groupId,
       fileId: fileId ?? this.fileId,
       htmlContentId: htmlContentId ?? this.htmlContentId,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -2468,6 +2761,9 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     if (htmlContentId.present) {
       map['html_content_id'] = Variable<int>(htmlContentId.value);
     }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -2481,7 +2777,8 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
           ..write('parentCourseId: $parentCourseId, ')
           ..write('groupId: $groupId, ')
           ..write('fileId: $fileId, ')
-          ..write('htmlContentId: $htmlContentId')
+          ..write('htmlContentId: $htmlContentId, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -2518,8 +2815,14 @@ class $CardTemplateTable extends CardTemplate
   late final GeneratedColumn<String> template = GeneratedColumn<String>(
       'template', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
   @override
-  List<GeneratedColumn> get $columns => [id, sku, path, template];
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, sku, path, template, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2551,6 +2854,14 @@ class $CardTemplateTable extends CardTemplate
     } else if (isInserting) {
       context.missing(_templateMeta);
     }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
     return context;
   }
 
@@ -2568,6 +2879,8 @@ class $CardTemplateTable extends CardTemplate
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
       template: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}template'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -2583,11 +2896,13 @@ class CardTemplateData extends DataClass
   final String sku;
   final String path;
   final String template;
+  final DateTime lastUpdated;
   const CardTemplateData(
       {required this.id,
       required this.sku,
       required this.path,
-      required this.template});
+      required this.template,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2595,6 +2910,7 @@ class CardTemplateData extends DataClass
     map['sku'] = Variable<String>(sku);
     map['path'] = Variable<String>(path);
     map['template'] = Variable<String>(template);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
@@ -2604,6 +2920,7 @@ class CardTemplateData extends DataClass
       sku: Value(sku),
       path: Value(path),
       template: Value(template),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -2615,6 +2932,7 @@ class CardTemplateData extends DataClass
       sku: serializer.fromJson<String>(json['sku']),
       path: serializer.fromJson<String>(json['path']),
       template: serializer.fromJson<String>(json['template']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -2625,16 +2943,22 @@ class CardTemplateData extends DataClass
       'sku': serializer.toJson<String>(sku),
       'path': serializer.toJson<String>(path),
       'template': serializer.toJson<String>(template),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
   CardTemplateData copyWith(
-          {int? id, String? sku, String? path, String? template}) =>
+          {int? id,
+          String? sku,
+          String? path,
+          String? template,
+          DateTime? lastUpdated}) =>
       CardTemplateData(
         id: id ?? this.id,
         sku: sku ?? this.sku,
         path: path ?? this.path,
         template: template ?? this.template,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
@@ -2642,13 +2966,14 @@ class CardTemplateData extends DataClass
           ..write('id: $id, ')
           ..write('sku: $sku, ')
           ..write('path: $path, ')
-          ..write('template: $template')
+          ..write('template: $template, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, sku, path, template);
+  int get hashCode => Object.hash(id, sku, path, template, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2656,7 +2981,8 @@ class CardTemplateData extends DataClass
           other.id == this.id &&
           other.sku == this.sku &&
           other.path == this.path &&
-          other.template == this.template);
+          other.template == this.template &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
@@ -2664,31 +2990,37 @@ class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
   final Value<String> sku;
   final Value<String> path;
   final Value<String> template;
+  final Value<DateTime> lastUpdated;
   const CardTemplateCompanion({
     this.id = const Value.absent(),
     this.sku = const Value.absent(),
     this.path = const Value.absent(),
     this.template = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   CardTemplateCompanion.insert({
     this.id = const Value.absent(),
     required String sku,
     required String path,
     required String template,
+    required DateTime lastUpdated,
   })  : sku = Value(sku),
         path = Value(path),
-        template = Value(template);
+        template = Value(template),
+        lastUpdated = Value(lastUpdated);
   static Insertable<CardTemplateData> custom({
     Expression<int>? id,
     Expression<String>? sku,
     Expression<String>? path,
     Expression<String>? template,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (sku != null) 'sku': sku,
       if (path != null) 'path': path,
       if (template != null) 'template': template,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
@@ -2696,12 +3028,14 @@ class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
       {Value<int>? id,
       Value<String>? sku,
       Value<String>? path,
-      Value<String>? template}) {
+      Value<String>? template,
+      Value<DateTime>? lastUpdated}) {
     return CardTemplateCompanion(
       id: id ?? this.id,
       sku: sku ?? this.sku,
       path: path ?? this.path,
       template: template ?? this.template,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -2720,6 +3054,9 @@ class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
     if (template.present) {
       map['template'] = Variable<String>(template.value);
     }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -2729,7 +3066,8 @@ class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
           ..write('id: $id, ')
           ..write('sku: $sku, ')
           ..write('path: $path, ')
-          ..write('template: $template')
+          ..write('template: $template, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -2750,25 +3088,21 @@ class $AssemblyCategoryTable extends AssemblyCategory
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _categoryNameMeta =
-      const VerificationMeta('categoryName');
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
-  late final GeneratedColumn<String> categoryName = GeneratedColumn<String>(
-      'category_name', aliasedName, false,
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _templateIdMeta =
-      const VerificationMeta('templateId');
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
   @override
-  late final GeneratedColumn<int> templateId = GeneratedColumn<int>(
-      'template_id', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: true,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES card_template (id)'));
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [id, categoryName, templateId];
+  List<GeneratedColumn> get $columns => [id, path, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2783,21 +3117,19 @@ class $AssemblyCategoryTable extends AssemblyCategory
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('category_name')) {
+    if (data.containsKey('path')) {
       context.handle(
-          _categoryNameMeta,
-          categoryName.isAcceptableOrUnknown(
-              data['category_name']!, _categoryNameMeta));
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
     } else if (isInserting) {
-      context.missing(_categoryNameMeta);
+      context.missing(_pathMeta);
     }
-    if (data.containsKey('template_id')) {
+    if (data.containsKey('last_updated')) {
       context.handle(
-          _templateIdMeta,
-          templateId.isAcceptableOrUnknown(
-              data['template_id']!, _templateIdMeta));
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
     } else if (isInserting) {
-      context.missing(_templateIdMeta);
+      context.missing(_lastUpdatedMeta);
     }
     return context;
   }
@@ -2810,10 +3142,10 @@ class $AssemblyCategoryTable extends AssemblyCategory
     return AssemblyCategoryData(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      categoryName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}category_name'])!,
-      templateId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}template_id'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -2826,24 +3158,24 @@ class $AssemblyCategoryTable extends AssemblyCategory
 class AssemblyCategoryData extends DataClass
     implements Insertable<AssemblyCategoryData> {
   final int id;
-  final String categoryName;
-  final int templateId;
+  final String path;
+  final DateTime lastUpdated;
   const AssemblyCategoryData(
-      {required this.id, required this.categoryName, required this.templateId});
+      {required this.id, required this.path, required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['category_name'] = Variable<String>(categoryName);
-    map['template_id'] = Variable<int>(templateId);
+    map['path'] = Variable<String>(path);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
   }
 
   AssemblyCategoryCompanion toCompanion(bool nullToAbsent) {
     return AssemblyCategoryCompanion(
       id: Value(id),
-      categoryName: Value(categoryName),
-      templateId: Value(templateId),
+      path: Value(path),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -2852,8 +3184,8 @@ class AssemblyCategoryData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AssemblyCategoryData(
       id: serializer.fromJson<int>(json['id']),
-      categoryName: serializer.fromJson<String>(json['categoryName']),
-      templateId: serializer.fromJson<int>(json['templateId']),
+      path: serializer.fromJson<String>(json['path']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
   }
   @override
@@ -2861,72 +3193,72 @@ class AssemblyCategoryData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'categoryName': serializer.toJson<String>(categoryName),
-      'templateId': serializer.toJson<int>(templateId),
+      'path': serializer.toJson<String>(path),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
   AssemblyCategoryData copyWith(
-          {int? id, String? categoryName, int? templateId}) =>
+          {int? id, String? path, DateTime? lastUpdated}) =>
       AssemblyCategoryData(
         id: id ?? this.id,
-        categoryName: categoryName ?? this.categoryName,
-        templateId: templateId ?? this.templateId,
+        path: path ?? this.path,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
     return (StringBuffer('AssemblyCategoryData(')
           ..write('id: $id, ')
-          ..write('categoryName: $categoryName, ')
-          ..write('templateId: $templateId')
+          ..write('path: $path, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, categoryName, templateId);
+  int get hashCode => Object.hash(id, path, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AssemblyCategoryData &&
           other.id == this.id &&
-          other.categoryName == this.categoryName &&
-          other.templateId == this.templateId);
+          other.path == this.path &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class AssemblyCategoryCompanion extends UpdateCompanion<AssemblyCategoryData> {
   final Value<int> id;
-  final Value<String> categoryName;
-  final Value<int> templateId;
+  final Value<String> path;
+  final Value<DateTime> lastUpdated;
   const AssemblyCategoryCompanion({
     this.id = const Value.absent(),
-    this.categoryName = const Value.absent(),
-    this.templateId = const Value.absent(),
+    this.path = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   AssemblyCategoryCompanion.insert({
     this.id = const Value.absent(),
-    required String categoryName,
-    required int templateId,
-  })  : categoryName = Value(categoryName),
-        templateId = Value(templateId);
+    required String path,
+    required DateTime lastUpdated,
+  })  : path = Value(path),
+        lastUpdated = Value(lastUpdated);
   static Insertable<AssemblyCategoryData> custom({
     Expression<int>? id,
-    Expression<String>? categoryName,
-    Expression<int>? templateId,
+    Expression<String>? path,
+    Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (categoryName != null) 'category_name': categoryName,
-      if (templateId != null) 'template_id': templateId,
+      if (path != null) 'path': path,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
   AssemblyCategoryCompanion copyWith(
-      {Value<int>? id, Value<String>? categoryName, Value<int>? templateId}) {
+      {Value<int>? id, Value<String>? path, Value<DateTime>? lastUpdated}) {
     return AssemblyCategoryCompanion(
       id: id ?? this.id,
-      categoryName: categoryName ?? this.categoryName,
-      templateId: templateId ?? this.templateId,
+      path: path ?? this.path,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -2936,11 +3268,11 @@ class AssemblyCategoryCompanion extends UpdateCompanion<AssemblyCategoryData> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (categoryName.present) {
-      map['category_name'] = Variable<String>(categoryName.value);
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
     }
-    if (templateId.present) {
-      map['template_id'] = Variable<int>(templateId.value);
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
     }
     return map;
   }
@@ -2949,8 +3281,255 @@ class AssemblyCategoryCompanion extends UpdateCompanion<AssemblyCategoryData> {
   String toString() {
     return (StringBuffer('AssemblyCategoryCompanion(')
           ..write('id: $id, ')
-          ..write('categoryName: $categoryName, ')
-          ..write('templateId: $templateId')
+          ..write('path: $path, ')
+          ..write('lastUpdated: $lastUpdated')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $UserAppTable extends UserApp with TableInfo<$UserAppTable, UserAppData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserAppTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(AppConstante.skuToBeDefined));
+  static const VerificationMeta _fbIdMeta = const VerificationMeta('fbId');
+  @override
+  late final GeneratedColumn<String> fbId = GeneratedColumn<String>(
+      'fb_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, sku, fbId, lastUpdated];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_app';
+  @override
+  VerificationContext validateIntegrity(Insertable<UserAppData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
+    }
+    if (data.containsKey('fb_id')) {
+      context.handle(
+          _fbIdMeta, fbId.isAcceptableOrUnknown(data['fb_id']!, _fbIdMeta));
+    } else if (isInserting) {
+      context.missing(_fbIdMeta);
+    }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UserAppData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserAppData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku'])!,
+      fbId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}fb_id'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
+    );
+  }
+
+  @override
+  $UserAppTable createAlias(String alias) {
+    return $UserAppTable(attachedDatabase, alias);
+  }
+}
+
+class UserAppData extends DataClass implements Insertable<UserAppData> {
+  final int id;
+  final String sku;
+  final String fbId;
+  final DateTime lastUpdated;
+  const UserAppData(
+      {required this.id,
+      required this.sku,
+      required this.fbId,
+      required this.lastUpdated});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['sku'] = Variable<String>(sku);
+    map['fb_id'] = Variable<String>(fbId);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
+    return map;
+  }
+
+  UserAppCompanion toCompanion(bool nullToAbsent) {
+    return UserAppCompanion(
+      id: Value(id),
+      sku: Value(sku),
+      fbId: Value(fbId),
+      lastUpdated: Value(lastUpdated),
+    );
+  }
+
+  factory UserAppData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserAppData(
+      id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String>(json['sku']),
+      fbId: serializer.fromJson<String>(json['fbId']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String>(sku),
+      'fbId': serializer.toJson<String>(fbId),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
+    };
+  }
+
+  UserAppData copyWith(
+          {int? id, String? sku, String? fbId, DateTime? lastUpdated}) =>
+      UserAppData(
+        id: id ?? this.id,
+        sku: sku ?? this.sku,
+        fbId: fbId ?? this.fbId,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('UserAppData(')
+          ..write('id: $id, ')
+          ..write('sku: $sku, ')
+          ..write('fbId: $fbId, ')
+          ..write('lastUpdated: $lastUpdated')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, sku, fbId, lastUpdated);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserAppData &&
+          other.id == this.id &&
+          other.sku == this.sku &&
+          other.fbId == this.fbId &&
+          other.lastUpdated == this.lastUpdated);
+}
+
+class UserAppCompanion extends UpdateCompanion<UserAppData> {
+  final Value<int> id;
+  final Value<String> sku;
+  final Value<String> fbId;
+  final Value<DateTime> lastUpdated;
+  const UserAppCompanion({
+    this.id = const Value.absent(),
+    this.sku = const Value.absent(),
+    this.fbId = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
+  });
+  UserAppCompanion.insert({
+    this.id = const Value.absent(),
+    this.sku = const Value.absent(),
+    required String fbId,
+    required DateTime lastUpdated,
+  })  : fbId = Value(fbId),
+        lastUpdated = Value(lastUpdated);
+  static Insertable<UserAppData> custom({
+    Expression<int>? id,
+    Expression<String>? sku,
+    Expression<String>? fbId,
+    Expression<DateTime>? lastUpdated,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
+      if (fbId != null) 'fb_id': fbId,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
+    });
+  }
+
+  UserAppCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? sku,
+      Value<String>? fbId,
+      Value<DateTime>? lastUpdated}) {
+    return UserAppCompanion(
+      id: id ?? this.id,
+      sku: sku ?? this.sku,
+      fbId: fbId ?? this.fbId,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
+    }
+    if (fbId.present) {
+      map['fb_id'] = Variable<String>(fbId.value);
+    }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserAppCompanion(')
+          ..write('id: $id, ')
+          ..write('sku: $sku, ')
+          ..write('fbId: $fbId, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -2970,6 +3549,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CardTemplateTable cardTemplate = $CardTemplateTable(this);
   late final $AssemblyCategoryTable assemblyCategory =
       $AssemblyCategoryTable(this);
+  late final $UserAppTable userApp = $UserAppTable(this);
   late final ImageDao imageDao = ImageDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -2985,6 +3565,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         hTMLContentFiles,
         topics,
         cardTemplate,
-        assemblyCategory
+        assemblyCategory,
+        userApp
       ];
 }

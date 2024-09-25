@@ -4,6 +4,7 @@ import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/db/assemblyCategoryTable.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,7 +43,7 @@ class _TemplateAssemblySaverState extends ConsumerState<TemplateAssemblySaver> {
       var database = MyDatabaseInstance.getInstance();
 
       categoriesReturned = await (database.select(database.assemblyCategory)
-            ..where((tbl) => tbl.categoryName.like("%$textValue%"))
+            ..where((tbl) => tbl.path.like("%$textValue%"))
             ..limit(15))
           .get();
     }
@@ -75,7 +76,7 @@ class _TemplateAssemblySaverState extends ConsumerState<TemplateAssemblySaver> {
             itemCount: categoriesReturned.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(categoriesReturned[index].categoryName),
+                title: Text(categoriesReturned[index].path),
                 onTap: () {
                   setState(() {
                     selectedCategoryIndex = index;
@@ -96,13 +97,22 @@ class _TemplateAssemblySaverState extends ConsumerState<TemplateAssemblySaver> {
         TextButton(
           child: const Text('OK'),
           onPressed: () async {
-            if(selectedCategoryIndex != null) {
+            if (selectedCategoryIndex != null) {
               //TODO: Save or update assembly
               final cardDao = CardDao(MyDatabaseInstance.getInstance());
-              cardDao.insertAssembly(HTMLContent(id: -1, recto: "", verso: "verso", isTemplated: true, cardTemplatedJson: "cardTemplatedJson", isAssembly: true), categoriesReturned[selectedCategoryIndex!].id, false);
+              cardDao.insertAssembly(
+                  HTMLContent(
+                      id: -1,
+                      recto: "",
+                      verso: "",
+                      isTemplated: true,
+                      cardTemplatedJson: "cardTemplatedJson",
+                      isAssembly: true,
+                      lastUpdated: getUpdateDateNow()),
+                  categoriesReturned[selectedCategoryIndex!].id,
+                  false);
               Navigator.of(context).pop();
             }
-            
           },
         ),
       ],

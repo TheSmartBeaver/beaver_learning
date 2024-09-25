@@ -1,5 +1,6 @@
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/widget/topic2.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -31,7 +32,8 @@ class _SummaryCreatorState extends State<SummaryCreator> {
                       id: counter,
                       title: "NEW TOPIC $counter",
                       parentCourseId: -1,
-                      parentId: topicId > 0 ? topicId : null,));
+                      parentId: topicId > 0 ? topicId : null,
+                      lastUpdated: getUpdateDateNow()));
                 });
                 break;
               case MenuOption.rename_topic:
@@ -77,7 +79,8 @@ class _SummaryCreatorState extends State<SummaryCreator> {
         margin: const EdgeInsets.all(2),
         padding: const EdgeInsets.only(left: 4),
         decoration: BoxDecoration(
-            border: Border.all(color: Colors.black, width: 1, style: BorderStyle.solid)),
+            border: Border.all(
+                color: Colors.black, width: 1, style: BorderStyle.solid)),
         child:
             Row(children: [Text(topic.name), _getPopupMenu(context, topic.id)]),
       ),

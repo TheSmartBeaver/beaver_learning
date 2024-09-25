@@ -10,6 +10,7 @@ import 'package:beaver_learning/src/utils/classes/export_classes.dart';
 import 'package:beaver_learning/src/utils/classes/import_class_interfaces.dart';
 import 'package:beaver_learning/src/utils/classes/import_classes.dart';
 import 'package:beaver_learning/src/utils/classes/import_utils_functions.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:drift/drift.dart';
 
 class ImportManager extends ImportInterface {
@@ -38,7 +39,8 @@ class ImportManager extends ImportInterface {
       await createHtmlTemplateInDb(CardTemplateCompanion.insert(
           sku: htmlTemplateExport.sku,
           path: htmlTemplateExport.path,
-          template: htmlTemplateExport.template));
+          template: htmlTemplateExport.template,
+          lastUpdated: getUpdateDateNow()));
     }
   }
 
@@ -372,10 +374,11 @@ class ImportManager extends ImportInterface {
                 element.type == ExportType.topic)
             .firstOrNull;
         if (topicEntityNature != null) {
-          topicExports[topicEntityNature.path]?.topicSupportContent?.files.add(FileContentExport(
-            paths[paths.length - 1].split('.')[0],
-            paths[paths.length - 1].split('.')[1],
-            fileContentSupport.value.bytes!));
+          topicExports[topicEntityNature.path]?.topicSupportContent?.files.add(
+              FileContentExport(
+                  paths[paths.length - 1].split('.')[0],
+                  paths[paths.length - 1].split('.')[1],
+                  fileContentSupport.value.bytes!));
           break;
         }
       }
@@ -436,7 +439,8 @@ class ImportManager extends ImportInterface {
             title: groupExport.title,
             tags: "",
             parentId: Value(parentId),
-            path: Value(groupExport.path!)));
+            path: Value(groupExport.path!),
+            lastUpdated: getUpdateDateNow()));
         groupExport.dbId = groupId;
       }
 
@@ -478,7 +482,8 @@ class ImportManager extends ImportInterface {
               recto: Value(cardExport.content.recto),
               verso: Value(cardExport.content.verso),
               isTemplated: const Value(false),
-              cardTemplatedJson: const Value("")));
+              cardTemplatedJson: const Value(""),
+              lastUpdated: getUpdateDateNow()));
     }
 
     Future<void> updateTemplatedCard() async {
@@ -487,7 +492,8 @@ class ImportManager extends ImportInterface {
             ..where((tbl) => tbl.id.equals(contentId)))
           .write(HTMLContentsCompanion.insert(
               isTemplated: const Value(true),
-              cardTemplatedJson: Value(cardExport.content.cardTemplatedJson)));
+              cardTemplatedJson: Value(cardExport.content.cardTemplatedJson),
+              lastUpdated: getUpdateDateNow()));
     }
 
     if (cardExport.content.isTemplated) {
@@ -506,7 +512,10 @@ class ImportManager extends ImportInterface {
       await createHtmlContentFileContentInDb(
           contentId,
           FileContentsCompanion.insert(
-              name: file.name, format: file.format, content: file.content));
+              name: file.name,
+              format: file.format,
+              content: file.content,
+              lastUpdated: getUpdateDateNow()));
     }
   }
 
@@ -522,7 +531,8 @@ class ImportManager extends ImportInterface {
               recto: Value(cardExport.content.recto),
               verso: Value(cardExport.content.verso),
               isTemplated: const Value(false),
-              cardTemplatedJson: const Value("")));
+              cardTemplatedJson: const Value(""),
+              lastUpdated: getUpdateDateNow()));
     }
 
     Future<void> createTemplatedCard() async {
@@ -532,7 +542,8 @@ class ImportManager extends ImportInterface {
           cardExport.path!,
           HTMLContentsCompanion.insert(
               isTemplated: const Value(true),
-              cardTemplatedJson: Value(cardExport.content.cardTemplatedJson)));
+              cardTemplatedJson: Value(cardExport.content.cardTemplatedJson),
+              lastUpdated: getUpdateDateNow()));
     }
 
     if (cardExport.content.isTemplated) {
@@ -559,7 +570,8 @@ class ImportManager extends ImportInterface {
           sku: courseExport.sku!,
           title: courseExport.name!,
           description: courseExport.learnAbouts!.join("\n"),
-          imageUrl: courseExport.imgUrl!));
+          imageUrl: courseExport.imgUrl!,
+          lastUpdated: getUpdateDateNow()));
       return courseId;
     }
   }
@@ -582,18 +594,27 @@ class ImportManager extends ImportInterface {
         supportId = await createFileContentInDb(FileContentsCompanion.insert(
             name: "support",
             format: "pdf",
-            content: topicExport.topicSupportBytes!));
+            content: topicExport.topicSupportBytes!,
+            lastUpdated: getUpdateDateNow()));
       }
 
       // On crée le support de cours HTML si il existe
       if (topicExport.topicSupportContent != null) {
-        htmlContentId = await createHtmlContentInDb(HTMLContentsCompanion.insert(cardTemplatedJson: Value(topicExport.topicSupportContent?.cardTemplatedJson ?? ""), isTemplated: const Value(true)));
+        htmlContentId = await createHtmlContentInDb(
+            HTMLContentsCompanion.insert(
+                cardTemplatedJson: Value(
+                    topicExport.topicSupportContent?.cardTemplatedJson ?? ""),
+                isTemplated: const Value(true),
+                lastUpdated: getUpdateDateNow()));
         if (topicExport.topicSupportContent?.files != null) {
           for (var file in topicExport.topicSupportContent!.files) {
             await createHtmlContentFileContentInDb(
                 htmlContentId!,
                 FileContentsCompanion.insert(
-                    name: file.name, format: file.format, content: file.content));
+                    name: file.name,
+                    format: file.format,
+                    content: file.content,
+                    lastUpdated: getUpdateDateNow()));
           }
         }
       }
@@ -615,7 +636,7 @@ class ImportManager extends ImportInterface {
         }
       }
       if (existingTopic.htmlContentId != null) {
-        //TODO: Faire le nécessaire pour tout supprimer htmlContent + files 
+        //TODO: Faire le nécessaire pour tout supprimer htmlContent + files
       }
       await createFileContent();
       topicId = existingTopic.id;
@@ -627,7 +648,8 @@ class ImportManager extends ImportInterface {
               groupId: Value(groupId),
               fileId: Value(supportId),
               htmlContentId: Value(htmlContentId),
-              parentId: Value(parentId)));
+              parentId: Value(parentId),
+              lastUpdated: getUpdateDateNow()));
     } else {
       await createFileContent();
       topicId = await createTopicInDb(TopicsCompanion.insert(
@@ -637,7 +659,8 @@ class ImportManager extends ImportInterface {
           groupId: Value(groupId),
           fileId: Value(supportId),
           htmlContentId: Value(htmlContentId),
-          parentId: Value(parentId)));
+          parentId: Value(parentId),
+          lastUpdated: getUpdateDateNow()));
     }
     for (var childTopic in topicExport.childTopics) {
       await saveTopicExportInDb(childTopic, groups, parentCourseId,

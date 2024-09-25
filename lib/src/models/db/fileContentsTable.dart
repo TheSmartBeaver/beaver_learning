@@ -6,4 +6,5 @@ class FileContents extends Table {
   TextColumn get name => text()();
   TextColumn get format => text()();
   BlobColumn get content => blob()();
+  DateTimeColumn get lastUpdated => dateTime()();
 }

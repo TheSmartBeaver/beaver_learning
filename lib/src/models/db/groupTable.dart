@@ -6,4 +6,5 @@ class Group extends Table {
   TextColumn get path => text().nullable()();
   TextColumn get tags => text().named('body')();
   IntColumn get parentId => integer().references(Group, #id).nullable()();
+  DateTimeColumn get lastUpdated => dateTime()();
 }

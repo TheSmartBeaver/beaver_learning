@@ -17,4 +17,6 @@ class ReviseCards extends Table {
   TextColumn get path => text().nullable()();
 
   TextColumn get mnemotechnicHint => text().nullable()();
+
+  DateTimeColumn get lastUpdated => dateTime()();
 }

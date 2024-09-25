@@ -14,4 +14,6 @@ class AppConstante {
   static String templateFieldName = "template_name";
 
     static const String profileProviderStateKey = "profileProviderStateKey";
+
+  static const String skuToBeDefined = "SKU_TO_BE_DEFINED";
 }

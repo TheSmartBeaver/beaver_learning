@@ -9,6 +9,7 @@ import 'package:beaver_learning/src/providers/templated_card_provider.dart';
 import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_displayer.dart';
@@ -40,11 +41,13 @@ class AssemblyEditor extends ConsumerStatefulWidget {
           cardTemplatedJson:
               drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
           isTemplated: const drift.Value(true),
-          isAssembly: const drift.Value(true)));
+          isAssembly: const drift.Value(true),
+          lastUpdated: getUpdateDateNow()));
     } else {
       await updateAssemblyInDb(HTMLContentsCompanion.insert(
           cardTemplatedJson:
-              drift.Value(cardForPreviewHtmlContent.cardTemplatedJson)));
+              drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
+          lastUpdated: getUpdateDateNow()));
     }
 
     var ahah = 0;

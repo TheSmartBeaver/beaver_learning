@@ -8,4 +8,5 @@ class HTMLContents extends Table {
   BoolColumn get isTemplated => boolean().withDefault(const Constant(false))();
   TextColumn get cardTemplatedJson => text().withDefault(const Constant(""))();
   BoolColumn get isAssembly => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get lastUpdated => dateTime()();
 }

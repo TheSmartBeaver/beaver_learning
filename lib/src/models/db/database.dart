@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/dao/image_dao.dart';
 import 'package:beaver_learning/src/models/db/assemblyCategoryTable.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
@@ -11,6 +12,7 @@ import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/models/db/image_table.dart';
 import 'package:beaver_learning/src/models/db/topicTable.dart';
+import 'package:beaver_learning/src/models/db/user_app.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/models/migrator/initial_migration.dart';
 import 'package:drift/drift.dart';
@@ -32,7 +34,8 @@ part 'database.g.dart';
   HTMLContentFiles,
   Topics,
   CardTemplate,
-  AssemblyCategory
+  AssemblyCategory,
+  UserApp
 ], views: [], daos: [
   ImageDao
 ])

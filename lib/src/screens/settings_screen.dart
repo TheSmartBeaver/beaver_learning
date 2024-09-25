@@ -17,7 +17,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-Widget buildSection(String sectionTitle, List<Widget> body, BuildContext context) {
+Widget buildSection(
+    String sectionTitle, List<Widget> body, BuildContext context) {
   return Container(
       width: MediaQuery.of(context).size.width,
       margin: const EdgeInsets.all(5),
@@ -54,7 +55,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            buildSection("Account infos", [const Text("Pour l'instant tu n'as pas la possibilité d'avoir de compte ^^")], context),
+            buildSection(
+                "Account infos",
+                [
+                  const Text(
+                      "Pour l'instant tu n'as pas la possibilité d'avoir de compte ^^")
+                ],
+                context),
+            ElevatedButton(
+                onPressed: () async {},
+                style: const ButtonStyle(
+                    backgroundColor: MaterialStatePropertyAll(Colors.red)),
+                child: const Text("Synchronize",
+                    style: TextStyle(color: Colors.black))),
             ElevatedButton(
                 onPressed: () async {
                   await importReal(context);
@@ -63,7 +76,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     backgroundColor: MaterialStatePropertyAll(Colors.purple)),
                 child: const Text("Import Deck",
                     style: TextStyle(color: Colors.black))),
-                    if (ref.read(authProvider.notifier).checkIfUserLogged())
+            if (ref.read(authProvider.notifier).checkIfUserLogged())
               ElevatedButton(
                 child: const Text("Logout"),
                 onPressed: () {
