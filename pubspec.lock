@@ -185,6 +185,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  chopper:
+    dependency: "direct main"
+    description:
+      name: chopper
+      sha256: "1b6280ec22841b844448bec8ef2644d9cbe9ea8dfce13ec9cab9e8d3aac3830d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.4.0"
+  chopper_generator:
+    dependency: "direct dev"
+    description:
+      name: chopper_generator
+      sha256: "2984ed8589132aa8fd8225482038cad2bd576405e3751aa237d466870f5dad42"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.4.0"
   cli_util:
     dependency: transitive
     description:
@@ -1197,6 +1213,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.3"
+  qs_dart:
+    dependency: transitive
+    description:
+      name: qs_dart
+      sha256: "8dddeaf1d32fe407e253840b2c25c9ab5bf347d2761d82cb4ce010096565c9ff"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.3"
   quill_html_converter:
     dependency: "direct main"
     description:
@@ -1221,6 +1245,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
+  recursive_regex:
+    dependency: transitive
+    description:
+      name: recursive_regex
+      sha256: f7252e3d3dfd1665e594d9fe035eca6bc54139b1f2fee38256fa427ea41adc60
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   riverpod:
     dependency: transitive
     description:
@@ -1450,6 +1482,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.8.5"
+  swagger_dart_code_generator:
+    dependency: "direct dev"
+    description:
+      name: swagger_dart_code_generator
+      sha256: "73dedc94da13ee4c7259cb60411ccf699789eeceb842a493e025afbca808bb99"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.15.2"
   synchronized:
     dependency: transitive
     description:
@@ -1658,6 +1698,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  weak_map:
+    dependency: transitive
+    description:
+      name: weak_map
+      sha256: "95ca338f0cdf5f0022cc283dfa4d97f6f6b03752f67eca85ebe6d7a679ffe3ed"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   web:
     dependency: transitive
     description:
