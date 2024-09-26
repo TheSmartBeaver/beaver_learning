@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 
 class ReviseCards extends Table {
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get sku => text().nullable()();
   IntColumn get groupId => integer().references(Group, #id)();
 
   IntColumn get htmlContent => integer().references(HTMLContents, #id)();

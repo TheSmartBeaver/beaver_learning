@@ -1,3 +1,3 @@
 DateTime getUpdateDateNow() {
-  return DateTime.now();
+  return DateTime.now().toUtc();
 }

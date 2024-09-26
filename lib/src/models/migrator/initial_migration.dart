@@ -15,7 +15,7 @@ Future<void> initial_migrate_batch(Batch batch, AppDatabase dbInfos) async {
   batch.insertAll(dbInfos.courses, [
     CoursesCompanion.insert(
         id: const Value(1),
-        sku: "ULTIMATE_ENGLISH_COURSE",
+        // sku: "ULTIMATE_ENGLISH_COURSE",
         title: 'Cours d\'Anglais ultime',
         description:
             'Un cours d\'anglais pour les débutants avec des leçons de grammaire, de vocabulaire et de prononciation.',
@@ -171,13 +171,13 @@ Future<void> initial_migrate_batch(Batch batch, AppDatabase dbInfos) async {
     CardTemplateCompanion.insert(
         id: const Value(1),
         path: emptyTemplate_name,
-        sku: "EMPTY_TEMPLATE",
+        // sku: "EMPTY_TEMPLATE",
         template: htmlEmptyTemplate,
         lastUpdated: last_updated),
     CardTemplateCompanion.insert(
         id: const Value(2),
         path: itemTemplate_name,
-        sku: "EMPTY_TEMPLATE",
+        // sku: "EMPTY_TEMPLATE",
         template: htmlEmptyTemplate,
         lastUpdated: last_updated)
   ]);

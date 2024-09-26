@@ -17,6 +17,11 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -49,7 +54,7 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, title, path, tags, parentId, lastUpdated];
+      [id, sku, title, path, tags, parentId, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -62,6 +67,10 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
     }
     if (data.containsKey('title')) {
       context.handle(
@@ -102,6 +111,8 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
     return GroupData(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       path: attachedDatabase.typeMapping
@@ -123,6 +134,7 @@ class $GroupTable extends Group with TableInfo<$GroupTable, GroupData> {
 
 class GroupData extends DataClass implements Insertable<GroupData> {
   final int id;
+  final String? sku;
   final String title;
   final String? path;
   final String tags;
@@ -130,6 +142,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
   final DateTime lastUpdated;
   const GroupData(
       {required this.id,
+      this.sku,
       required this.title,
       this.path,
       required this.tags,
@@ -139,6 +152,9 @@ class GroupData extends DataClass implements Insertable<GroupData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || path != null) {
       map['path'] = Variable<String>(path);
@@ -154,6 +170,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
   GroupCompanion toCompanion(bool nullToAbsent) {
     return GroupCompanion(
       id: Value(id),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       title: Value(title),
       path: path == null && nullToAbsent ? const Value.absent() : Value(path),
       tags: Value(tags),
@@ -169,6 +186,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return GroupData(
       id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String?>(json['sku']),
       title: serializer.fromJson<String>(json['title']),
       path: serializer.fromJson<String?>(json['path']),
       tags: serializer.fromJson<String>(json['tags']),
@@ -181,6 +199,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String?>(sku),
       'title': serializer.toJson<String>(title),
       'path': serializer.toJson<String?>(path),
       'tags': serializer.toJson<String>(tags),
@@ -191,6 +210,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
 
   GroupData copyWith(
           {int? id,
+          Value<String?> sku = const Value.absent(),
           String? title,
           Value<String?> path = const Value.absent(),
           String? tags,
@@ -198,6 +218,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
           DateTime? lastUpdated}) =>
       GroupData(
         id: id ?? this.id,
+        sku: sku.present ? sku.value : this.sku,
         title: title ?? this.title,
         path: path.present ? path.value : this.path,
         tags: tags ?? this.tags,
@@ -208,6 +229,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
   String toString() {
     return (StringBuffer('GroupData(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('title: $title, ')
           ..write('path: $path, ')
           ..write('tags: $tags, ')
@@ -218,12 +240,14 @@ class GroupData extends DataClass implements Insertable<GroupData> {
   }
 
   @override
-  int get hashCode => Object.hash(id, title, path, tags, parentId, lastUpdated);
+  int get hashCode =>
+      Object.hash(id, sku, title, path, tags, parentId, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GroupData &&
           other.id == this.id &&
+          other.sku == this.sku &&
           other.title == this.title &&
           other.path == this.path &&
           other.tags == this.tags &&
@@ -233,6 +257,7 @@ class GroupData extends DataClass implements Insertable<GroupData> {
 
 class GroupCompanion extends UpdateCompanion<GroupData> {
   final Value<int> id;
+  final Value<String?> sku;
   final Value<String> title;
   final Value<String?> path;
   final Value<String> tags;
@@ -240,6 +265,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
   final Value<DateTime> lastUpdated;
   const GroupCompanion({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.title = const Value.absent(),
     this.path = const Value.absent(),
     this.tags = const Value.absent(),
@@ -248,6 +274,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
   });
   GroupCompanion.insert({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     required String title,
     this.path = const Value.absent(),
     required String tags,
@@ -258,6 +285,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
         lastUpdated = Value(lastUpdated);
   static Insertable<GroupData> custom({
     Expression<int>? id,
+    Expression<String>? sku,
     Expression<String>? title,
     Expression<String>? path,
     Expression<String>? tags,
@@ -266,6 +294,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
       if (title != null) 'title': title,
       if (path != null) 'path': path,
       if (tags != null) 'body': tags,
@@ -276,6 +305,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
 
   GroupCompanion copyWith(
       {Value<int>? id,
+      Value<String?>? sku,
       Value<String>? title,
       Value<String?>? path,
       Value<String>? tags,
@@ -283,6 +313,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
       Value<DateTime>? lastUpdated}) {
     return GroupCompanion(
       id: id ?? this.id,
+      sku: sku ?? this.sku,
       title: title ?? this.title,
       path: path ?? this.path,
       tags: tags ?? this.tags,
@@ -296,6 +327,9 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -319,6 +353,7 @@ class GroupCompanion extends UpdateCompanion<GroupData> {
   String toString() {
     return (StringBuffer('GroupCompanion(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('title: $title, ')
           ..write('path: $path, ')
           ..write('tags: $tags, ')
@@ -344,6 +379,11 @@ class $HTMLContentsTable extends HTMLContents
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
@@ -400,6 +440,7 @@ class $HTMLContentsTable extends HTMLContents
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        sku,
         path,
         recto,
         verso,
@@ -420,6 +461,10 @@ class $HTMLContentsTable extends HTMLContents
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
     }
     if (data.containsKey('path')) {
       context.handle(
@@ -470,6 +515,8 @@ class $HTMLContentsTable extends HTMLContents
     return HTMLContent(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path']),
       recto: attachedDatabase.typeMapping
@@ -495,6 +542,7 @@ class $HTMLContentsTable extends HTMLContents
 
 class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   final int id;
+  final String? sku;
   final String? path;
   final String recto;
   final String verso;
@@ -504,6 +552,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   final DateTime lastUpdated;
   const HTMLContent(
       {required this.id,
+      this.sku,
       this.path,
       required this.recto,
       required this.verso,
@@ -515,6 +564,9 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     if (!nullToAbsent || path != null) {
       map['path'] = Variable<String>(path);
     }
@@ -530,6 +582,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   HTMLContentsCompanion toCompanion(bool nullToAbsent) {
     return HTMLContentsCompanion(
       id: Value(id),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       path: path == null && nullToAbsent ? const Value.absent() : Value(path),
       recto: Value(recto),
       verso: Value(verso),
@@ -545,6 +598,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return HTMLContent(
       id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String?>(json['sku']),
       path: serializer.fromJson<String?>(json['path']),
       recto: serializer.fromJson<String>(json['recto']),
       verso: serializer.fromJson<String>(json['verso']),
@@ -559,6 +613,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String?>(sku),
       'path': serializer.toJson<String?>(path),
       'recto': serializer.toJson<String>(recto),
       'verso': serializer.toJson<String>(verso),
@@ -571,6 +626,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
 
   HTMLContent copyWith(
           {int? id,
+          Value<String?> sku = const Value.absent(),
           Value<String?> path = const Value.absent(),
           String? recto,
           String? verso,
@@ -580,6 +636,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
           DateTime? lastUpdated}) =>
       HTMLContent(
         id: id ?? this.id,
+        sku: sku.present ? sku.value : this.sku,
         path: path.present ? path.value : this.path,
         recto: recto ?? this.recto,
         verso: verso ?? this.verso,
@@ -592,6 +649,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   String toString() {
     return (StringBuffer('HTMLContent(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('path: $path, ')
           ..write('recto: $recto, ')
           ..write('verso: $verso, ')
@@ -604,13 +662,14 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
   }
 
   @override
-  int get hashCode => Object.hash(id, path, recto, verso, isTemplated,
+  int get hashCode => Object.hash(id, sku, path, recto, verso, isTemplated,
       cardTemplatedJson, isAssembly, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is HTMLContent &&
           other.id == this.id &&
+          other.sku == this.sku &&
           other.path == this.path &&
           other.recto == this.recto &&
           other.verso == this.verso &&
@@ -622,6 +681,7 @@ class HTMLContent extends DataClass implements Insertable<HTMLContent> {
 
 class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   final Value<int> id;
+  final Value<String?> sku;
   final Value<String?> path;
   final Value<String> recto;
   final Value<String> verso;
@@ -631,6 +691,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   final Value<DateTime> lastUpdated;
   const HTMLContentsCompanion({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.path = const Value.absent(),
     this.recto = const Value.absent(),
     this.verso = const Value.absent(),
@@ -641,6 +702,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   });
   HTMLContentsCompanion.insert({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.path = const Value.absent(),
     this.recto = const Value.absent(),
     this.verso = const Value.absent(),
@@ -651,6 +713,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   }) : lastUpdated = Value(lastUpdated);
   static Insertable<HTMLContent> custom({
     Expression<int>? id,
+    Expression<String>? sku,
     Expression<String>? path,
     Expression<String>? recto,
     Expression<String>? verso,
@@ -661,6 +724,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
       if (path != null) 'path': path,
       if (recto != null) 'recto': recto,
       if (verso != null) 'verso': verso,
@@ -673,6 +737,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
 
   HTMLContentsCompanion copyWith(
       {Value<int>? id,
+      Value<String?>? sku,
       Value<String?>? path,
       Value<String>? recto,
       Value<String>? verso,
@@ -682,6 +747,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
       Value<DateTime>? lastUpdated}) {
     return HTMLContentsCompanion(
       id: id ?? this.id,
+      sku: sku ?? this.sku,
       path: path ?? this.path,
       recto: recto ?? this.recto,
       verso: verso ?? this.verso,
@@ -697,6 +763,9 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
     }
     if (path.present) {
       map['path'] = Variable<String>(path.value);
@@ -726,6 +795,7 @@ class HTMLContentsCompanion extends UpdateCompanion<HTMLContent> {
   String toString() {
     return (StringBuffer('HTMLContentsCompanion(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('path: $path, ')
           ..write('recto: $recto, ')
           ..write('verso: $verso, ')
@@ -753,6 +823,11 @@ class $ReviseCardsTable extends ReviseCards
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _groupIdMeta =
       const VerificationMeta('groupId');
   @override
@@ -817,6 +892,7 @@ class $ReviseCardsTable extends ReviseCards
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        sku,
         groupId,
         htmlContent,
         displayerType,
@@ -839,6 +915,10 @@ class $ReviseCardsTable extends ReviseCards
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
     }
     if (data.containsKey('group_id')) {
       context.handle(_groupIdMeta,
@@ -905,6 +985,8 @@ class $ReviseCardsTable extends ReviseCards
     return ReviseCard(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       groupId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}group_id'])!,
       htmlContent: attachedDatabase.typeMapping
@@ -940,6 +1022,7 @@ class $ReviseCardsTable extends ReviseCards
 
 class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final int id;
+  final String? sku;
   final int groupId;
   final int htmlContent;
   final CardDisplayerType displayerType;
@@ -951,6 +1034,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   final DateTime lastUpdated;
   const ReviseCard(
       {required this.id,
+      this.sku,
       required this.groupId,
       required this.htmlContent,
       required this.displayerType,
@@ -964,6 +1048,9 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     map['group_id'] = Variable<int>(groupId);
     map['html_content'] = Variable<int>(htmlContent);
     {
@@ -989,6 +1076,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   ReviseCardsCompanion toCompanion(bool nullToAbsent) {
     return ReviseCardsCompanion(
       id: Value(id),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       groupId: Value(groupId),
       htmlContent: Value(htmlContent),
       displayerType: Value(displayerType),
@@ -1010,6 +1098,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ReviseCard(
       id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String?>(json['sku']),
       groupId: serializer.fromJson<int>(json['groupId']),
       htmlContent: serializer.fromJson<int>(json['htmlContent']),
       displayerType: $ReviseCardsTable.$converterdisplayerType
@@ -1029,6 +1118,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String?>(sku),
       'groupId': serializer.toJson<int>(groupId),
       'htmlContent': serializer.toJson<int>(htmlContent),
       'displayerType': serializer.toJson<int>(
@@ -1045,6 +1135,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
 
   ReviseCard copyWith(
           {int? id,
+          Value<String?> sku = const Value.absent(),
           int? groupId,
           int? htmlContent,
           CardDisplayerType? displayerType,
@@ -1056,6 +1147,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
           DateTime? lastUpdated}) =>
       ReviseCard(
         id: id ?? this.id,
+        sku: sku.present ? sku.value : this.sku,
         groupId: groupId ?? this.groupId,
         htmlContent: htmlContent ?? this.htmlContent,
         displayerType: displayerType ?? this.displayerType,
@@ -1075,6 +1167,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   String toString() {
     return (StringBuffer('ReviseCard(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('groupId: $groupId, ')
           ..write('htmlContent: $htmlContent, ')
           ..write('displayerType: $displayerType, ')
@@ -1092,6 +1185,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
   @override
   int get hashCode => Object.hash(
       id,
+      sku,
       groupId,
       htmlContent,
       displayerType,
@@ -1106,6 +1200,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
       identical(this, other) ||
       (other is ReviseCard &&
           other.id == this.id &&
+          other.sku == this.sku &&
           other.groupId == this.groupId &&
           other.htmlContent == this.htmlContent &&
           other.displayerType == this.displayerType &&
@@ -1120,6 +1215,7 @@ class ReviseCard extends DataClass implements Insertable<ReviseCard> {
 
 class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<int> id;
+  final Value<String?> sku;
   final Value<int> groupId;
   final Value<int> htmlContent;
   final Value<CardDisplayerType> displayerType;
@@ -1131,6 +1227,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   final Value<DateTime> lastUpdated;
   const ReviseCardsCompanion({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.groupId = const Value.absent(),
     this.htmlContent = const Value.absent(),
     this.displayerType = const Value.absent(),
@@ -1143,6 +1240,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   });
   ReviseCardsCompanion.insert({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     required int groupId,
     required int htmlContent,
     required CardDisplayerType displayerType,
@@ -1160,6 +1258,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
         lastUpdated = Value(lastUpdated);
   static Insertable<ReviseCard> custom({
     Expression<int>? id,
+    Expression<String>? sku,
     Expression<int>? groupId,
     Expression<int>? htmlContent,
     Expression<int>? displayerType,
@@ -1172,6 +1271,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
       if (groupId != null) 'group_id': groupId,
       if (htmlContent != null) 'html_content': htmlContent,
       if (displayerType != null) 'displayer_type': displayerType,
@@ -1187,6 +1287,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
 
   ReviseCardsCompanion copyWith(
       {Value<int>? id,
+      Value<String?>? sku,
       Value<int>? groupId,
       Value<int>? htmlContent,
       Value<CardDisplayerType>? displayerType,
@@ -1198,6 +1299,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
       Value<DateTime>? lastUpdated}) {
     return ReviseCardsCompanion(
       id: id ?? this.id,
+      sku: sku ?? this.sku,
       groupId: groupId ?? this.groupId,
       htmlContent: htmlContent ?? this.htmlContent,
       displayerType: displayerType ?? this.displayerType,
@@ -1216,6 +1318,9 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
     }
     if (groupId.present) {
       map['group_id'] = Variable<int>(groupId.value);
@@ -1253,6 +1358,7 @@ class ReviseCardsCompanion extends UpdateCompanion<ReviseCard> {
   String toString() {
     return (StringBuffer('ReviseCardsCompanion(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('groupId: $groupId, ')
           ..write('htmlContent: $htmlContent, ')
           ..write('displayerType: $displayerType, ')
@@ -1457,8 +1563,8 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
   static const VerificationMeta _skuMeta = const VerificationMeta('sku');
   @override
   late final GeneratedColumn<String> sku = GeneratedColumn<String>(
-      'sku', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _imageUrlMeta =
       const VerificationMeta('imageUrl');
   @override
@@ -1501,8 +1607,6 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
     if (data.containsKey('sku')) {
       context.handle(
           _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
-    } else if (isInserting) {
-      context.missing(_skuMeta);
     }
     if (data.containsKey('image_url')) {
       context.handle(_imageUrlMeta,
@@ -1544,7 +1648,7 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       sku: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}sku'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       imageUrl: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}image_url'])!,
       title: attachedDatabase.typeMapping
@@ -1564,14 +1668,14 @@ class $CoursesTable extends Courses with TableInfo<$CoursesTable, Course> {
 
 class Course extends DataClass implements Insertable<Course> {
   final int id;
-  final String sku;
+  final String? sku;
   final String imageUrl;
   final String title;
   final String description;
   final DateTime lastUpdated;
   const Course(
       {required this.id,
-      required this.sku,
+      this.sku,
       required this.imageUrl,
       required this.title,
       required this.description,
@@ -1580,7 +1684,9 @@ class Course extends DataClass implements Insertable<Course> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['sku'] = Variable<String>(sku);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     map['image_url'] = Variable<String>(imageUrl);
     map['title'] = Variable<String>(title);
     map['description'] = Variable<String>(description);
@@ -1591,7 +1697,7 @@ class Course extends DataClass implements Insertable<Course> {
   CoursesCompanion toCompanion(bool nullToAbsent) {
     return CoursesCompanion(
       id: Value(id),
-      sku: Value(sku),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       imageUrl: Value(imageUrl),
       title: Value(title),
       description: Value(description),
@@ -1604,7 +1710,7 @@ class Course extends DataClass implements Insertable<Course> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Course(
       id: serializer.fromJson<int>(json['id']),
-      sku: serializer.fromJson<String>(json['sku']),
+      sku: serializer.fromJson<String?>(json['sku']),
       imageUrl: serializer.fromJson<String>(json['imageUrl']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String>(json['description']),
@@ -1616,7 +1722,7 @@ class Course extends DataClass implements Insertable<Course> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'sku': serializer.toJson<String>(sku),
+      'sku': serializer.toJson<String?>(sku),
       'imageUrl': serializer.toJson<String>(imageUrl),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String>(description),
@@ -1626,14 +1732,14 @@ class Course extends DataClass implements Insertable<Course> {
 
   Course copyWith(
           {int? id,
-          String? sku,
+          Value<String?> sku = const Value.absent(),
           String? imageUrl,
           String? title,
           String? description,
           DateTime? lastUpdated}) =>
       Course(
         id: id ?? this.id,
-        sku: sku ?? this.sku,
+        sku: sku.present ? sku.value : this.sku,
         imageUrl: imageUrl ?? this.imageUrl,
         title: title ?? this.title,
         description: description ?? this.description,
@@ -1669,7 +1775,7 @@ class Course extends DataClass implements Insertable<Course> {
 
 class CoursesCompanion extends UpdateCompanion<Course> {
   final Value<int> id;
-  final Value<String> sku;
+  final Value<String?> sku;
   final Value<String> imageUrl;
   final Value<String> title;
   final Value<String> description;
@@ -1684,13 +1790,12 @@ class CoursesCompanion extends UpdateCompanion<Course> {
   });
   CoursesCompanion.insert({
     this.id = const Value.absent(),
-    required String sku,
+    this.sku = const Value.absent(),
     required String imageUrl,
     required String title,
     required String description,
     required DateTime lastUpdated,
-  })  : sku = Value(sku),
-        imageUrl = Value(imageUrl),
+  })  : imageUrl = Value(imageUrl),
         title = Value(title),
         description = Value(description),
         lastUpdated = Value(lastUpdated);
@@ -1714,7 +1819,7 @@ class CoursesCompanion extends UpdateCompanion<Course> {
 
   CoursesCompanion copyWith(
       {Value<int>? id,
-      Value<String>? sku,
+      Value<String?>? sku,
       Value<String>? imageUrl,
       Value<String>? title,
       Value<String>? description,
@@ -1782,6 +1887,11 @@ class $FileContentsTable extends FileContents
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -1806,7 +1916,7 @@ class $FileContentsTable extends FileContents
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, format, content, lastUpdated];
+      [id, sku, name, format, content, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1819,6 +1929,10 @@ class $FileContentsTable extends FileContents
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -1857,6 +1971,8 @@ class $FileContentsTable extends FileContents
     return FileContent(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       format: attachedDatabase.typeMapping
@@ -1876,12 +1992,14 @@ class $FileContentsTable extends FileContents
 
 class FileContent extends DataClass implements Insertable<FileContent> {
   final int id;
+  final String? sku;
   final String name;
   final String format;
   final Uint8List content;
   final DateTime lastUpdated;
   const FileContent(
       {required this.id,
+      this.sku,
       required this.name,
       required this.format,
       required this.content,
@@ -1890,6 +2008,9 @@ class FileContent extends DataClass implements Insertable<FileContent> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     map['name'] = Variable<String>(name);
     map['format'] = Variable<String>(format);
     map['content'] = Variable<Uint8List>(content);
@@ -1900,6 +2021,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
   FileContentsCompanion toCompanion(bool nullToAbsent) {
     return FileContentsCompanion(
       id: Value(id),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       name: Value(name),
       format: Value(format),
       content: Value(content),
@@ -1912,6 +2034,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FileContent(
       id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String?>(json['sku']),
       name: serializer.fromJson<String>(json['name']),
       format: serializer.fromJson<String>(json['format']),
       content: serializer.fromJson<Uint8List>(json['content']),
@@ -1923,6 +2046,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String?>(sku),
       'name': serializer.toJson<String>(name),
       'format': serializer.toJson<String>(format),
       'content': serializer.toJson<Uint8List>(content),
@@ -1932,12 +2056,14 @@ class FileContent extends DataClass implements Insertable<FileContent> {
 
   FileContent copyWith(
           {int? id,
+          Value<String?> sku = const Value.absent(),
           String? name,
           String? format,
           Uint8List? content,
           DateTime? lastUpdated}) =>
       FileContent(
         id: id ?? this.id,
+        sku: sku.present ? sku.value : this.sku,
         name: name ?? this.name,
         format: format ?? this.format,
         content: content ?? this.content,
@@ -1947,6 +2073,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
   String toString() {
     return (StringBuffer('FileContent(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('name: $name, ')
           ..write('format: $format, ')
           ..write('content: $content, ')
@@ -1957,12 +2084,13 @@ class FileContent extends DataClass implements Insertable<FileContent> {
 
   @override
   int get hashCode => Object.hash(
-      id, name, format, $driftBlobEquality.hash(content), lastUpdated);
+      id, sku, name, format, $driftBlobEquality.hash(content), lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FileContent &&
           other.id == this.id &&
+          other.sku == this.sku &&
           other.name == this.name &&
           other.format == this.format &&
           $driftBlobEquality.equals(other.content, this.content) &&
@@ -1971,12 +2099,14 @@ class FileContent extends DataClass implements Insertable<FileContent> {
 
 class FileContentsCompanion extends UpdateCompanion<FileContent> {
   final Value<int> id;
+  final Value<String?> sku;
   final Value<String> name;
   final Value<String> format;
   final Value<Uint8List> content;
   final Value<DateTime> lastUpdated;
   const FileContentsCompanion({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.name = const Value.absent(),
     this.format = const Value.absent(),
     this.content = const Value.absent(),
@@ -1984,6 +2114,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
   });
   FileContentsCompanion.insert({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     required String name,
     required String format,
     required Uint8List content,
@@ -1994,6 +2125,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
         lastUpdated = Value(lastUpdated);
   static Insertable<FileContent> custom({
     Expression<int>? id,
+    Expression<String>? sku,
     Expression<String>? name,
     Expression<String>? format,
     Expression<Uint8List>? content,
@@ -2001,6 +2133,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
       if (name != null) 'name': name,
       if (format != null) 'format': format,
       if (content != null) 'content': content,
@@ -2010,12 +2143,14 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
 
   FileContentsCompanion copyWith(
       {Value<int>? id,
+      Value<String?>? sku,
       Value<String>? name,
       Value<String>? format,
       Value<Uint8List>? content,
       Value<DateTime>? lastUpdated}) {
     return FileContentsCompanion(
       id: id ?? this.id,
+      sku: sku ?? this.sku,
       name: name ?? this.name,
       format: format ?? this.format,
       content: content ?? this.content,
@@ -2028,6 +2163,9 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -2048,6 +2186,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
   String toString() {
     return (StringBuffer('FileContentsCompanion(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('name: $name, ')
           ..write('format: $format, ')
           ..write('content: $content, ')
@@ -2335,6 +2474,11 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
@@ -2398,6 +2542,7 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        sku,
         path,
         title,
         parentId,
@@ -2419,6 +2564,10 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
     }
     if (data.containsKey('path')) {
       context.handle(
@@ -2475,6 +2624,8 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
     return Topic(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path']),
       title: attachedDatabase.typeMapping
@@ -2502,6 +2653,7 @@ class $TopicsTable extends Topics with TableInfo<$TopicsTable, Topic> {
 
 class Topic extends DataClass implements Insertable<Topic> {
   final int id;
+  final String? sku;
   final String? path;
   final String title;
   final int? parentId;
@@ -2512,6 +2664,7 @@ class Topic extends DataClass implements Insertable<Topic> {
   final DateTime lastUpdated;
   const Topic(
       {required this.id,
+      this.sku,
       this.path,
       required this.title,
       this.parentId,
@@ -2524,6 +2677,9 @@ class Topic extends DataClass implements Insertable<Topic> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     if (!nullToAbsent || path != null) {
       map['path'] = Variable<String>(path);
     }
@@ -2548,6 +2704,7 @@ class Topic extends DataClass implements Insertable<Topic> {
   TopicsCompanion toCompanion(bool nullToAbsent) {
     return TopicsCompanion(
       id: Value(id),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       path: path == null && nullToAbsent ? const Value.absent() : Value(path),
       title: Value(title),
       parentId: parentId == null && nullToAbsent
@@ -2571,6 +2728,7 @@ class Topic extends DataClass implements Insertable<Topic> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Topic(
       id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String?>(json['sku']),
       path: serializer.fromJson<String?>(json['path']),
       title: serializer.fromJson<String>(json['title']),
       parentId: serializer.fromJson<int?>(json['parentId']),
@@ -2586,6 +2744,7 @@ class Topic extends DataClass implements Insertable<Topic> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String?>(sku),
       'path': serializer.toJson<String?>(path),
       'title': serializer.toJson<String>(title),
       'parentId': serializer.toJson<int?>(parentId),
@@ -2599,6 +2758,7 @@ class Topic extends DataClass implements Insertable<Topic> {
 
   Topic copyWith(
           {int? id,
+          Value<String?> sku = const Value.absent(),
           Value<String?> path = const Value.absent(),
           String? title,
           Value<int?> parentId = const Value.absent(),
@@ -2609,6 +2769,7 @@ class Topic extends DataClass implements Insertable<Topic> {
           DateTime? lastUpdated}) =>
       Topic(
         id: id ?? this.id,
+        sku: sku.present ? sku.value : this.sku,
         path: path.present ? path.value : this.path,
         title: title ?? this.title,
         parentId: parentId.present ? parentId.value : this.parentId,
@@ -2623,6 +2784,7 @@ class Topic extends DataClass implements Insertable<Topic> {
   String toString() {
     return (StringBuffer('Topic(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('path: $path, ')
           ..write('title: $title, ')
           ..write('parentId: $parentId, ')
@@ -2636,13 +2798,14 @@ class Topic extends DataClass implements Insertable<Topic> {
   }
 
   @override
-  int get hashCode => Object.hash(id, path, title, parentId, parentCourseId,
-      groupId, fileId, htmlContentId, lastUpdated);
+  int get hashCode => Object.hash(id, sku, path, title, parentId,
+      parentCourseId, groupId, fileId, htmlContentId, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Topic &&
           other.id == this.id &&
+          other.sku == this.sku &&
           other.path == this.path &&
           other.title == this.title &&
           other.parentId == this.parentId &&
@@ -2655,6 +2818,7 @@ class Topic extends DataClass implements Insertable<Topic> {
 
 class TopicsCompanion extends UpdateCompanion<Topic> {
   final Value<int> id;
+  final Value<String?> sku;
   final Value<String?> path;
   final Value<String> title;
   final Value<int?> parentId;
@@ -2665,6 +2829,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   final Value<DateTime> lastUpdated;
   const TopicsCompanion({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.path = const Value.absent(),
     this.title = const Value.absent(),
     this.parentId = const Value.absent(),
@@ -2676,6 +2841,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   });
   TopicsCompanion.insert({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.path = const Value.absent(),
     required String title,
     this.parentId = const Value.absent(),
@@ -2689,6 +2855,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
         lastUpdated = Value(lastUpdated);
   static Insertable<Topic> custom({
     Expression<int>? id,
+    Expression<String>? sku,
     Expression<String>? path,
     Expression<String>? title,
     Expression<int>? parentId,
@@ -2700,6 +2867,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
       if (path != null) 'path': path,
       if (title != null) 'title': title,
       if (parentId != null) 'parent_id': parentId,
@@ -2713,6 +2881,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
 
   TopicsCompanion copyWith(
       {Value<int>? id,
+      Value<String?>? sku,
       Value<String?>? path,
       Value<String>? title,
       Value<int?>? parentId,
@@ -2723,6 +2892,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
       Value<DateTime>? lastUpdated}) {
     return TopicsCompanion(
       id: id ?? this.id,
+      sku: sku ?? this.sku,
       path: path ?? this.path,
       title: title ?? this.title,
       parentId: parentId ?? this.parentId,
@@ -2739,6 +2909,9 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
     }
     if (path.present) {
       map['path'] = Variable<String>(path.value);
@@ -2771,6 +2944,7 @@ class TopicsCompanion extends UpdateCompanion<Topic> {
   String toString() {
     return (StringBuffer('TopicsCompanion(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('path: $path, ')
           ..write('title: $title, ')
           ..write('parentId: $parentId, ')
@@ -2802,8 +2976,8 @@ class $CardTemplateTable extends CardTemplate
   static const VerificationMeta _skuMeta = const VerificationMeta('sku');
   @override
   late final GeneratedColumn<String> sku = GeneratedColumn<String>(
-      'sku', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
@@ -2839,8 +3013,6 @@ class $CardTemplateTable extends CardTemplate
     if (data.containsKey('sku')) {
       context.handle(
           _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
-    } else if (isInserting) {
-      context.missing(_skuMeta);
     }
     if (data.containsKey('path')) {
       context.handle(
@@ -2874,7 +3046,7 @@ class $CardTemplateTable extends CardTemplate
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       sku: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}sku'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
       template: attachedDatabase.typeMapping
@@ -2893,13 +3065,13 @@ class $CardTemplateTable extends CardTemplate
 class CardTemplateData extends DataClass
     implements Insertable<CardTemplateData> {
   final int id;
-  final String sku;
+  final String? sku;
   final String path;
   final String template;
   final DateTime lastUpdated;
   const CardTemplateData(
       {required this.id,
-      required this.sku,
+      this.sku,
       required this.path,
       required this.template,
       required this.lastUpdated});
@@ -2907,7 +3079,9 @@ class CardTemplateData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['sku'] = Variable<String>(sku);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     map['path'] = Variable<String>(path);
     map['template'] = Variable<String>(template);
     map['last_updated'] = Variable<DateTime>(lastUpdated);
@@ -2917,7 +3091,7 @@ class CardTemplateData extends DataClass
   CardTemplateCompanion toCompanion(bool nullToAbsent) {
     return CardTemplateCompanion(
       id: Value(id),
-      sku: Value(sku),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       path: Value(path),
       template: Value(template),
       lastUpdated: Value(lastUpdated),
@@ -2929,7 +3103,7 @@ class CardTemplateData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CardTemplateData(
       id: serializer.fromJson<int>(json['id']),
-      sku: serializer.fromJson<String>(json['sku']),
+      sku: serializer.fromJson<String?>(json['sku']),
       path: serializer.fromJson<String>(json['path']),
       template: serializer.fromJson<String>(json['template']),
       lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
@@ -2940,7 +3114,7 @@ class CardTemplateData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'sku': serializer.toJson<String>(sku),
+      'sku': serializer.toJson<String?>(sku),
       'path': serializer.toJson<String>(path),
       'template': serializer.toJson<String>(template),
       'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
@@ -2949,13 +3123,13 @@ class CardTemplateData extends DataClass
 
   CardTemplateData copyWith(
           {int? id,
-          String? sku,
+          Value<String?> sku = const Value.absent(),
           String? path,
           String? template,
           DateTime? lastUpdated}) =>
       CardTemplateData(
         id: id ?? this.id,
-        sku: sku ?? this.sku,
+        sku: sku.present ? sku.value : this.sku,
         path: path ?? this.path,
         template: template ?? this.template,
         lastUpdated: lastUpdated ?? this.lastUpdated,
@@ -2987,7 +3161,7 @@ class CardTemplateData extends DataClass
 
 class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
   final Value<int> id;
-  final Value<String> sku;
+  final Value<String?> sku;
   final Value<String> path;
   final Value<String> template;
   final Value<DateTime> lastUpdated;
@@ -3000,12 +3174,11 @@ class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
   });
   CardTemplateCompanion.insert({
     this.id = const Value.absent(),
-    required String sku,
+    this.sku = const Value.absent(),
     required String path,
     required String template,
     required DateTime lastUpdated,
-  })  : sku = Value(sku),
-        path = Value(path),
+  })  : path = Value(path),
         template = Value(template),
         lastUpdated = Value(lastUpdated);
   static Insertable<CardTemplateData> custom({
@@ -3026,7 +3199,7 @@ class CardTemplateCompanion extends UpdateCompanion<CardTemplateData> {
 
   CardTemplateCompanion copyWith(
       {Value<int>? id,
-      Value<String>? sku,
+      Value<String?>? sku,
       Value<String>? path,
       Value<String>? template,
       Value<DateTime>? lastUpdated}) {
@@ -3088,6 +3261,11 @@ class $AssemblyCategoryTable extends AssemblyCategory
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
@@ -3102,7 +3280,7 @@ class $AssemblyCategoryTable extends AssemblyCategory
       'last_updated', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
-  List<GeneratedColumn> get $columns => [id, path, lastUpdated];
+  List<GeneratedColumn> get $columns => [id, sku, path, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3116,6 +3294,10 @@ class $AssemblyCategoryTable extends AssemblyCategory
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+          _skuMeta, sku.isAcceptableOrUnknown(data['sku']!, _skuMeta));
     }
     if (data.containsKey('path')) {
       context.handle(
@@ -3142,6 +3324,8 @@ class $AssemblyCategoryTable extends AssemblyCategory
     return AssemblyCategoryData(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      sku: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
       lastUpdated: attachedDatabase.typeMapping
@@ -3158,14 +3342,21 @@ class $AssemblyCategoryTable extends AssemblyCategory
 class AssemblyCategoryData extends DataClass
     implements Insertable<AssemblyCategoryData> {
   final int id;
+  final String? sku;
   final String path;
   final DateTime lastUpdated;
   const AssemblyCategoryData(
-      {required this.id, required this.path, required this.lastUpdated});
+      {required this.id,
+      this.sku,
+      required this.path,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     map['path'] = Variable<String>(path);
     map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
@@ -3174,6 +3365,7 @@ class AssemblyCategoryData extends DataClass
   AssemblyCategoryCompanion toCompanion(bool nullToAbsent) {
     return AssemblyCategoryCompanion(
       id: Value(id),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       path: Value(path),
       lastUpdated: Value(lastUpdated),
     );
@@ -3184,6 +3376,7 @@ class AssemblyCategoryData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AssemblyCategoryData(
       id: serializer.fromJson<int>(json['id']),
+      sku: serializer.fromJson<String?>(json['sku']),
       path: serializer.fromJson<String>(json['path']),
       lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
@@ -3193,15 +3386,20 @@ class AssemblyCategoryData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'sku': serializer.toJson<String?>(sku),
       'path': serializer.toJson<String>(path),
       'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
   AssemblyCategoryData copyWith(
-          {int? id, String? path, DateTime? lastUpdated}) =>
+          {int? id,
+          Value<String?> sku = const Value.absent(),
+          String? path,
+          DateTime? lastUpdated}) =>
       AssemblyCategoryData(
         id: id ?? this.id,
+        sku: sku.present ? sku.value : this.sku,
         path: path ?? this.path,
         lastUpdated: lastUpdated ?? this.lastUpdated,
       );
@@ -3209,6 +3407,7 @@ class AssemblyCategoryData extends DataClass
   String toString() {
     return (StringBuffer('AssemblyCategoryData(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('path: $path, ')
           ..write('lastUpdated: $lastUpdated')
           ..write(')'))
@@ -3216,47 +3415,57 @@ class AssemblyCategoryData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, path, lastUpdated);
+  int get hashCode => Object.hash(id, sku, path, lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AssemblyCategoryData &&
           other.id == this.id &&
+          other.sku == this.sku &&
           other.path == this.path &&
           other.lastUpdated == this.lastUpdated);
 }
 
 class AssemblyCategoryCompanion extends UpdateCompanion<AssemblyCategoryData> {
   final Value<int> id;
+  final Value<String?> sku;
   final Value<String> path;
   final Value<DateTime> lastUpdated;
   const AssemblyCategoryCompanion({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     this.path = const Value.absent(),
     this.lastUpdated = const Value.absent(),
   });
   AssemblyCategoryCompanion.insert({
     this.id = const Value.absent(),
+    this.sku = const Value.absent(),
     required String path,
     required DateTime lastUpdated,
   })  : path = Value(path),
         lastUpdated = Value(lastUpdated);
   static Insertable<AssemblyCategoryData> custom({
     Expression<int>? id,
+    Expression<String>? sku,
     Expression<String>? path,
     Expression<DateTime>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (sku != null) 'sku': sku,
       if (path != null) 'path': path,
       if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
   AssemblyCategoryCompanion copyWith(
-      {Value<int>? id, Value<String>? path, Value<DateTime>? lastUpdated}) {
+      {Value<int>? id,
+      Value<String?>? sku,
+      Value<String>? path,
+      Value<DateTime>? lastUpdated}) {
     return AssemblyCategoryCompanion(
       id: id ?? this.id,
+      sku: sku ?? this.sku,
       path: path ?? this.path,
       lastUpdated: lastUpdated ?? this.lastUpdated,
     );
@@ -3267,6 +3476,9 @@ class AssemblyCategoryCompanion extends UpdateCompanion<AssemblyCategoryData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
     }
     if (path.present) {
       map['path'] = Variable<String>(path.value);
@@ -3281,6 +3493,7 @@ class AssemblyCategoryCompanion extends UpdateCompanion<AssemblyCategoryData> {
   String toString() {
     return (StringBuffer('AssemblyCategoryCompanion(')
           ..write('id: $id, ')
+          ..write('sku: $sku, ')
           ..write('path: $path, ')
           ..write('lastUpdated: $lastUpdated')
           ..write(')'))
@@ -3305,10 +3518,8 @@ class $UserAppTable extends UserApp with TableInfo<$UserAppTable, UserAppData> {
   static const VerificationMeta _skuMeta = const VerificationMeta('sku');
   @override
   late final GeneratedColumn<String> sku = GeneratedColumn<String>(
-      'sku', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(AppConstante.skuToBeDefined));
+      'sku', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _fbIdMeta = const VerificationMeta('fbId');
   @override
   late final GeneratedColumn<String> fbId = GeneratedColumn<String>(
@@ -3365,7 +3576,7 @@ class $UserAppTable extends UserApp with TableInfo<$UserAppTable, UserAppData> {
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       sku: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}sku'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       fbId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}fb_id'])!,
       lastUpdated: attachedDatabase.typeMapping
@@ -3381,19 +3592,21 @@ class $UserAppTable extends UserApp with TableInfo<$UserAppTable, UserAppData> {
 
 class UserAppData extends DataClass implements Insertable<UserAppData> {
   final int id;
-  final String sku;
+  final String? sku;
   final String fbId;
   final DateTime lastUpdated;
   const UserAppData(
       {required this.id,
-      required this.sku,
+      this.sku,
       required this.fbId,
       required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['sku'] = Variable<String>(sku);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
     map['fb_id'] = Variable<String>(fbId);
     map['last_updated'] = Variable<DateTime>(lastUpdated);
     return map;
@@ -3402,7 +3615,7 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
   UserAppCompanion toCompanion(bool nullToAbsent) {
     return UserAppCompanion(
       id: Value(id),
-      sku: Value(sku),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       fbId: Value(fbId),
       lastUpdated: Value(lastUpdated),
     );
@@ -3413,7 +3626,7 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return UserAppData(
       id: serializer.fromJson<int>(json['id']),
-      sku: serializer.fromJson<String>(json['sku']),
+      sku: serializer.fromJson<String?>(json['sku']),
       fbId: serializer.fromJson<String>(json['fbId']),
       lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
     );
@@ -3423,17 +3636,20 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'sku': serializer.toJson<String>(sku),
+      'sku': serializer.toJson<String?>(sku),
       'fbId': serializer.toJson<String>(fbId),
       'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
     };
   }
 
   UserAppData copyWith(
-          {int? id, String? sku, String? fbId, DateTime? lastUpdated}) =>
+          {int? id,
+          Value<String?> sku = const Value.absent(),
+          String? fbId,
+          DateTime? lastUpdated}) =>
       UserAppData(
         id: id ?? this.id,
-        sku: sku ?? this.sku,
+        sku: sku.present ? sku.value : this.sku,
         fbId: fbId ?? this.fbId,
         lastUpdated: lastUpdated ?? this.lastUpdated,
       );
@@ -3462,7 +3678,7 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
 
 class UserAppCompanion extends UpdateCompanion<UserAppData> {
   final Value<int> id;
-  final Value<String> sku;
+  final Value<String?> sku;
   final Value<String> fbId;
   final Value<DateTime> lastUpdated;
   const UserAppCompanion({
@@ -3494,7 +3710,7 @@ class UserAppCompanion extends UpdateCompanion<UserAppData> {
 
   UserAppCompanion copyWith(
       {Value<int>? id,
-      Value<String>? sku,
+      Value<String?>? sku,
       Value<String>? fbId,
       Value<DateTime>? lastUpdated}) {
     return UserAppCompanion(

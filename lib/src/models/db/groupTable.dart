@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 class Group extends Table {
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get sku => text().nullable()();
   TextColumn get title => text()();
   TextColumn get path => text().nullable()();
   TextColumn get tags => text().named('body')();

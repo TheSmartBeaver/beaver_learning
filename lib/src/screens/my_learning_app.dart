@@ -91,6 +91,8 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
                   switch (routeSettings.name) {
                     case CardEditorScreen.routeName:
                       return CardEditorScreen();
+                    case LoginScreen.routeName:
+                      return LoginScreen();
                     case AssemblyEditor.routeName:
                       return AssemblyEditor();
                     case AssembliesList.routeName:

@@ -37,7 +37,7 @@ class ImportManager extends ImportInterface {
     for (var htmlTemplate in htmlTemplateExports.entries) {
       var htmlTemplateExport = htmlTemplate.value;
       await createHtmlTemplateInDb(CardTemplateCompanion.insert(
-          sku: htmlTemplateExport.sku,
+          sku: Value(htmlTemplateExport.sku),
           path: htmlTemplateExport.path,
           template: htmlTemplateExport.template,
           lastUpdated: getUpdateDateNow()));
@@ -567,7 +567,7 @@ class ImportManager extends ImportInterface {
       return matchingCourses.first.id;
     } else {
       int courseId = await createCourseInDb(CoursesCompanion.insert(
-          sku: courseExport.sku!,
+          sku: Value(courseExport.sku!),
           title: courseExport.name!,
           description: courseExport.learnAbouts!.join("\n"),
           imageUrl: courseExport.imgUrl!,

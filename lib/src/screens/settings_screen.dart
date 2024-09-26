@@ -2,6 +2,7 @@ import 'package:beaver_learning/src/providers/firebase_auth_provider.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
 import 'package:beaver_learning/src/screens/login_screen.dart';
 import 'package:beaver_learning/src/utils/export_functions.dart';
+import 'package:beaver_learning/src/utils/synchronize_manager.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:beaver_learning/data/constants.dart';
@@ -63,7 +64,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
                 context),
             ElevatedButton(
-                onPressed: () async {},
+                onPressed: () async {
+                  SynchronizeManager syncManager = SynchronizeManager(context, ref);
+                  await syncManager.synchronize();
+                },
                 style: const ButtonStyle(
                     backgroundColor: MaterialStatePropertyAll(Colors.red)),
                 child: const Text("Synchronize",
@@ -81,7 +85,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: const Text("Logout"),
                 onPressed: () {
                   ref.read(authProvider.notifier).signOut(context);
-                  Navigator.pushNamed(context, CoursesScreen.routeName);
+                  Navigator.pushNamed(context, LoginScreen.routeName);
                 },
               ),
           ],

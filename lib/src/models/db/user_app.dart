@@ -3,7 +3,7 @@ import 'package:drift/drift.dart';
 
 class UserApp extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get sku => text().withDefault(const Constant(AppConstante.skuToBeDefined))();
+  TextColumn get sku => text().nullable()();//.withDefault(const Constant(AppConstante.skuToBeDefined))();
 
   // Firebase Auth ID
   TextColumn get fbId => text()();

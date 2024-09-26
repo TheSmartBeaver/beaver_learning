@@ -1,4 +1,7 @@
+import 'package:beaver_learning/api/flash_mem_pro_api.dart';
 import 'package:beaver_learning/data/constants.dart';
+import 'package:beaver_learning/generated_code/flash_mem_pro_api.swagger.dart';
+import 'package:beaver_learning/service-agent/appuser_service_agent.dart';
 import 'package:beaver_learning/src/providers/firebase_auth_provider.dart';
 import 'package:beaver_learning/src/providers/profile_provider.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
@@ -6,10 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-
 import 'package:image_picker/image_picker.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
+
+  static const String routeName = '/LoginScreen';
 
   LoginScreen({super.key}) {
     //TODO: Faire appel à la BDD, si gugus existe, changeScreen
@@ -34,16 +38,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> fetchAuthent(bool isNewLogin) async {
     if (ref.read(authProvider.notifier).user?.uid != null) {
-      // var authEntryDto = AuthentificateEntryDto(
-      //     authentUid: ref.read(authProvider.notifier).user!.uid);
-      // var result =
-      //     (await vibeScopApi.vibescopyApiUserAuthentificatePost(body: authEntryDto))
-      //         .body;
-      // if (result?.isRegistered == true) {
-      //   final profile = (await vibeScopApi.vibescopyApiUserGetUserProfileFbIdPost(
-      //           fbId: authEntryDto.authentUid))
-      //       .body;
-        sharedPrefs.remove(AppConstante.profileProviderStateKey);
+      var authEntryDto = AuthenticateEntryDto(
+          authentUid: ref.read(authProvider.notifier).user!.uid);
+
+      AuthenticateDto result =
+          await AppUserServiceAgent(context).authenticate(authEntryDto);
+      if (result?.isRegistered == true) {
+        // final profile = (await fmpApi.vibescopyApiUserGetUserProfileFbIdPost(
+        //         fbId: authEntryDto.authentUid))
+        //     .body;
+
+        //sharedPrefs.remove(AppConstante.profileProviderStateKey);
+
         // await ref
         //     .read(profileProvider.notifier)
         //     .fetchProfileAfterAuthent(profile!);
@@ -57,6 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         setState(() {});
       }
     }
+  }
 
   @override
   Widget build(BuildContext context) {

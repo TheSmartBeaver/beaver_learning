@@ -1,13 +1,12 @@
 import 'dart:io';
 
 class AppConstante {
-
   AppConstante() {
     if (Platform.isIOS) {
       ApiUrl = "localhost:7299";
       //ApiUrl = "beaver-tech.com"; //VPS
     } else if (Platform.isAndroid) {
-      ApiUrl = "10.0.2.2:7299";
+      ApiUrl = "10.0.2.2:7239";
       //ApiUrl = "beaver-tech.com"; //VPS
     }
     //ApiUrl = "62.72.18.73"; //VPS
@@ -24,9 +23,9 @@ class AppConstante {
   static String htmlSupportFieldName = "support";
   static String templateFieldName = "template_name";
 
-    static const String profileProviderStateKey = "profileProviderStateKey";
+  static const String profileProviderStateKey = "profileProviderStateKey";
 
-  static const String skuToBeDefined = "SKU_TO_BE_DEFINED";
+  // static const String skuToBeDefined = "SKU_TO_BE_DEFINED";
 
   late String ApiUrl;
 }
