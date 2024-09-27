@@ -132,10 +132,133 @@
           }
         }
       }
+    },
+    "/api/Synchronize/syncTowardsServer": {
+      "post": {
+        "tags": [
+          "Synchronize"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Synchronize/createElementsWithMissingSku": {
+      "post": {
+        "tags": [
+          "Synchronize"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElementsWithoutSkuDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElementsWithoutSkuDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElementsWithoutSkuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementsWithoutSkuDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementsWithoutSkuDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementsWithoutSkuDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Synchronize/synchronizeElementsCreatedAfterLastServerUpdate": {
+      "post": {
+        "tags": [
+          "Synchronize"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElementsToSyncDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElementsToSyncDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElementsToSyncDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AssemblyCategorySyncDto": {
+        "type": "object",
+        "properties": {
+          "SKU": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "Path": {
+            "type": "string",
+            "nullable": true
+          },
+          "LastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AssemblyLinkedToAssembCategSyncDto": {
+        "type": "object",
+        "properties": {
+          "AssemblyCategorySKU": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "AssemblySKU": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
       "AuthenticateDto": {
         "type": "object",
         "properties": {
@@ -151,6 +274,428 @@
           "AuthentUid": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CardSyncDto": {
+        "type": "object",
+        "properties": {
+          "SKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "GroupSKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isMine": {
+            "type": "boolean"
+          },
+          "HtmlContentSKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "Tags": {
+            "type": "string",
+            "nullable": true
+          },
+          "NextRevisionDateMultiplicator": {
+            "type": "number",
+            "format": "double"
+          },
+          "NextRevisionDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "Path": {
+            "type": "string",
+            "nullable": true
+          },
+          "LastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CardTemplateSyncDto": {
+        "type": "object",
+        "properties": {
+          "SKU": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "Path": {
+            "type": "string",
+            "nullable": true
+          },
+          "Template": {
+            "type": "string",
+            "nullable": true
+          },
+          "LastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CourseSyncDto": {
+        "type": "object",
+        "properties": {
+          "SKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isMine": {
+            "type": "boolean"
+          },
+          "ImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "Title": {
+            "type": "string",
+            "nullable": true
+          },
+          "Description": {
+            "type": "string",
+            "nullable": true
+          },
+          "RootTopicSKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "LastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateEntityForSkuDto": {
+        "type": "object",
+        "properties": {
+          "FrontId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "SKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ElementsToSyncDto": {
+        "type": "object",
+        "properties": {
+          "FileContents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileContentSyncDto"
+            },
+            "nullable": true
+          },
+          "HtmlContents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HtmlContentSyncDto"
+            },
+            "nullable": true
+          },
+          "FileContentLinkedToHtmlContents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileContentSyncDto"
+            },
+            "nullable": true
+          },
+          "AssemblyCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssemblyCategorySyncDto"
+            },
+            "nullable": true
+          },
+          "AssemblyLinkedToAssembCateg": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssemblyLinkedToAssembCategSyncDto"
+            },
+            "nullable": true
+          },
+          "Groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupSyncDto"
+            },
+            "nullable": true
+          },
+          "Cards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardSyncDto"
+            },
+            "nullable": true
+          },
+          "Courses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseSyncDto"
+            },
+            "nullable": true
+          },
+          "Topics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicSyncDto"
+            },
+            "nullable": true
+          },
+          "CardTemplates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardTemplateSyncDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ElementsWithoutSkuDto": {
+        "type": "object",
+        "properties": {
+          "FileContents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "HtmlContents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "FileContentLinkedToHtmlContents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "AssemblyCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "AssemblyLinkedToAssembCateg": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "Groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "Cards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "Courses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "Topics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          },
+          "CardTemplates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityForSkuDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileContentSyncDto": {
+        "type": "object",
+        "properties": {
+          "SKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isMine": {
+            "type": "boolean"
+          },
+          "Name": {
+            "type": "string",
+            "nullable": true
+          },
+          "Format": {
+            "type": "string",
+            "nullable": true
+          },
+          "Content": {
+            "type": "string",
+            "format": "byte",
+            "nullable": true
+          },
+          "LastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GroupSyncDto": {
+        "type": "object",
+        "properties": {
+          "SKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isMine": {
+            "type": "boolean"
+          },
+          "Title": {
+            "type": "string",
+            "nullable": true
+          },
+          "Path": {
+            "type": "string",
+            "nullable": true
+          },
+          "Tags": {
+            "type": "string",
+            "nullable": true
+          },
+          "ParentSKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "LastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "HtmlContentSyncDto": {
+        "type": "object",
+        "properties": {
+          "SKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isMine": {
+            "type": "boolean"
+          },
+          "Path": {
+            "type": "string",
+            "nullable": true
+          },
+          "Recto": {
+            "type": "string",
+            "nullable": true
+          },
+          "Verso": {
+            "type": "string",
+            "nullable": true
+          },
+          "IsTemplated": {
+            "type": "boolean"
+          },
+          "CardTemplatedJson": {
+            "type": "string",
+            "nullable": true
+          },
+          "IsAssembly": {
+            "type": "boolean"
+          },
+          "LastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TopicSyncDto": {
+        "type": "object",
+        "properties": {
+          "SKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "Path": {
+            "type": "string",
+            "nullable": true
+          },
+          "Title": {
+            "type": "string",
+            "nullable": true
+          },
+          "ParentSKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "ParentCourseSKU": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "GroupSKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "FileSKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "HtmlContentSKU": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "LastUpdated": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

@@ -6,7 +6,7 @@ class AppUserServiceAgent extends BaseServiceAgent {
   AppUserServiceAgent(super.buildContext);
 
   Future<AuthenticateDto> authenticate(AuthenticateEntryDto dto) async {
-    
+
     var response = await fmpApi.apiAppUserAuthentificatePost(body: dto);
 
     if (response.error != null) {
@@ -19,6 +19,17 @@ class AppUserServiceAgent extends BaseServiceAgent {
 
   Future<DateTime> getLastUserSyncDate() async {
     var response = (await fmpApi.apiSynchronizeGetLastSynchronizationDateGet());
+
+    if (response.error != null) {
+      dealWithRequestError(buildContext, response.error);
+      throw Exception("");
+    } else {
+      return response.body!;
+    }
+  }
+
+  Future<ElementsWithoutSkuDto> createElementsWithMissingSku(ElementsWithoutSkuDto dto) async {
+    var response = (await fmpApi.apiSynchronizeCreateElementsWithMissingSkuPost(body: dto));
 
     if (response.error != null) {
       dealWithRequestError(buildContext, response.error);

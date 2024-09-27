@@ -88,4 +88,9 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   Future updateAssembly(HTMLContent htmlContent, int templateCategoryId) async {
       await update(hTMLContents).replace(htmlContent);
   }
+
+  Future updateById(int id, ReviseCardsCompanion cardCompanion) {
+    return (update(reviseCards)..where((t) => t.id.equals(id)))
+        .write(cardCompanion);
+  }
 }

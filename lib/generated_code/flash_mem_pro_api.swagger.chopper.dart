@@ -85,4 +85,46 @@ final class _$FlashMemProApi extends FlashMemProApi {
     );
     return client.send<DateTime, DateTime>($request);
   }
+
+  @override
+  Future<Response<dynamic>> _apiSynchronizeSyncTowardsServerPost() {
+    final Uri $url = Uri.parse('/api/Synchronize/syncTowardsServer');
+    final Request $request = Request(
+      'POST',
+      $url,
+      client.baseUrl,
+    );
+    return client.send<dynamic, dynamic>($request);
+  }
+
+  @override
+  Future<Response<ElementsWithoutSkuDto>>
+      _apiSynchronizeCreateElementsWithMissingSkuPost(
+          {required ElementsWithoutSkuDto? body}) {
+    final Uri $url = Uri.parse('/api/Synchronize/createElementsWithMissingSku');
+    final $body = body;
+    final Request $request = Request(
+      'POST',
+      $url,
+      client.baseUrl,
+      body: $body,
+    );
+    return client.send<ElementsWithoutSkuDto, ElementsWithoutSkuDto>($request);
+  }
+
+  @override
+  Future<Response<dynamic>>
+      _apiSynchronizeSynchronizeElementsCreatedAfterLastServerUpdatePost(
+          {required ElementsToSyncDto? body}) {
+    final Uri $url = Uri.parse(
+        '/api/Synchronize/synchronizeElementsCreatedAfterLastServerUpdate');
+    final $body = body;
+    final Request $request = Request(
+      'POST',
+      $url,
+      client.baseUrl,
+      body: $body,
+    );
+    return client.send<dynamic, dynamic>($request);
+  }
 }

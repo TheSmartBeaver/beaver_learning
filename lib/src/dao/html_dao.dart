@@ -57,4 +57,15 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
     return result;
   }
+
+  Future updateById(int id, HTMLContentsCompanion htmlContentCompanion) {
+    return (update(hTMLContents)..where((t) => t.id.equals(id)))
+        .write(htmlContentCompanion);
+  }
+
+  Future<HTMLContent?> getById(int id) async {
+    var entity = await ((select(hTMLContents)..where((t) => t.id.equals(id))).getSingleOrNull());
+    return entity;
+  }
+
 }
