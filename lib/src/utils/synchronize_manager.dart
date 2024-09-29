@@ -12,8 +12,12 @@ import 'package:beaver_learning/src/dao/file_content_dao.dart';
 import 'package:beaver_learning/src/dao/group_dao.dart';
 import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/dao/topic_dao.dart';
+import 'package:beaver_learning/src/dao/user_app_dao.dart';
+import 'package:beaver_learning/src/models/db/assemblyCategoryAssemblyTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart' as db;
+import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
+import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/firebase_auth_provider.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
@@ -50,9 +54,10 @@ class SynchronizeManager {
     try {
       final database = MyDatabaseInstance.getInstance();
 
-      ElementsWithoutSkuDto entryDto = const ElementsWithoutSkuDto(
+      ElementsWithoutSkuDto entryDto = ElementsWithoutSkuDto(
           assemblyCategories: [],
           assemblyLinkedToAssembCateg: [],
+          cardTemplates: [],
           cards: [],
           courses: [],
           fileContentLinkedToHtmlContents: [],
@@ -77,10 +82,6 @@ class SynchronizeManager {
         entryDto.htmlContents?.add(CreateEntityForSkuDto(frontId: dbEntity.id));
       }
 
-      //sync fileContents belonging to htmlContent
-
-      //TODO:
-
       //sync card template
 
       for (var dbEntity in await (database.select(database.cardTemplate)
@@ -90,29 +91,12 @@ class SynchronizeManager {
             ?.add(CreateEntityForSkuDto(frontId: dbEntity.id));
       }
 
-      //sync fileContents belonging to htmlContent
-
-      for (var dbEntity in await (database.select(database.fileContents)
-            ..where((tbl) => tbl.sku.isNull()))
-          .get()) {
-        entryDto.fileContents?.add(CreateEntityForSkuDto(frontId: dbEntity.id));
-      }
-
       //sync assembly categories
 
       for (var dbEntity in await (database.select(database.assemblyCategory)
             ..where((tbl) => tbl.sku.isNull()))
           .get()) {
         entryDto.assemblyCategories
-            ?.add(CreateEntityForSkuDto(frontId: dbEntity.id));
-      }
-
-      //sync assemblies belonging to categories
-
-      for (var dbEntity in await (database.select(database.hTMLContents)
-            ..where((tbl) => tbl.sku.isNull()))
-          .get()) {
-        entryDto.assemblyLinkedToAssembCateg
             ?.add(CreateEntityForSkuDto(frontId: dbEntity.id));
       }
 
@@ -148,6 +132,7 @@ class SynchronizeManager {
         entryDto.topics?.add(CreateEntityForSkuDto(frontId: dbEntity.id));
       }
 
+      // APPEL API -----------------------------
       ElementsWithoutSkuDto resultDto = await AppUserServiceAgent(context)
           .createElementsWithMissingSku(entryDto);
 
@@ -180,13 +165,6 @@ class SynchronizeManager {
         await assemblyCategoryDao.updateById(
             dto.frontId!, db.AssemblyCategoryCompanion(sku: Value(dto.sku)));
       }
-
-      //sync assemblies belonging to categories
-
-      // var dao = AAAAA(database);
-      // for (var dto in resultDto.AAAAA!) {
-      //   await dao.updateById(dto.frontId!, db.AAAAAA(sku: Value(dto.sku)));
-      // }
 
       //sync group
 
@@ -226,7 +204,7 @@ class SynchronizeManager {
 
   Future<void> _synchronizeElementsCreatedAfterLastServerUpdate() async {
     try {
-      DateTime lastUpdated = await _getLastSynchronizationDate();
+      DateTime lastUpdated = await _getLastMobileSynchronizationDate();
 
       //sync fileContents
 
@@ -269,6 +247,23 @@ class SynchronizeManager {
 
       //sync fileContents belonging to htmlContent
 
+      Map<String, dynamic>? fileContentLinkedToHtmlContents = {};
+
+      for (var e in htmlContentsToSync) {
+        List<HTMLContentFile> htmlContentFilesToSync =
+            await (database.select(database.hTMLContentFiles)
+                  ..where((x) => x.htmlContentParentId.equals(e.id)))
+                .get();
+        String? htmlContentSKU = (await HtmlDao(database).getById(e.id))?.sku;
+        if (htmlContentSKU != null) {
+          fileContentLinkedToHtmlContents[htmlContentSKU] = [];
+          for (var e in htmlContentFilesToSync) {
+            fileContentLinkedToHtmlContents[htmlContentSKU] =
+                (await FileContentDao(database).getById(e.fileId))?.sku;
+          }
+        }
+      }
+
       //sync card template
 
       List<db.CardTemplateData> cardTemplatesToSync =
@@ -297,6 +292,24 @@ class SynchronizeManager {
           .toList();
 
       //sync assemblies belonging to categories
+
+      Map<String, dynamic>? assemblyCategoryLinkedToAssembly = {};
+
+      for (var e in assemblyCategoriesToSync) {
+        List<db.AssemblyCategoryAssemblyData> assemblyCategoryAssembliesToSync =
+            await (database.select(database.assemblyCategoryAssembly)
+                  ..where((x) => x.assemblyCategoryId.equals(e.id)))
+                .get();
+        String? assemblyCategorySKU =
+            (await AssemblyCategoryDao(database).getById(e.id))?.sku;
+        if (assemblyCategorySKU != null) {
+          assemblyCategoryLinkedToAssembly[assemblyCategorySKU] = [];
+          for (var e in assemblyCategoryAssembliesToSync) {
+            assemblyCategoryLinkedToAssembly[assemblyCategorySKU] =
+                (await HtmlDao(database).getById(e.assemblyId))?.sku;
+          }
+        }
+      }
 
       //sync group
 
@@ -327,16 +340,17 @@ class SynchronizeManager {
       List<CardSyncDto> cardsToSyncDto = [];
       for (var e in cardsToSync) {
         cardsToSyncDto.add(CardSyncDto(
-              sku: e.sku,
-              nextRevisionDate: e.nextRevisionDate,
-              tags: e.tags,
-              nextRevisionDateMultiplicator: e.nextRevisionDateMultiplicator,
-              groupSKU: (await GroupDao(database).getById(e.id))?.sku,
-              htmlContentSKU: (await HtmlDao(database).getById(e.htmlContent))?.sku,
-              path: e.path,
-              lastUpdated: e.lastUpdated,
-              isMine: true // Comment le définir ?
-              ));
+            sku: e.sku,
+            nextRevisionDate: e.nextRevisionDate,
+            tags: e.tags,
+            nextRevisionDateMultiplicator: e.nextRevisionDateMultiplicator,
+            groupSKU: (await GroupDao(database).getById(e.id))?.sku,
+            htmlContentSKU:
+                (await HtmlDao(database).getById(e.htmlContent))?.sku,
+            path: e.path,
+            lastUpdated: e.lastUpdated,
+            isMine: true // Comment le définir ?
+            ));
       }
 
       //sync courses
@@ -348,7 +362,7 @@ class SynchronizeManager {
       List<CourseSyncDto> coursesToSyncDto = [];
       for (var e in coursesToSync) {
         coursesToSyncDto.add(CourseSyncDto(
-          rootTopicSKU: (await TopicDao(database).getRootTopicByCourseId(e.id))?.sku,
+          // rootTopicSKU: (await TopicDao(database).getRootTopicByCourseId(e.id))?.sku,
           description: e.description,
           imageUrl: e.imageUrl,
           sku: e.sku,
@@ -366,51 +380,199 @@ class SynchronizeManager {
 
       List<TopicSyncDto> topicsToSyncDto = [];
       for (var e in topicToSync) {
+        var test = 0;
         topicsToSyncDto.add(TopicSyncDto(
-          parentCourseSKU: (await CourseDao(database).getById(e.parentCourseId))?.sku,
-          fileSKU: e.fileId != null ? (await FileContentDao(database).getById(e.fileId!))?.sku : null,
-          groupSKU: e.groupId != null ? (await GroupDao(database).getById(e.fileId!))?.sku : null,
-          parentSKU: e.parentId != null ? (await TopicDao(database).getById(e.fileId!))?.sku : null,
-          htmlContentSKU: e.htmlContentId != null ? (await HtmlDao(database).getById(e.fileId!))?.sku : null,
-          path: e.path,
-          sku: e.sku,
-          title: e.title,
-          lastUpdated: e.lastUpdated
-        ));
+            parentCourseSKU:
+                (await CourseDao(database).getById(e.parentCourseId))?.sku,
+            fileSKU: e.fileId != null
+                ? (await FileContentDao(database).getById(e.fileId!))?.sku
+                : null,
+            groupSKU: e.groupId != null
+                ? (await GroupDao(database).getById(e.groupId!))?.sku
+                : null,
+            parentSKU: e.parentId != null
+                ? (await TopicDao(database).getById(e.parentId!))?.sku
+                : null,
+            htmlContentSKU: e.htmlContentId != null
+                ? (await HtmlDao(database).getById(e.htmlContentId!))?.sku
+                : null,
+            path: e.path,
+            sku: e.sku,
+            title: e.title,
+            lastUpdated: e.lastUpdated));
       }
 
       ElementsToSyncDto elementsToSyncDto = ElementsToSyncDto(
           assemblyCategories: assemblyCategoriesToSyncDto,
-          assemblyLinkedToAssembCateg: [],
+          assemblyLinkedToAssembCateg: assemblyCategoryLinkedToAssembly,
           cards: cardsToSyncDto,
           cardTemplates: cardTemplatesToSyncDto,
           courses: coursesToSyncDto,
           fileContents: fileContentsToSyncDto,
           groups: groupsToSyncDto,
           htmlContents: htmlContentsToSyncDto,
-          topics: topicsToSyncDto,);
+          fileContentLinkedToHtmlContents: fileContentLinkedToHtmlContents,
+          topics: topicsToSyncDto);
+
+      var resultDto = await AppUserServiceAgent(context)
+          .synchronizeElementsTowardsServerUpdate(elementsToSyncDto);
     } catch (e) {
       throw e;
     }
   }
 
-  Future<DateTime> _getLastSynchronizationDate() async {
-    // final database = MyDatabaseInstance.getInstance();
-    // //TODO: Faux chercher sur le serveur
-    // UserAppData user = await (database.select(database.userApp)
-    //       ..where((tbl) => tbl.fbId.equals(currentUser.uid)))
-    //     .getSingle();
+  Future<dynamic> synchronizeElementsTowardsMobileUpdate() async {
+    DateTime lastUpdated = await _getLastMobileSynchronizationDate();
 
-    //DateTime lastUpdated = user.lastUpdated;
+    ElementsToSyncDto resultDto = await AppUserServiceAgent(context)
+        .synchronizeElementsTowardsMobileUpdate(lastUpdated);
 
-    DateTime lastUpdated =
-        await AppUserServiceAgent(context).getLastUserSyncDate();
+    //sync fileContents
+      FileContentDao fileContentDao = FileContentDao(database);
+      for (var dto in resultDto.fileContents!) {
+        await fileContentDao.updateBySku(
+            dto.sku!, db.FileContentsCompanion(sku: Value(dto.sku),
+            content: Value(base64Decode(dto.content ?? "")),
+            format: Value(dto.format ?? ""),
+            name: Value(dto.name ?? ""),
+            lastUpdated: Value(getUpdateDateNow())
+        ));
+      }
 
-    return lastUpdated;
+      //sync htmlContent
+      var htmlDao = HtmlDao(database);
+      for (var dto in resultDto.htmlContents!) {
+        await htmlDao.updateBySku(
+            dto.sku!, db.HTMLContentsCompanion(sku: Value(dto.sku),
+            cardTemplatedJson: Value(dto.cardTemplatedJson ?? ""),
+            isAssembly: Value(dto.isAssembly ?? false),
+            isTemplated: Value(dto.isTemplated ?? false),
+            lastUpdated: Value(getUpdateDateNow()),
+            path: Value(dto.path ?? ""),
+            recto: Value(dto.recto ?? ""),
+            verso: Value(dto.verso ?? "")
+        ));
+      }
+
+      //sync fileContents belonging to htmlContent
+
+      //
+
+      //sync card template
+
+      var daoCardTemplate = CardTemplateDao(database);
+      for (var dto in resultDto.cardTemplates!) {
+        await daoCardTemplate.updateBySku(
+            dto.sku!, db.CardTemplateCompanion(sku: Value(dto.sku),
+            path: Value(dto.path ?? ""),
+            template: Value(dto.template ?? ""),
+            lastUpdated: Value(getUpdateDateNow())
+            ));
+      }
+
+      //sync assembly categories
+
+      var assemblyCategoryDao = AssemblyCategoryDao(database);
+      for (var dto in resultDto.assemblyCategories!) {
+        await assemblyCategoryDao.updateBySku(
+            dto.sku!, db.AssemblyCategoryCompanion(sku: Value(dto.sku),
+            path: Value(dto.path ?? ""),
+            lastUpdated: Value(getUpdateDateNow())
+            ));
+      }
+
+      //sync assemblies belonging to categories
+
+      //
+
+      //sync group
+
+      var groupDao = GroupDao(database);
+      for (var dto in resultDto.groups!) {
+        await groupDao.updateBySku(
+            dto.sku!, db.GroupCompanion(sku: Value(dto.sku),
+            path: Value(dto.path ?? ""),
+            tags: Value(dto.tags ?? ""),
+            title: Value(dto.title ?? ""),
+            lastUpdated: Value(getUpdateDateNow()),
+            parentId: Value((await groupDao.getBySku(dto.parentSKU ?? ""))?.id),
+            ));
+      }
+
+      //sync cards
+
+      var cardDao = CardDao(database);
+      for (var dto in resultDto.cards!) {
+        await cardDao.updateBySku(
+            dto.sku!, db.ReviseCardsCompanion(sku: Value(dto.sku),
+            displayerType: const Value(CardDisplayerType.html),
+            groupId: Value((await groupDao.getBySku(dto.groupSKU ?? ""))?.id ?? -1),
+            htmlContent: Value((await htmlDao.getBySku(dto.htmlContentSKU ?? ""))?.id ?? -1),
+            mnemotechnicHint: Value(dto.mnemotechnicHint ?? ""),
+            nextRevisionDate: Value(dto.nextRevisionDate),
+            nextRevisionDateMultiplicator: Value(dto.nextRevisionDateMultiplicator ?? 0.2),
+            path: Value(dto.path ?? ""),
+            tags: Value(dto.tags ?? ""),
+            lastUpdated: Value(getUpdateDateNow())
+            ));
+      }
+
+      //sync courses
+
+      var courseDao = CourseDao(database);
+      for (var dto in resultDto.courses!) {
+        await courseDao.updateBySku(
+            dto.sku!, db.CoursesCompanion(sku: Value(dto.sku),
+            description: Value(dto.description ?? ""),
+            imageUrl: Value(dto.imageUrl ?? ""),
+            title: Value(dto.title ?? ""),
+            lastUpdated: Value(getUpdateDateNow())
+            ));
+      }
+
+      //sync topic
+
+      var topicDao = TopicDao(database);
+      for (var dto in resultDto.topics!) {
+        await topicDao.updateBySku(
+            dto.sku!, db.TopicsCompanion(sku: Value(dto.sku),
+            fileId: Value((await fileContentDao.getBySku(dto.fileSKU ?? ""))?.id),
+            groupId: Value((await groupDao.getBySku(dto.groupSKU ?? ""))?.id),
+            htmlContentId: Value((await htmlDao.getBySku(dto.htmlContentSKU ?? ""))?.id),
+            parentCourseId: Value((await courseDao.getBySku(dto.parentCourseSKU ?? ""))?.id ?? -1),
+            parentId: Value((await topicDao.getBySku(dto.parentSKU ?? ""))?.id),
+            path: Value(dto.path ?? ""),
+            title: Value(dto.title ?? ""),
+            lastUpdated: Value(getUpdateDateNow())
+            ));
+      }
+
+  }
+
+  Future<DateTime> _getLastMobileSynchronizationDate() async {
+    final database = MyDatabaseInstance.getInstance();
+    //TODO: Faux chercher sur le serveur
+    UserAppData user = await (database.select(database.userApp)
+          ..where((tbl) => tbl.fbId.equals(currentUser.uid)))
+        .getSingle();
+
+    DateTime? lastUpdated = user.lastUpdated;
+
+    // DateTime lastUpdated =
+    //     await AppUserServiceAgent(context).getLastServerUserSyncDate();
+
+    return lastUpdated ?? DateTime.fromMicrosecondsSinceEpoch(0);
   }
 
   Future<void> _setNewSynchronizationDate() async {
     DateTime new_sync_date = getUpdateDateNow();
+    final database = MyDatabaseInstance.getInstance();
+
+    await (database.update(database.userApp)
+          ..where((tbl) => tbl.fbId.equals(currentUser.uid)))
+        .write(UserAppCompanion(lastUpdated: Value(new_sync_date)));
+
+    await AppUserServiceAgent(context).setLastServerUserSyncDate();
 
     //TODO: Faire appel serveur pour mettre à jour la date de synchro
   }

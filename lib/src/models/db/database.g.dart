@@ -3529,8 +3529,8 @@ class $UserAppTable extends UserApp with TableInfo<$UserAppTable, UserAppData> {
       const VerificationMeta('lastUpdated');
   @override
   late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
-      'last_updated', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+      'last_updated', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, sku, fbId, lastUpdated];
   @override
@@ -3561,8 +3561,6 @@ class $UserAppTable extends UserApp with TableInfo<$UserAppTable, UserAppData> {
           _lastUpdatedMeta,
           lastUpdated.isAcceptableOrUnknown(
               data['last_updated']!, _lastUpdatedMeta));
-    } else if (isInserting) {
-      context.missing(_lastUpdatedMeta);
     }
     return context;
   }
@@ -3580,7 +3578,7 @@ class $UserAppTable extends UserApp with TableInfo<$UserAppTable, UserAppData> {
       fbId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}fb_id'])!,
       lastUpdated: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated'])!,
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_updated']),
     );
   }
 
@@ -3594,12 +3592,9 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
   final int id;
   final String? sku;
   final String fbId;
-  final DateTime lastUpdated;
+  final DateTime? lastUpdated;
   const UserAppData(
-      {required this.id,
-      this.sku,
-      required this.fbId,
-      required this.lastUpdated});
+      {required this.id, this.sku, required this.fbId, this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3608,7 +3603,9 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
       map['sku'] = Variable<String>(sku);
     }
     map['fb_id'] = Variable<String>(fbId);
-    map['last_updated'] = Variable<DateTime>(lastUpdated);
+    if (!nullToAbsent || lastUpdated != null) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated);
+    }
     return map;
   }
 
@@ -3617,7 +3614,9 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
       id: Value(id),
       sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       fbId: Value(fbId),
-      lastUpdated: Value(lastUpdated),
+      lastUpdated: lastUpdated == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastUpdated),
     );
   }
 
@@ -3628,7 +3627,7 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
       id: serializer.fromJson<int>(json['id']),
       sku: serializer.fromJson<String?>(json['sku']),
       fbId: serializer.fromJson<String>(json['fbId']),
-      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
+      lastUpdated: serializer.fromJson<DateTime?>(json['lastUpdated']),
     );
   }
   @override
@@ -3638,7 +3637,7 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
       'id': serializer.toJson<int>(id),
       'sku': serializer.toJson<String?>(sku),
       'fbId': serializer.toJson<String>(fbId),
-      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
+      'lastUpdated': serializer.toJson<DateTime?>(lastUpdated),
     };
   }
 
@@ -3646,12 +3645,12 @@ class UserAppData extends DataClass implements Insertable<UserAppData> {
           {int? id,
           Value<String?> sku = const Value.absent(),
           String? fbId,
-          DateTime? lastUpdated}) =>
+          Value<DateTime?> lastUpdated = const Value.absent()}) =>
       UserAppData(
         id: id ?? this.id,
         sku: sku.present ? sku.value : this.sku,
         fbId: fbId ?? this.fbId,
-        lastUpdated: lastUpdated ?? this.lastUpdated,
+        lastUpdated: lastUpdated.present ? lastUpdated.value : this.lastUpdated,
       );
   @override
   String toString() {
@@ -3680,7 +3679,7 @@ class UserAppCompanion extends UpdateCompanion<UserAppData> {
   final Value<int> id;
   final Value<String?> sku;
   final Value<String> fbId;
-  final Value<DateTime> lastUpdated;
+  final Value<DateTime?> lastUpdated;
   const UserAppCompanion({
     this.id = const Value.absent(),
     this.sku = const Value.absent(),
@@ -3691,9 +3690,8 @@ class UserAppCompanion extends UpdateCompanion<UserAppData> {
     this.id = const Value.absent(),
     this.sku = const Value.absent(),
     required String fbId,
-    required DateTime lastUpdated,
-  })  : fbId = Value(fbId),
-        lastUpdated = Value(lastUpdated);
+    this.lastUpdated = const Value.absent(),
+  }) : fbId = Value(fbId);
   static Insertable<UserAppData> custom({
     Expression<int>? id,
     Expression<String>? sku,
@@ -3712,7 +3710,7 @@ class UserAppCompanion extends UpdateCompanion<UserAppData> {
       {Value<int>? id,
       Value<String?>? sku,
       Value<String>? fbId,
-      Value<DateTime>? lastUpdated}) {
+      Value<DateTime?>? lastUpdated}) {
     return UserAppCompanion(
       id: id ?? this.id,
       sku: sku ?? this.sku,
@@ -3751,6 +3749,237 @@ class UserAppCompanion extends UpdateCompanion<UserAppData> {
   }
 }
 
+class $AssemblyCategoryAssemblyTable extends AssemblyCategoryAssembly
+    with
+        TableInfo<$AssemblyCategoryAssemblyTable,
+            AssemblyCategoryAssemblyData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AssemblyCategoryAssemblyTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _assemblyIdMeta =
+      const VerificationMeta('assemblyId');
+  @override
+  late final GeneratedColumn<int> assemblyId = GeneratedColumn<int>(
+      'assembly_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES h_t_m_l_contents (id)'));
+  static const VerificationMeta _assemblyCategoryIdMeta =
+      const VerificationMeta('assemblyCategoryId');
+  @override
+  late final GeneratedColumn<int> assemblyCategoryId = GeneratedColumn<int>(
+      'assembly_category_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES assembly_category_assembly (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [id, assemblyId, assemblyCategoryId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'assembly_category_assembly';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<AssemblyCategoryAssemblyData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('assembly_id')) {
+      context.handle(
+          _assemblyIdMeta,
+          assemblyId.isAcceptableOrUnknown(
+              data['assembly_id']!, _assemblyIdMeta));
+    } else if (isInserting) {
+      context.missing(_assemblyIdMeta);
+    }
+    if (data.containsKey('assembly_category_id')) {
+      context.handle(
+          _assemblyCategoryIdMeta,
+          assemblyCategoryId.isAcceptableOrUnknown(
+              data['assembly_category_id']!, _assemblyCategoryIdMeta));
+    } else if (isInserting) {
+      context.missing(_assemblyCategoryIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AssemblyCategoryAssemblyData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AssemblyCategoryAssemblyData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      assemblyId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}assembly_id'])!,
+      assemblyCategoryId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}assembly_category_id'])!,
+    );
+  }
+
+  @override
+  $AssemblyCategoryAssemblyTable createAlias(String alias) {
+    return $AssemblyCategoryAssemblyTable(attachedDatabase, alias);
+  }
+}
+
+class AssemblyCategoryAssemblyData extends DataClass
+    implements Insertable<AssemblyCategoryAssemblyData> {
+  final int id;
+  final int assemblyId;
+  final int assemblyCategoryId;
+  const AssemblyCategoryAssemblyData(
+      {required this.id,
+      required this.assemblyId,
+      required this.assemblyCategoryId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['assembly_id'] = Variable<int>(assemblyId);
+    map['assembly_category_id'] = Variable<int>(assemblyCategoryId);
+    return map;
+  }
+
+  AssemblyCategoryAssemblyCompanion toCompanion(bool nullToAbsent) {
+    return AssemblyCategoryAssemblyCompanion(
+      id: Value(id),
+      assemblyId: Value(assemblyId),
+      assemblyCategoryId: Value(assemblyCategoryId),
+    );
+  }
+
+  factory AssemblyCategoryAssemblyData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AssemblyCategoryAssemblyData(
+      id: serializer.fromJson<int>(json['id']),
+      assemblyId: serializer.fromJson<int>(json['assemblyId']),
+      assemblyCategoryId: serializer.fromJson<int>(json['assemblyCategoryId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'assemblyId': serializer.toJson<int>(assemblyId),
+      'assemblyCategoryId': serializer.toJson<int>(assemblyCategoryId),
+    };
+  }
+
+  AssemblyCategoryAssemblyData copyWith(
+          {int? id, int? assemblyId, int? assemblyCategoryId}) =>
+      AssemblyCategoryAssemblyData(
+        id: id ?? this.id,
+        assemblyId: assemblyId ?? this.assemblyId,
+        assemblyCategoryId: assemblyCategoryId ?? this.assemblyCategoryId,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('AssemblyCategoryAssemblyData(')
+          ..write('id: $id, ')
+          ..write('assemblyId: $assemblyId, ')
+          ..write('assemblyCategoryId: $assemblyCategoryId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, assemblyId, assemblyCategoryId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AssemblyCategoryAssemblyData &&
+          other.id == this.id &&
+          other.assemblyId == this.assemblyId &&
+          other.assemblyCategoryId == this.assemblyCategoryId);
+}
+
+class AssemblyCategoryAssemblyCompanion
+    extends UpdateCompanion<AssemblyCategoryAssemblyData> {
+  final Value<int> id;
+  final Value<int> assemblyId;
+  final Value<int> assemblyCategoryId;
+  const AssemblyCategoryAssemblyCompanion({
+    this.id = const Value.absent(),
+    this.assemblyId = const Value.absent(),
+    this.assemblyCategoryId = const Value.absent(),
+  });
+  AssemblyCategoryAssemblyCompanion.insert({
+    this.id = const Value.absent(),
+    required int assemblyId,
+    required int assemblyCategoryId,
+  })  : assemblyId = Value(assemblyId),
+        assemblyCategoryId = Value(assemblyCategoryId);
+  static Insertable<AssemblyCategoryAssemblyData> custom({
+    Expression<int>? id,
+    Expression<int>? assemblyId,
+    Expression<int>? assemblyCategoryId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (assemblyId != null) 'assembly_id': assemblyId,
+      if (assemblyCategoryId != null)
+        'assembly_category_id': assemblyCategoryId,
+    });
+  }
+
+  AssemblyCategoryAssemblyCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? assemblyId,
+      Value<int>? assemblyCategoryId}) {
+    return AssemblyCategoryAssemblyCompanion(
+      id: id ?? this.id,
+      assemblyId: assemblyId ?? this.assemblyId,
+      assemblyCategoryId: assemblyCategoryId ?? this.assemblyCategoryId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (assemblyId.present) {
+      map['assembly_id'] = Variable<int>(assemblyId.value);
+    }
+    if (assemblyCategoryId.present) {
+      map['assembly_category_id'] = Variable<int>(assemblyCategoryId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AssemblyCategoryAssemblyCompanion(')
+          ..write('id: $id, ')
+          ..write('assemblyId: $assemblyId, ')
+          ..write('assemblyCategoryId: $assemblyCategoryId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   late final $GroupTable group = $GroupTable(this);
@@ -3766,6 +3995,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AssemblyCategoryTable assemblyCategory =
       $AssemblyCategoryTable(this);
   late final $UserAppTable userApp = $UserAppTable(this);
+  late final $AssemblyCategoryAssemblyTable assemblyCategoryAssembly =
+      $AssemblyCategoryAssemblyTable(this);
   late final ImageDao imageDao = ImageDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -3782,6 +4013,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         topics,
         cardTemplate,
         assemblyCategory,
-        userApp
+        userApp,
+        assemblyCategoryAssembly
       ];
 }

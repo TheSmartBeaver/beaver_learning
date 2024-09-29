@@ -16,4 +16,9 @@ class CardTemplateDao extends DatabaseAccessor<AppDatabase> with _$CardTemplateD
         .write(cardTemplateCompanion);
   }
 
+  Future updateBySku(String sku, CardTemplateCompanion companion) {
+    return (update(cardTemplate)..where((t) => t.sku.equals(sku)))
+        .write(companion);
+  }
+
 }

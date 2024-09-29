@@ -112,14 +112,28 @@ abstract class FlashMemProApi extends ChopperService {
 
   ///
   Future<chopper.Response<DateTime>>
-      apiSynchronizeGetLastSynchronizationDateGet() {
-    return _apiSynchronizeGetLastSynchronizationDateGet();
+      apiSynchronizeGetLastServerSynchronizationDateGet() {
+    return _apiSynchronizeGetLastServerSynchronizationDateGet();
   }
 
   ///
-  @Get(path: '/api/Synchronize/getLastSynchronizationDate')
+  @Get(path: '/api/Synchronize/getLastServerSynchronizationDate')
   Future<chopper.Response<DateTime>>
-      _apiSynchronizeGetLastSynchronizationDateGet();
+      _apiSynchronizeGetLastServerSynchronizationDateGet();
+
+  ///
+  ///@param newSynchronizationDate
+  Future<chopper.Response> apiSynchronizeSetLastServerSynchronizationDateGet(
+      {DateTime? newSynchronizationDate}) {
+    return _apiSynchronizeSetLastServerSynchronizationDateGet(
+        newSynchronizationDate: newSynchronizationDate);
+  }
+
+  ///
+  ///@param newSynchronizationDate
+  @Get(path: '/api/Synchronize/setLastServerSynchronizationDate')
+  Future<chopper.Response> _apiSynchronizeSetLastServerSynchronizationDateGet(
+      {@Query('newSynchronizationDate') DateTime? newSynchronizationDate});
 
   ///
   Future<chopper.Response> apiSynchronizeSyncTowardsServerPost() {
@@ -153,21 +167,40 @@ abstract class FlashMemProApi extends ChopperService {
           {@Body() required ElementsWithoutSkuDto? body});
 
   ///
-  Future<chopper.Response>
-      apiSynchronizeSynchronizeElementsCreatedAfterLastServerUpdatePost(
-          {required ElementsToSyncDto? body}) {
-    return _apiSynchronizeSynchronizeElementsCreatedAfterLastServerUpdatePost(
-        body: body);
+  Future<chopper.Response> apiSynchronizeSynchronizeElementsTowardsServerPost(
+      {required ElementsToSyncDto? body}) {
+    return _apiSynchronizeSynchronizeElementsTowardsServerPost(body: body);
   }
 
   ///
   @Post(
-    path: '/api/Synchronize/synchronizeElementsCreatedAfterLastServerUpdate',
+    path: '/api/Synchronize/synchronizeElementsTowardsServer',
     optionalBody: true,
   )
-  Future<chopper.Response>
-      _apiSynchronizeSynchronizeElementsCreatedAfterLastServerUpdatePost(
-          {@Body() required ElementsToSyncDto? body});
+  Future<chopper.Response> _apiSynchronizeSynchronizeElementsTowardsServerPost(
+      {@Body() required ElementsToSyncDto? body});
+
+  ///
+  ///@param lastMobileUpdate
+  Future<chopper.Response<ElementsToSyncDto>>
+      apiSynchronizeSynchronizeElementsTowardsMobilePost(
+          {DateTime? lastMobileUpdate}) {
+    generatedMapping.putIfAbsent(
+        ElementsToSyncDto, () => ElementsToSyncDto.fromJsonFactory);
+
+    return _apiSynchronizeSynchronizeElementsTowardsMobilePost(
+        lastMobileUpdate: lastMobileUpdate);
+  }
+
+  ///
+  ///@param lastMobileUpdate
+  @Post(
+    path: '/api/Synchronize/synchronizeElementsTowardsMobile',
+    optionalBody: true,
+  )
+  Future<chopper.Response<ElementsToSyncDto>>
+      _apiSynchronizeSynchronizeElementsTowardsMobilePost(
+          {@Query('lastMobileUpdate') DateTime? lastMobileUpdate});
 }
 
 @JsonSerializable(explicitToJson: true)
@@ -234,69 +267,6 @@ extension $AssemblyCategorySyncDtoExtension on AssemblyCategorySyncDto {
         path: (path != null ? path.value : this.path),
         lastUpdated:
             (lastUpdated != null ? lastUpdated.value : this.lastUpdated));
-  }
-}
-
-@JsonSerializable(explicitToJson: true)
-class AssemblyLinkedToAssembCategSyncDto {
-  const AssemblyLinkedToAssembCategSyncDto({
-    this.assemblyCategorySKU,
-    this.assemblySKU,
-  });
-
-  factory AssemblyLinkedToAssembCategSyncDto.fromJson(
-          Map<String, dynamic> json) =>
-      _$AssemblyLinkedToAssembCategSyncDtoFromJson(json);
-
-  static const toJsonFactory = _$AssemblyLinkedToAssembCategSyncDtoToJson;
-  Map<String, dynamic> toJson() =>
-      _$AssemblyLinkedToAssembCategSyncDtoToJson(this);
-
-  @JsonKey(name: 'AssemblyCategorySKU', defaultValue: 'default')
-  final String? assemblyCategorySKU;
-  @JsonKey(name: 'AssemblySKU', defaultValue: 'default')
-  final String? assemblySKU;
-  static const fromJsonFactory = _$AssemblyLinkedToAssembCategSyncDtoFromJson;
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is AssemblyLinkedToAssembCategSyncDto &&
-            (identical(other.assemblyCategorySKU, assemblyCategorySKU) ||
-                const DeepCollectionEquality()
-                    .equals(other.assemblyCategorySKU, assemblyCategorySKU)) &&
-            (identical(other.assemblySKU, assemblySKU) ||
-                const DeepCollectionEquality()
-                    .equals(other.assemblySKU, assemblySKU)));
-  }
-
-  @override
-  String toString() => jsonEncode(this);
-
-  @override
-  int get hashCode =>
-      const DeepCollectionEquality().hash(assemblyCategorySKU) ^
-      const DeepCollectionEquality().hash(assemblySKU) ^
-      runtimeType.hashCode;
-}
-
-extension $AssemblyLinkedToAssembCategSyncDtoExtension
-    on AssemblyLinkedToAssembCategSyncDto {
-  AssemblyLinkedToAssembCategSyncDto copyWith(
-      {String? assemblyCategorySKU, String? assemblySKU}) {
-    return AssemblyLinkedToAssembCategSyncDto(
-        assemblyCategorySKU: assemblyCategorySKU ?? this.assemblyCategorySKU,
-        assemblySKU: assemblySKU ?? this.assemblySKU);
-  }
-
-  AssemblyLinkedToAssembCategSyncDto copyWithWrapped(
-      {Wrapped<String?>? assemblyCategorySKU, Wrapped<String?>? assemblySKU}) {
-    return AssemblyLinkedToAssembCategSyncDto(
-        assemblyCategorySKU: (assemblyCategorySKU != null
-            ? assemblyCategorySKU.value
-            : this.assemblyCategorySKU),
-        assemblySKU:
-            (assemblySKU != null ? assemblySKU.value : this.assemblySKU));
   }
 }
 
@@ -396,6 +366,7 @@ class CardSyncDto {
     this.groupSKU,
     this.isMine,
     this.htmlContentSKU,
+    this.mnemotechnicHint,
     this.tags,
     this.nextRevisionDateMultiplicator,
     this.nextRevisionDate,
@@ -417,6 +388,8 @@ class CardSyncDto {
   final bool? isMine;
   @JsonKey(name: 'HtmlContentSKU', defaultValue: 'default')
   final String? htmlContentSKU;
+  @JsonKey(name: 'MnemotechnicHint', defaultValue: 'default')
+  final String? mnemotechnicHint;
   @JsonKey(name: 'Tags', defaultValue: 'default')
   final String? tags;
   @JsonKey(name: 'NextRevisionDateMultiplicator')
@@ -443,6 +416,9 @@ class CardSyncDto {
             (identical(other.htmlContentSKU, htmlContentSKU) ||
                 const DeepCollectionEquality()
                     .equals(other.htmlContentSKU, htmlContentSKU)) &&
+            (identical(other.mnemotechnicHint, mnemotechnicHint) ||
+                const DeepCollectionEquality()
+                    .equals(other.mnemotechnicHint, mnemotechnicHint)) &&
             (identical(other.tags, tags) ||
                 const DeepCollectionEquality().equals(other.tags, tags)) &&
             (identical(other.nextRevisionDateMultiplicator,
@@ -469,6 +445,7 @@ class CardSyncDto {
       const DeepCollectionEquality().hash(groupSKU) ^
       const DeepCollectionEquality().hash(isMine) ^
       const DeepCollectionEquality().hash(htmlContentSKU) ^
+      const DeepCollectionEquality().hash(mnemotechnicHint) ^
       const DeepCollectionEquality().hash(tags) ^
       const DeepCollectionEquality().hash(nextRevisionDateMultiplicator) ^
       const DeepCollectionEquality().hash(nextRevisionDate) ^
@@ -483,6 +460,7 @@ extension $CardSyncDtoExtension on CardSyncDto {
       String? groupSKU,
       bool? isMine,
       String? htmlContentSKU,
+      String? mnemotechnicHint,
       String? tags,
       double? nextRevisionDateMultiplicator,
       DateTime? nextRevisionDate,
@@ -493,6 +471,7 @@ extension $CardSyncDtoExtension on CardSyncDto {
         groupSKU: groupSKU ?? this.groupSKU,
         isMine: isMine ?? this.isMine,
         htmlContentSKU: htmlContentSKU ?? this.htmlContentSKU,
+        mnemotechnicHint: mnemotechnicHint ?? this.mnemotechnicHint,
         tags: tags ?? this.tags,
         nextRevisionDateMultiplicator:
             nextRevisionDateMultiplicator ?? this.nextRevisionDateMultiplicator,
@@ -506,6 +485,7 @@ extension $CardSyncDtoExtension on CardSyncDto {
       Wrapped<String?>? groupSKU,
       Wrapped<bool?>? isMine,
       Wrapped<String?>? htmlContentSKU,
+      Wrapped<String?>? mnemotechnicHint,
       Wrapped<String?>? tags,
       Wrapped<double?>? nextRevisionDateMultiplicator,
       Wrapped<DateTime?>? nextRevisionDate,
@@ -518,6 +498,9 @@ extension $CardSyncDtoExtension on CardSyncDto {
         htmlContentSKU: (htmlContentSKU != null
             ? htmlContentSKU.value
             : this.htmlContentSKU),
+        mnemotechnicHint: (mnemotechnicHint != null
+            ? mnemotechnicHint.value
+            : this.mnemotechnicHint),
         tags: (tags != null ? tags.value : this.tags),
         nextRevisionDateMultiplicator: (nextRevisionDateMultiplicator != null
             ? nextRevisionDateMultiplicator.value
@@ -616,7 +599,6 @@ class CourseSyncDto {
     this.imageUrl,
     this.title,
     this.description,
-    this.rootTopicSKU,
     this.lastUpdated,
   });
 
@@ -636,8 +618,6 @@ class CourseSyncDto {
   final String? title;
   @JsonKey(name: 'Description', defaultValue: 'default')
   final String? description;
-  @JsonKey(name: 'RootTopicSKU', defaultValue: 'default')
-  final String? rootTopicSKU;
   @JsonKey(name: 'LastUpdated')
   final DateTime? lastUpdated;
   static const fromJsonFactory = _$CourseSyncDtoFromJson;
@@ -658,9 +638,6 @@ class CourseSyncDto {
             (identical(other.description, description) ||
                 const DeepCollectionEquality()
                     .equals(other.description, description)) &&
-            (identical(other.rootTopicSKU, rootTopicSKU) ||
-                const DeepCollectionEquality()
-                    .equals(other.rootTopicSKU, rootTopicSKU)) &&
             (identical(other.lastUpdated, lastUpdated) ||
                 const DeepCollectionEquality()
                     .equals(other.lastUpdated, lastUpdated)));
@@ -676,7 +653,6 @@ class CourseSyncDto {
       const DeepCollectionEquality().hash(imageUrl) ^
       const DeepCollectionEquality().hash(title) ^
       const DeepCollectionEquality().hash(description) ^
-      const DeepCollectionEquality().hash(rootTopicSKU) ^
       const DeepCollectionEquality().hash(lastUpdated) ^
       runtimeType.hashCode;
 }
@@ -688,7 +664,6 @@ extension $CourseSyncDtoExtension on CourseSyncDto {
       String? imageUrl,
       String? title,
       String? description,
-      String? rootTopicSKU,
       DateTime? lastUpdated}) {
     return CourseSyncDto(
         sku: sku ?? this.sku,
@@ -696,7 +671,6 @@ extension $CourseSyncDtoExtension on CourseSyncDto {
         imageUrl: imageUrl ?? this.imageUrl,
         title: title ?? this.title,
         description: description ?? this.description,
-        rootTopicSKU: rootTopicSKU ?? this.rootTopicSKU,
         lastUpdated: lastUpdated ?? this.lastUpdated);
   }
 
@@ -706,7 +680,6 @@ extension $CourseSyncDtoExtension on CourseSyncDto {
       Wrapped<String?>? imageUrl,
       Wrapped<String?>? title,
       Wrapped<String?>? description,
-      Wrapped<String?>? rootTopicSKU,
       Wrapped<DateTime?>? lastUpdated}) {
     return CourseSyncDto(
         sku: (sku != null ? sku.value : this.sku),
@@ -715,8 +688,6 @@ extension $CourseSyncDtoExtension on CourseSyncDto {
         title: (title != null ? title.value : this.title),
         description:
             (description != null ? description.value : this.description),
-        rootTopicSKU:
-            (rootTopicSKU != null ? rootTopicSKU.value : this.rootTopicSKU),
         lastUpdated:
             (lastUpdated != null ? lastUpdated.value : this.lastUpdated));
   }
@@ -801,17 +772,13 @@ class ElementsToSyncDto {
   final List<FileContentSyncDto>? fileContents;
   @JsonKey(name: 'HtmlContents', defaultValue: <HtmlContentSyncDto>[])
   final List<HtmlContentSyncDto>? htmlContents;
-  @JsonKey(
-      name: 'FileContentLinkedToHtmlContents',
-      defaultValue: <FileContentSyncDto>[])
-  final List<FileContentSyncDto>? fileContentLinkedToHtmlContents;
+  @JsonKey(name: 'FileContentLinkedToHtmlContents')
+  final Map<String, dynamic>? fileContentLinkedToHtmlContents;
   @JsonKey(
       name: 'AssemblyCategories', defaultValue: <AssemblyCategorySyncDto>[])
   final List<AssemblyCategorySyncDto>? assemblyCategories;
-  @JsonKey(
-      name: 'AssemblyLinkedToAssembCateg',
-      defaultValue: <AssemblyLinkedToAssembCategSyncDto>[])
-  final List<AssemblyLinkedToAssembCategSyncDto>? assemblyLinkedToAssembCateg;
+  @JsonKey(name: 'AssemblyLinkedToAssembCateg')
+  final Map<String, dynamic>? assemblyLinkedToAssembCateg;
   @JsonKey(name: 'Groups', defaultValue: <GroupSyncDto>[])
   final List<GroupSyncDto>? groups;
   @JsonKey(name: 'Cards', defaultValue: <CardSyncDto>[])
@@ -883,9 +850,9 @@ extension $ElementsToSyncDtoExtension on ElementsToSyncDto {
   ElementsToSyncDto copyWith(
       {List<FileContentSyncDto>? fileContents,
       List<HtmlContentSyncDto>? htmlContents,
-      List<FileContentSyncDto>? fileContentLinkedToHtmlContents,
+      Map<String, dynamic>? fileContentLinkedToHtmlContents,
       List<AssemblyCategorySyncDto>? assemblyCategories,
-      List<AssemblyLinkedToAssembCategSyncDto>? assemblyLinkedToAssembCateg,
+      Map<String, dynamic>? assemblyLinkedToAssembCateg,
       List<GroupSyncDto>? groups,
       List<CardSyncDto>? cards,
       List<CourseSyncDto>? courses,
@@ -909,10 +876,9 @@ extension $ElementsToSyncDtoExtension on ElementsToSyncDto {
   ElementsToSyncDto copyWithWrapped(
       {Wrapped<List<FileContentSyncDto>?>? fileContents,
       Wrapped<List<HtmlContentSyncDto>?>? htmlContents,
-      Wrapped<List<FileContentSyncDto>?>? fileContentLinkedToHtmlContents,
+      Wrapped<Map<String, dynamic>?>? fileContentLinkedToHtmlContents,
       Wrapped<List<AssemblyCategorySyncDto>?>? assemblyCategories,
-      Wrapped<List<AssemblyLinkedToAssembCategSyncDto>?>?
-          assemblyLinkedToAssembCateg,
+      Wrapped<Map<String, dynamic>?>? assemblyLinkedToAssembCateg,
       Wrapped<List<GroupSyncDto>?>? groups,
       Wrapped<List<CardSyncDto>?>? cards,
       Wrapped<List<CourseSyncDto>?>? courses,

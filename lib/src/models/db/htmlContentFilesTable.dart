@@ -6,5 +6,5 @@ class HTMLContentFiles extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get fileId => integer().references(FileContents, #id)();
   IntColumn get htmlContentParentId => integer().references(HTMLContents, #id)();
-  DateTimeColumn get lastUpdated => dateTime()();
+  DateTimeColumn get lastUpdated => dateTime()(); // Utile ????
 }

@@ -15,4 +15,14 @@ class AssemblyCategoryDao extends DatabaseAccessor<AppDatabase> with _$AssemblyC
     return (update(assemblyCategory)..where((t) => t.id.equals(id)))
         .write(assemblyCategoryCompanion);
   }
+
+  Future<AssemblyCategoryData?> getById(int id) async {
+    var entity = await ((select(assemblyCategory)..where((t) => t.id.equals(id))).getSingleOrNull());
+    return entity;
+  }
+
+  Future updateBySku(String sku, AssemblyCategoryCompanion companion) {
+    return (update(assemblyCategory)..where((t) => t.sku.equals(sku)))
+        .write(companion);
+  }
 }

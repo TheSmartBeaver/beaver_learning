@@ -7,5 +7,5 @@ class UserApp extends Table {
 
   // Firebase Auth ID
   TextColumn get fbId => text()();
-  DateTimeColumn get lastUpdated => dateTime()();
+  DateTimeColumn get lastUpdated => dateTime().nullable()();
 }

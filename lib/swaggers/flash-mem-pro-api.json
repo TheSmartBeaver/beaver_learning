@@ -101,7 +101,7 @@
         }
       }
     },
-    "/api/Synchronize/getLastSynchronizationDate": {
+    "/api/Synchronize/getLastServerSynchronizationDate": {
       "get": {
         "tags": [
           "Synchronize"
@@ -129,6 +129,29 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/Synchronize/setLastServerSynchronizationDate": {
+      "get": {
+        "tags": [
+          "Synchronize"
+        ],
+        "parameters": [
+          {
+            "name": "newSynchronizationDate",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
           }
         }
       }
@@ -193,7 +216,7 @@
         }
       }
     },
-    "/api/Synchronize/synchronizeElementsCreatedAfterLastServerUpdate": {
+    "/api/Synchronize/synchronizeElementsTowardsServer": {
       "post": {
         "tags": [
           "Synchronize"
@@ -223,6 +246,46 @@
           }
         }
       }
+    },
+    "/api/Synchronize/synchronizeElementsTowardsMobile": {
+      "post": {
+        "tags": [
+          "Synchronize"
+        ],
+        "parameters": [
+          {
+            "name": "lastMobileUpdate",
+            "in": "query",
+            "style": "form",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementsToSyncDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementsToSyncDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementsToSyncDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -241,20 +304,6 @@
           "LastUpdated": {
             "type": "string",
             "format": "date-time"
-          }
-        },
-        "additionalProperties": false
-      },
-      "AssemblyLinkedToAssembCategSyncDto": {
-        "type": "object",
-        "properties": {
-          "AssemblyCategorySKU": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "AssemblySKU": {
-            "type": "string",
-            "format": "uuid"
           }
         },
         "additionalProperties": false
@@ -297,6 +346,10 @@
           "HtmlContentSKU": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          },
+          "MnemotechnicHint": {
+            "type": "string",
             "nullable": true
           },
           "Tags": {
@@ -368,11 +421,6 @@
             "type": "string",
             "nullable": true
           },
-          "RootTopicSKU": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
           "LastUpdated": {
             "type": "string",
             "format": "date-time"
@@ -413,9 +461,13 @@
             "nullable": true
           },
           "FileContentLinkedToHtmlContents": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FileContentSyncDto"
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
             },
             "nullable": true
           },
@@ -427,9 +479,13 @@
             "nullable": true
           },
           "AssemblyLinkedToAssembCateg": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssemblyLinkedToAssembCategSyncDto"
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
             },
             "nullable": true
           },

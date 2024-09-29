@@ -183,12 +183,14 @@ Future<void> initial_migrate_batch(Batch batch, AppDatabase dbInfos) async {
   ]);
 
   batch.insertAll(dbInfos.hTMLContents, [
-    HTMLContentsCompanion.insert(
+    HTMLContentsCompanion.insert( // Pour card preview Editor
         id: const Value(1),
+        path: const Value(AppConstante.templatedPreviewNameKey),
         cardTemplatedJson: Value(previewCardJson),
         isTemplated: const Value(true),
+        isAssembly: const Value(false),
         lastUpdated: last_updated),
-    HTMLContentsCompanion.insert(
+    HTMLContentsCompanion.insert( // Pour assembly preview Editor
         id: const Value(2),
         path: const Value(AppConstante.templatedPreviewNameKey),
         cardTemplatedJson: Value(previewCardJson),

@@ -76,14 +76,33 @@ final class _$FlashMemProApi extends FlashMemProApi {
   }
 
   @override
-  Future<Response<DateTime>> _apiSynchronizeGetLastSynchronizationDateGet() {
-    final Uri $url = Uri.parse('/api/Synchronize/getLastSynchronizationDate');
+  Future<Response<DateTime>>
+      _apiSynchronizeGetLastServerSynchronizationDateGet() {
+    final Uri $url =
+        Uri.parse('/api/Synchronize/getLastServerSynchronizationDate');
     final Request $request = Request(
       'GET',
       $url,
       client.baseUrl,
     );
     return client.send<DateTime, DateTime>($request);
+  }
+
+  @override
+  Future<Response<dynamic>> _apiSynchronizeSetLastServerSynchronizationDateGet(
+      {DateTime? newSynchronizationDate}) {
+    final Uri $url =
+        Uri.parse('/api/Synchronize/setLastServerSynchronizationDate');
+    final Map<String, dynamic> $params = <String, dynamic>{
+      'newSynchronizationDate': newSynchronizationDate
+    };
+    final Request $request = Request(
+      'GET',
+      $url,
+      client.baseUrl,
+      parameters: $params,
+    );
+    return client.send<dynamic, dynamic>($request);
   }
 
   @override
@@ -113,11 +132,10 @@ final class _$FlashMemProApi extends FlashMemProApi {
   }
 
   @override
-  Future<Response<dynamic>>
-      _apiSynchronizeSynchronizeElementsCreatedAfterLastServerUpdatePost(
-          {required ElementsToSyncDto? body}) {
-    final Uri $url = Uri.parse(
-        '/api/Synchronize/synchronizeElementsCreatedAfterLastServerUpdate');
+  Future<Response<dynamic>> _apiSynchronizeSynchronizeElementsTowardsServerPost(
+      {required ElementsToSyncDto? body}) {
+    final Uri $url =
+        Uri.parse('/api/Synchronize/synchronizeElementsTowardsServer');
     final $body = body;
     final Request $request = Request(
       'POST',
@@ -126,5 +144,23 @@ final class _$FlashMemProApi extends FlashMemProApi {
       body: $body,
     );
     return client.send<dynamic, dynamic>($request);
+  }
+
+  @override
+  Future<Response<ElementsToSyncDto>>
+      _apiSynchronizeSynchronizeElementsTowardsMobilePost(
+          {DateTime? lastMobileUpdate}) {
+    final Uri $url =
+        Uri.parse('/api/Synchronize/synchronizeElementsTowardsMobile');
+    final Map<String, dynamic> $params = <String, dynamic>{
+      'lastMobileUpdate': lastMobileUpdate
+    };
+    final Request $request = Request(
+      'POST',
+      $url,
+      client.baseUrl,
+      parameters: $params,
+    );
+    return client.send<ElementsToSyncDto, ElementsToSyncDto>($request);
   }
 }

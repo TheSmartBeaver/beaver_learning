@@ -20,4 +20,14 @@ class CourseDao extends DatabaseAccessor<AppDatabase> with _$CourseDaoMixin {
     return entity;
   }
 
+  Future updateBySku(String sku, CoursesCompanion companion) {
+    return (update(courses)..where((t) => t.sku.equals(sku)))
+        .write(companion);
+  }
+
+  Future<Course?> getBySku(String sku) async {
+    var entity = await ((select(courses)..where((t) => t.sku.equals(sku))).getSingleOrNull());
+    return entity;
+  }
+
 }

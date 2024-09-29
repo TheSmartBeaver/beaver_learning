@@ -1,4 +1,8 @@
+import 'package:beaver_learning/src/dao/user_app_dao.dart';
+import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
+import 'package:drift/drift.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:firebase_auth_demo/utils/showOTPDialog.dart';
 //import 'package:firebase_auth_demo/utils/showSnackbar.dart';
@@ -77,6 +81,7 @@ class FirebaseAuthMethods extends StateNotifier<Object> {
 
           //TODO: mieux faire un appel en bdd ?
           if (userCredential.user != null) {
+            await initAdditionalTreatment(context);
             if (userCredential.additionalUserInfo!.isNewUser) {}
           }
 
@@ -186,6 +191,16 @@ class FirebaseAuthMethods extends StateNotifier<Object> {
 
   bool checkIfUserLogged() {
     return _auth.currentUser != null;
+  }
+
+  initAdditionalTreatment(BuildContext context) async {
+    final database = MyDatabaseInstance.getInstance();
+    bool isUserAlreadyRegistered = await UserAppDao(database)
+        .isUserAlreadyRegistered(_auth.currentUser!.uid);
+    if (!isUserAlreadyRegistered) {
+      await UserAppDao(database).create(UserAppCompanion.insert(
+          fbId: _auth.currentUser!.uid, sku: const Value("TO_FILL")));
+    }
   }
 }
 

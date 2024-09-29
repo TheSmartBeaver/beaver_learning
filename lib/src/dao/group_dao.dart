@@ -20,4 +20,14 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
     var entity = await ((select(group)..where((t) => t.id.equals(id))).getSingleOrNull());
     return entity;
   }
+
+  Future<GroupData?> getBySku(String sku) async {
+    var entity = await ((select(group)..where((t) => t.sku.equals(sku))).getSingleOrNull());
+    return entity;
+  }
+
+  Future updateBySku(String sku, GroupCompanion companion) {
+    return (update(group)..where((t) => t.sku.equals(sku)))
+        .write(companion);
+  }
 }

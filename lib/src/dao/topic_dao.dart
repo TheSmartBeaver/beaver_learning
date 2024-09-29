@@ -21,8 +21,19 @@ class TopicDao extends DatabaseAccessor<AppDatabase> with _$TopicDaoMixin {
     return entity;
   }
 
-  Future<Topic?> getRootTopicByCourseId(int courseId) async {
-    var entity = await ((select(topics)..where((t) => t.parentCourseId.equals(courseId))).getSingleOrNull());
+  Future updateBySku(String sku, TopicsCompanion companion) {
+    return (update(topics)..where((t) => t.sku.equals(sku)))
+        .write(companion);
+  }
+
+  Future<Topic?> getBySku(String sku) async {
+    var entity = await ((select(topics)..where((t) => t.sku.equals(sku))).getSingleOrNull());
     return entity;
   }
+
+  // Future<Topic?> getRootTopicByCourseId(int courseId) async {
+  //   var test = await ((select(topics)..where((t) => t.parentCourseId.equals(courseId))).get());
+  //   var entity = await ((select(topics)..where((t) => t.parentCourseId.equals(courseId) & t.parentId.isNull())).getSingleOrNull());
+  //   return entity;
+  // }
 }

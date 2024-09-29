@@ -16,8 +16,18 @@ class FileContentDao extends DatabaseAccessor<AppDatabase>
         .write(fileContentCompanion);
   }
 
+  Future updateBySku(String sku, FileContentsCompanion fileContentCompanion) {
+    return (update(fileContents)..where((t) => t.sku.equals(sku)))
+        .write(fileContentCompanion);
+  }
+
   Future<FileContent?> getById(int id) async {
     var entity = await ((select(fileContents)..where((t) => t.id.equals(id))).getSingleOrNull());
+    return entity;
+  }
+
+  Future<FileContent?> getBySku(String sku) async {
+    var entity = await ((select(fileContents)..where((t) => t.sku.equals(sku))).getSingleOrNull());
     return entity;
   }
 }

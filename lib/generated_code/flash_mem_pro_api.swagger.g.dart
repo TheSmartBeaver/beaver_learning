@@ -24,20 +24,6 @@ Map<String, dynamic> _$AssemblyCategorySyncDtoToJson(
       'LastUpdated': instance.lastUpdated?.toIso8601String(),
     };
 
-AssemblyLinkedToAssembCategSyncDto _$AssemblyLinkedToAssembCategSyncDtoFromJson(
-        Map<String, dynamic> json) =>
-    AssemblyLinkedToAssembCategSyncDto(
-      assemblyCategorySKU: json['AssemblyCategorySKU'] as String? ?? 'default',
-      assemblySKU: json['AssemblySKU'] as String? ?? 'default',
-    );
-
-Map<String, dynamic> _$AssemblyLinkedToAssembCategSyncDtoToJson(
-        AssemblyLinkedToAssembCategSyncDto instance) =>
-    <String, dynamic>{
-      'AssemblyCategorySKU': instance.assemblyCategorySKU,
-      'AssemblySKU': instance.assemblySKU,
-    };
-
 AuthenticateDto _$AuthenticateDtoFromJson(Map<String, dynamic> json) =>
     AuthenticateDto(
       isRegistered: json['IsRegistered'] as bool?,
@@ -65,6 +51,7 @@ CardSyncDto _$CardSyncDtoFromJson(Map<String, dynamic> json) => CardSyncDto(
       groupSKU: json['GroupSKU'] as String? ?? 'default',
       isMine: json['isMine'] as bool?,
       htmlContentSKU: json['HtmlContentSKU'] as String? ?? 'default',
+      mnemotechnicHint: json['MnemotechnicHint'] as String? ?? 'default',
       tags: json['Tags'] as String? ?? 'default',
       nextRevisionDateMultiplicator:
           (json['NextRevisionDateMultiplicator'] as num?)?.toDouble(),
@@ -83,6 +70,7 @@ Map<String, dynamic> _$CardSyncDtoToJson(CardSyncDto instance) =>
       'GroupSKU': instance.groupSKU,
       'isMine': instance.isMine,
       'HtmlContentSKU': instance.htmlContentSKU,
+      'MnemotechnicHint': instance.mnemotechnicHint,
       'Tags': instance.tags,
       'NextRevisionDateMultiplicator': instance.nextRevisionDateMultiplicator,
       'NextRevisionDate': instance.nextRevisionDate?.toIso8601String(),
@@ -116,7 +104,6 @@ CourseSyncDto _$CourseSyncDtoFromJson(Map<String, dynamic> json) =>
       imageUrl: json['ImageUrl'] as String? ?? 'default',
       title: json['Title'] as String? ?? 'default',
       description: json['Description'] as String? ?? 'default',
-      rootTopicSKU: json['RootTopicSKU'] as String? ?? 'default',
       lastUpdated: json['LastUpdated'] == null
           ? null
           : DateTime.parse(json['LastUpdated'] as String),
@@ -129,7 +116,6 @@ Map<String, dynamic> _$CourseSyncDtoToJson(CourseSyncDto instance) =>
       'ImageUrl': instance.imageUrl,
       'Title': instance.title,
       'Description': instance.description,
-      'RootTopicSKU': instance.rootTopicSKU,
       'LastUpdated': instance.lastUpdated?.toIso8601String(),
     };
 
@@ -159,23 +145,15 @@ ElementsToSyncDto _$ElementsToSyncDtoFromJson(Map<String, dynamic> json) =>
                   (e) => HtmlContentSyncDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      fileContentLinkedToHtmlContents: (json['FileContentLinkedToHtmlContents']
-                  as List<dynamic>?)
-              ?.map(
-                  (e) => FileContentSyncDto.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+      fileContentLinkedToHtmlContents:
+          json['FileContentLinkedToHtmlContents'] as Map<String, dynamic>?,
       assemblyCategories: (json['AssemblyCategories'] as List<dynamic>?)
               ?.map((e) =>
                   AssemblyCategorySyncDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       assemblyLinkedToAssembCateg:
-          (json['AssemblyLinkedToAssembCateg'] as List<dynamic>?)
-                  ?.map((e) => AssemblyLinkedToAssembCategSyncDto.fromJson(
-                      e as Map<String, dynamic>))
-                  .toList() ??
-              [],
+          json['AssemblyLinkedToAssembCateg'] as Map<String, dynamic>?,
       groups: (json['Groups'] as List<dynamic>?)
               ?.map((e) => GroupSyncDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -203,14 +181,11 @@ Map<String, dynamic> _$ElementsToSyncDtoToJson(ElementsToSyncDto instance) =>
     <String, dynamic>{
       'FileContents': instance.fileContents?.map((e) => e.toJson()).toList(),
       'HtmlContents': instance.htmlContents?.map((e) => e.toJson()).toList(),
-      'FileContentLinkedToHtmlContents': instance
-          .fileContentLinkedToHtmlContents
-          ?.map((e) => e.toJson())
-          .toList(),
+      'FileContentLinkedToHtmlContents':
+          instance.fileContentLinkedToHtmlContents,
       'AssemblyCategories':
           instance.assemblyCategories?.map((e) => e.toJson()).toList(),
-      'AssemblyLinkedToAssembCateg':
-          instance.assemblyLinkedToAssembCateg?.map((e) => e.toJson()).toList(),
+      'AssemblyLinkedToAssembCateg': instance.assemblyLinkedToAssembCateg,
       'Groups': instance.groups?.map((e) => e.toJson()).toList(),
       'Cards': instance.cards?.map((e) => e.toJson()).toList(),
       'Courses': instance.courses?.map((e) => e.toJson()).toList(),

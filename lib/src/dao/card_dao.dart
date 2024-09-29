@@ -93,4 +93,9 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
     return (update(reviseCards)..where((t) => t.id.equals(id)))
         .write(cardCompanion);
   }
+
+  Future updateBySku(String sku, ReviseCardsCompanion companion) {
+    return (update(reviseCards)..where((t) => t.sku.equals(sku)))
+        .write(companion);
+  }
 }
