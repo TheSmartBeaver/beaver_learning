@@ -20,6 +20,7 @@ import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/firebase_auth_provider.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
+import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:drift/drift.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -48,6 +49,9 @@ class SynchronizeManager {
   Future<void> synchronize() async {
     await _createSkuForEveryElementWithoutOne();
     await _synchronizeElementsCreatedAfterLastServerUpdate();
+    await synchronizeElementsTowardsMobileUpdate();
+    await _setNewSynchronizationDate();
+    showInfoInDialog(context, "Synchronization done");
   }
 
   Future<void> _createSkuForEveryElementWithoutOne() async {
@@ -428,125 +432,141 @@ class SynchronizeManager {
         .synchronizeElementsTowardsMobileUpdate(lastUpdated);
 
     //sync fileContents
-      FileContentDao fileContentDao = FileContentDao(database);
-      for (var dto in resultDto.fileContents!) {
-        await fileContentDao.updateBySku(
-            dto.sku!, db.FileContentsCompanion(sku: Value(dto.sku),
-            content: Value(base64Decode(dto.content ?? "")),
-            format: Value(dto.format ?? ""),
-            name: Value(dto.name ?? ""),
-            lastUpdated: Value(getUpdateDateNow())
-        ));
-      }
+    FileContentDao fileContentDao = FileContentDao(database);
+    for (var dto in resultDto.fileContents!) {
+      await fileContentDao.insertOrUpdateBySku(
+          dto.sku!,
+          db.FileContentsCompanion(
+              sku: Value(dto.sku),
+              content: Value(base64Decode(dto.content ?? "")),
+              format: Value(dto.format ?? ""),
+              name: Value(dto.name ?? ""),
+              lastUpdated: Value(getUpdateDateNow())));
+    }
 
-      //sync htmlContent
-      var htmlDao = HtmlDao(database);
-      for (var dto in resultDto.htmlContents!) {
-        await htmlDao.updateBySku(
-            dto.sku!, db.HTMLContentsCompanion(sku: Value(dto.sku),
-            cardTemplatedJson: Value(dto.cardTemplatedJson ?? ""),
-            isAssembly: Value(dto.isAssembly ?? false),
-            isTemplated: Value(dto.isTemplated ?? false),
-            lastUpdated: Value(getUpdateDateNow()),
-            path: Value(dto.path ?? ""),
-            recto: Value(dto.recto ?? ""),
-            verso: Value(dto.verso ?? "")
-        ));
-      }
+    //sync htmlContent
+    var htmlDao = HtmlDao(database);
+    for (var dto in resultDto.htmlContents!) {
+      await htmlDao.insertOrUpdateBySku(
+          dto.sku!,
+          db.HTMLContentsCompanion(
+              sku: Value(dto.sku),
+              cardTemplatedJson: Value(dto.cardTemplatedJson ?? ""),
+              isAssembly: Value(dto.isAssembly ?? false),
+              isTemplated: Value(dto.isTemplated ?? false),
+              lastUpdated: Value(getUpdateDateNow()),
+              path: Value(dto.path ?? ""),
+              recto: Value(dto.recto ?? ""),
+              verso: Value(dto.verso ?? "")));
+    }
 
-      //sync fileContents belonging to htmlContent
+    //sync fileContents belonging to htmlContent
 
-      //
+    //
 
-      //sync card template
+    //sync card template
 
-      var daoCardTemplate = CardTemplateDao(database);
-      for (var dto in resultDto.cardTemplates!) {
-        await daoCardTemplate.updateBySku(
-            dto.sku!, db.CardTemplateCompanion(sku: Value(dto.sku),
-            path: Value(dto.path ?? ""),
-            template: Value(dto.template ?? ""),
-            lastUpdated: Value(getUpdateDateNow())
-            ));
-      }
+    var daoCardTemplate = CardTemplateDao(database);
+    for (var dto in resultDto.cardTemplates!) {
+      await daoCardTemplate.insertOrUpdateBySku(
+          dto.sku!,
+          db.CardTemplateCompanion(
+              sku: Value(dto.sku),
+              path: Value(dto.path ?? ""),
+              template: Value(dto.template ?? ""),
+              lastUpdated: Value(getUpdateDateNow())));
+    }
 
-      //sync assembly categories
+    //sync assembly categories
 
-      var assemblyCategoryDao = AssemblyCategoryDao(database);
-      for (var dto in resultDto.assemblyCategories!) {
-        await assemblyCategoryDao.updateBySku(
-            dto.sku!, db.AssemblyCategoryCompanion(sku: Value(dto.sku),
-            path: Value(dto.path ?? ""),
-            lastUpdated: Value(getUpdateDateNow())
-            ));
-      }
+    var assemblyCategoryDao = AssemblyCategoryDao(database);
+    for (var dto in resultDto.assemblyCategories!) {
+      await assemblyCategoryDao.insertOrUpdateBySku(
+          dto.sku!,
+          db.AssemblyCategoryCompanion(
+              sku: Value(dto.sku),
+              path: Value(dto.path ?? ""),
+              lastUpdated: Value(getUpdateDateNow())));
+    }
 
-      //sync assemblies belonging to categories
+    //sync assemblies belonging to categories
 
-      //
+    //
 
-      //sync group
+    //sync group
 
-      var groupDao = GroupDao(database);
-      for (var dto in resultDto.groups!) {
-        await groupDao.updateBySku(
-            dto.sku!, db.GroupCompanion(sku: Value(dto.sku),
+    var groupDao = GroupDao(database);
+    for (var dto in resultDto.groups!) {
+      await groupDao.insertOrUpdateBySku(
+          dto.sku!,
+          db.GroupCompanion(
+            sku: Value(dto.sku),
             path: Value(dto.path ?? ""),
             tags: Value(dto.tags ?? ""),
             title: Value(dto.title ?? ""),
             lastUpdated: Value(getUpdateDateNow()),
             parentId: Value((await groupDao.getBySku(dto.parentSKU ?? ""))?.id),
-            ));
-      }
+          ));
+    }
 
-      //sync cards
+    //sync cards
 
-      var cardDao = CardDao(database);
-      for (var dto in resultDto.cards!) {
-        await cardDao.updateBySku(
-            dto.sku!, db.ReviseCardsCompanion(sku: Value(dto.sku),
-            displayerType: const Value(CardDisplayerType.html),
-            groupId: Value((await groupDao.getBySku(dto.groupSKU ?? ""))?.id ?? -1),
-            htmlContent: Value((await htmlDao.getBySku(dto.htmlContentSKU ?? ""))?.id ?? -1),
-            mnemotechnicHint: Value(dto.mnemotechnicHint ?? ""),
-            nextRevisionDate: Value(dto.nextRevisionDate),
-            nextRevisionDateMultiplicator: Value(dto.nextRevisionDateMultiplicator ?? 0.2),
-            path: Value(dto.path ?? ""),
-            tags: Value(dto.tags ?? ""),
-            lastUpdated: Value(getUpdateDateNow())
-            ));
-      }
+    var cardDao = CardDao(database);
+    for (var dto in resultDto.cards!) {
+      await cardDao.insertOrUpdateBySku(
+          dto.sku!,
+          db.ReviseCardsCompanion(
+              sku: Value(dto.sku),
+              displayerType: const Value(CardDisplayerType.html),
+              groupId: Value(
+                  (await groupDao.getBySku(dto.groupSKU ?? ""))?.id ?? -1),
+              htmlContent: Value(
+                  (await htmlDao.getBySku(dto.htmlContentSKU ?? ""))?.id ?? -1),
+              mnemotechnicHint: Value(dto.mnemotechnicHint ?? ""),
+              nextRevisionDate: Value(dto.nextRevisionDate),
+              nextRevisionDateMultiplicator:
+                  Value(dto.nextRevisionDateMultiplicator ?? 0.2),
+              path: Value(dto.path ?? ""),
+              tags: Value(dto.tags ?? ""),
+              lastUpdated: Value(getUpdateDateNow())));
+    }
 
-      //sync courses
+    //sync courses
 
-      var courseDao = CourseDao(database);
-      for (var dto in resultDto.courses!) {
-        await courseDao.updateBySku(
-            dto.sku!, db.CoursesCompanion(sku: Value(dto.sku),
-            description: Value(dto.description ?? ""),
-            imageUrl: Value(dto.imageUrl ?? ""),
-            title: Value(dto.title ?? ""),
-            lastUpdated: Value(getUpdateDateNow())
-            ));
-      }
+    var courseDao = CourseDao(database);
+    for (var dto in resultDto.courses!) {
+      await courseDao.insertOrUpdateBySku(
+          dto.sku!,
+          db.CoursesCompanion(
+              sku: Value(dto.sku),
+              description: Value(dto.description ?? ""),
+              imageUrl: Value(dto.imageUrl ?? ""),
+              title: Value(dto.title ?? ""),
+              lastUpdated: Value(getUpdateDateNow())));
+    }
 
-      //sync topic
+    //sync topic
 
-      var topicDao = TopicDao(database);
-      for (var dto in resultDto.topics!) {
-        await topicDao.updateBySku(
-            dto.sku!, db.TopicsCompanion(sku: Value(dto.sku),
-            fileId: Value((await fileContentDao.getBySku(dto.fileSKU ?? ""))?.id),
-            groupId: Value((await groupDao.getBySku(dto.groupSKU ?? ""))?.id),
-            htmlContentId: Value((await htmlDao.getBySku(dto.htmlContentSKU ?? ""))?.id),
-            parentCourseId: Value((await courseDao.getBySku(dto.parentCourseSKU ?? ""))?.id ?? -1),
-            parentId: Value((await topicDao.getBySku(dto.parentSKU ?? ""))?.id),
-            path: Value(dto.path ?? ""),
-            title: Value(dto.title ?? ""),
-            lastUpdated: Value(getUpdateDateNow())
-            ));
-      }
-
+    var topicDao = TopicDao(database);
+    for (var dto in resultDto.topics!) {
+      await topicDao.insertOrUpdateBySku(
+          dto.sku!,
+          db.TopicsCompanion(
+              sku: Value(dto.sku),
+              fileId:
+                  Value((await fileContentDao.getBySku(dto.fileSKU ?? ""))?.id),
+              groupId: Value((await groupDao.getBySku(dto.groupSKU ?? ""))?.id),
+              htmlContentId:
+                  Value((await htmlDao.getBySku(dto.htmlContentSKU ?? ""))?.id),
+              parentCourseId: Value(
+                  (await courseDao.getBySku(dto.parentCourseSKU ?? ""))?.id ??
+                      -1),
+              parentId:
+                  Value((await topicDao.getBySku(dto.parentSKU ?? ""))?.id),
+              path: Value(dto.path ?? ""),
+              title: Value(dto.title ?? ""),
+              lastUpdated: Value(getUpdateDateNow())));
+    }
   }
 
   Future<DateTime> _getLastMobileSynchronizationDate() async {
@@ -573,7 +593,5 @@ class SynchronizeManager {
         .write(UserAppCompanion(lastUpdated: Value(new_sync_date)));
 
     await AppUserServiceAgent(context).setLastServerUserSyncDate();
-
-    //TODO: Faire appel serveur pour mettre à jour la date de synchro
   }
 }

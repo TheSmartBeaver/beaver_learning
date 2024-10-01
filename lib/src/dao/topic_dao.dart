@@ -21,9 +21,15 @@ class TopicDao extends DatabaseAccessor<AppDatabase> with _$TopicDaoMixin {
     return entity;
   }
 
-  Future updateBySku(String sku, TopicsCompanion companion) {
-    return (update(topics)..where((t) => t.sku.equals(sku)))
-        .write(companion);
+  Future insertOrUpdateBySku(String sku, TopicsCompanion companion) async {
+    var entity = await getBySku(sku);
+
+    if (entity == null) {
+      return into(topics).insert(companion);
+    } else {
+      return await (update(topics)..where((t) => t.sku.equals(sku)))
+          .write(companion);
+    }
   }
 
   Future<Topic?> getBySku(String sku) async {

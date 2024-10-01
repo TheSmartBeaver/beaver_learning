@@ -73,9 +73,15 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
     return entity;
   }
 
-  Future updateBySku(String sku, HTMLContentsCompanion companion) {
-    return (update(hTMLContents)..where((t) => t.sku.equals(sku)))
-        .write(companion);
+  Future insertOrUpdateBySku(String sku, HTMLContentsCompanion companion) async {
+    var entity = await getBySku(sku);
+
+    if (entity == null) {
+      return into(hTMLContents).insert(companion);
+    } else {
+      return await (update(hTMLContents)..where((t) => t.sku.equals(sku)))
+          .write(companion);
+    }
   }
 
 }

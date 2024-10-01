@@ -16,9 +16,20 @@ class CardTemplateDao extends DatabaseAccessor<AppDatabase> with _$CardTemplateD
         .write(cardTemplateCompanion);
   }
 
-  Future updateBySku(String sku, CardTemplateCompanion companion) {
-    return (update(cardTemplate)..where((t) => t.sku.equals(sku)))
-        .write(companion);
+  Future<CardTemplateData?> getBySku(String sku) async {
+    var entity = await ((select(cardTemplate)..where((t) => t.sku.equals(sku))).getSingleOrNull());
+    return entity;
+  }
+
+  Future insertOrUpdateBySku(String sku, CardTemplateCompanion companion) async {
+    var entity = await getBySku(sku);
+
+    if (entity == null) {
+      return into(cardTemplate).insert(companion);
+    } else {
+      return await (update(cardTemplate)..where((t) => t.sku.equals(sku)))
+          .write(companion);
+    }
   }
 
 }

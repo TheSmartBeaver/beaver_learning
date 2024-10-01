@@ -94,8 +94,19 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
         .write(cardCompanion);
   }
 
-  Future updateBySku(String sku, ReviseCardsCompanion companion) {
-    return (update(reviseCards)..where((t) => t.sku.equals(sku)))
-        .write(companion);
+  Future<ReviseCard?> getBySku(String sku) async {
+    var entity = await ((select(reviseCards)..where((t) => t.sku.equals(sku))).getSingleOrNull());
+    return entity;
+  }
+
+  Future insertOrUpdateBySku(String sku, ReviseCardsCompanion companion) async {
+    var entity = await getBySku(sku);
+
+    if (entity == null) {
+      return into(reviseCards).insert(companion);
+    } else {
+      return await (update(reviseCards)..where((t) => t.sku.equals(sku)))
+          .write(companion);
+    }
   }
 }

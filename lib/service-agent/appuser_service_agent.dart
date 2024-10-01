@@ -36,7 +36,7 @@ class AppUserServiceAgent extends BaseServiceAgent {
       dealWithRequestError(buildContext, response.error);
       throw Exception("");
     } else {
-      return response.body!;
+      return response;
     }
   }
 
@@ -58,7 +58,7 @@ class AppUserServiceAgent extends BaseServiceAgent {
       dealWithRequestError(buildContext, response.error);
       throw Exception("");
     } else {
-      return response.body!;
+      return response;
     }
   }
 
