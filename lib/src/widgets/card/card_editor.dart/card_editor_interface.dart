@@ -6,4 +6,5 @@ abstract class CardEditorInterface extends Widget {
 
   Future<void> createOrUpdateCard(int groupId);
   Future<void> showCard(BuildContext context);
+  Future<void> initEditorWithAssembly(int assemblyId, BuildContext context);
 }

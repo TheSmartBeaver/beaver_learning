@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/dao/card_dao.dart';
-import 'package:beaver_learning/src/models/data/test_data.dart';
+import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
@@ -52,6 +52,7 @@ class TemplateCardEditor extends ConsumerStatefulWidget
               lastUpdated: getUpdateDateNow()));
     } else {
       await updateCardInDb(
+          cardToEditId!,
           groupId,
           CardDisplayerType.html,
           null,
@@ -103,6 +104,17 @@ class TemplateCardEditor extends ConsumerStatefulWidget
       ),
     );
   }
+
+  @override
+  Future<void> initEditorWithAssembly(
+      int assemblyId, BuildContext context) async {
+    var htmlContentDao = HtmlDao(MyDatabaseInstance.getInstance());
+    HTMLContent? assembly = await htmlContentDao.getById(assemblyId);
+
+    Map<String, dynamic> json = jsonDecode(assembly!.cardTemplatedJson);
+    widgetState.changeCardTemplatedBranchToUpdate(buildBranch(json));
+    
+  }
 }
 
 class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
@@ -110,6 +122,14 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
   bool isInitialized = false;
   CardTemplatedBranch cardTemplatedBranchToUpdate = CardTemplatedBranch(null);
   late HTMLCardDisplayer htmlCardDisplayer;
+
+  changeCardTemplatedBranchToUpdate(
+      CardTemplatedBranch cardTemplatedBranchToUpdate) {
+    setState(() {
+      this.cardTemplatedBranchToUpdate = cardTemplatedBranchToUpdate;
+      forceFormTemplateRefresh();
+    });
+  }
 
   Future getPreviewCard() async {
     final database = MyDatabaseInstance.getInstance();
@@ -155,10 +175,7 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
         setState(() {
           cardTemplatedBranchToUpdate =
               buildBranch(jsonDecode(cardToEditHtmlContent.cardTemplatedJson));
-          cardTemplatedBranchToUpdate.templateName = "NOT NEW";
-          ref
-              .read(templatedCardProvider.notifier)
-              .makeRootCardTemplatedBranchChange();
+          forceFormTemplateRefresh();
         });
 
         var test = 0;
@@ -168,6 +185,13 @@ class TemplateCardEditorState extends ConsumerState<TemplateCardEditor> {
         isInitialized = true;
       });
     }
+  }
+
+  void forceFormTemplateRefresh(){
+    cardTemplatedBranchToUpdate.templateName = "NOT NEW";
+          ref
+              .read(templatedCardProvider.notifier)
+              .makeRootCardTemplatedBranchChange();
   }
 
   @override

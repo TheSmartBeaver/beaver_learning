@@ -2,6 +2,7 @@ import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/cardTemplateTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/image_table.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:drift/drift.dart';
 
 part 'card_dao.g.dart';
@@ -24,7 +25,8 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
     return (update(reviseCards)..where((t) => t.id.equals(cardId))).write(
       ReviseCardsCompanion(
           nextRevisionDateMultiplicator: Value(newCoeff),
-          nextRevisionDate: Value(nextRevisionDate)),
+          nextRevisionDate: Value(nextRevisionDate),
+          lastUpdated: Value(getUpdateDateNow())),
     );
   }
 
@@ -54,9 +56,12 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   }
 
   Future<HTMLContent> getHtmlContentByCardId(int cardId) async {
+    ReviseCard card = await (select(reviseCards)
+          ..where((tbl) => tbl.id.equals(cardId)))
+        .getSingle();
 
     HTMLContent htmlContentToReturn = await (select(hTMLContents)
-          ..where((tbl) => tbl.id.equals(cardId)))
+          ..where((tbl) => tbl.id.equals(card.htmlContent)))
         .getSingle();
 
     return htmlContentToReturn;

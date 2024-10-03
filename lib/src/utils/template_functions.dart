@@ -129,3 +129,59 @@ Future<HTMLContentWithFileContents> getHtmlContentAndFileContentByHtmlContentId(
   return HTMLContentWithFileContents(
       htmlContent: htmlContent, files: contentFiles);
 }
+
+String getCustomHtml(String recto, String verso, bool isPrintAnswer) {
+  return '''
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            margin: 0; /* Supprime les marges par défaut du corps de la page */
+            padding: 0; /* Supprime les espacements internes par défaut du corps de la page */
+            display: flex; /* Utilise un affichage flex pour organiser les éléments en ligne */
+            flex-direction: column; /* Organise les éléments de haut en bas */
+            /* height: 100vh; Utilise la hauteur de la fenêtre visible */
+          }
+
+          .recto {
+            display: flex;
+            justify-content: center; /* Centre le contenu horizontalement */
+            align-items: center; /* Centre le contenu verticalement */
+            flex-direction: column; /* Organise les éléments de haut en bas */
+            padding: 10px; /* Ajoute une padding de 6 pixels */
+          }
+
+          .verso {
+            display: flex;
+            flex-grow: 1; /* Permet à la partie "recto" de s'étendre pour remplir l'espace restant */
+            justify-content: center; /* Centre le contenu horizontalement */
+            align-items: center; /* Centre le contenu verticalement */
+            flex-direction: column; /* Organise les éléments de haut en bas */
+            padding: 10px; /* Ajoute une padding de 6 pixels */
+          }
+
+          .texte {
+            font-size: 34px; /* Augmente la taille de la police à 24 pixels */
+          }
+
+          .separateur {
+            width: 100%;
+            height: 2px;
+            background-color: black;
+            margin: 10px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class='recto texte'>$recto</div>
+        ${isPrintAnswer ? "<div class='verso texte'>$verso</div>" : ""}
+        <script>
+          function sayHello() {
+            alert('Hello from JavaScript!');
+          }
+        </script>
+      </body>
+      </html>
+    ''';
+}

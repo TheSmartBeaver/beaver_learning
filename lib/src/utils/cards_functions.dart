@@ -1,4 +1,5 @@
 import 'package:beaver_learning/src/dao/card_dao.dart';
+import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
@@ -33,31 +34,30 @@ Future<void> createAssemblyInDb(
       await database.into(database.hTMLContents).insert(hTMLContentsCompanion);
 }
 
-Future<void> updateAssemblyInDb(
+Future<void> updateAssemblyInDb(int assemblyId,
     HTMLContentsCompanion hTMLContentsCompanion) async {
-  var cardId =
-      await database.update(database.hTMLContents).write(hTMLContentsCompanion);
-
-  final cardDao = CardDao(MyDatabaseInstance.getInstance());
-  var htmlContent = await cardDao.getHtmlContentByCardId(cardId);
 
   (database.update(database.hTMLContents)
-        ..where((t) => t.id.equals(htmlContent.id)))
+        ..where((t) => t.id.equals(assemblyId)))
       .write(hTMLContentsCompanion);
 }
 
-Future<void> updateCardInDb(int groupId, CardDisplayerType displayerType,
+Future<void> updateCardInDb(int cardId, int groupId, CardDisplayerType displayerType,
     String? path, HTMLContentsCompanion hTMLContentsCompanion) async {
-  var cardId = await database
-      .update(database.reviseCards)
+  await (database
+      .update(database.reviseCards)..where((t) => t.id.equals(cardId)))
       .write(ReviseCardsCompanion(groupId: Value(groupId)));
 
   final cardDao = CardDao(MyDatabaseInstance.getInstance());
   var htmlContent = await cardDao.getHtmlContentByCardId(cardId);
 
-  (database.update(database.hTMLContents)
+  await (database.update(database.hTMLContents)
         ..where((t) => t.id.equals(htmlContent.id)))
       .write(hTMLContentsCompanion);
+
+  var updatedHtmlContent = await HtmlDao(MyDatabaseInstance.getInstance()).getById(htmlContent.id);
+  var updatedCard = await CardDao(MyDatabaseInstance.getInstance()).getCardById(cardId);
+  var test = 0;
 }
 
 class CardCreatedReturns {

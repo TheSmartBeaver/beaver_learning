@@ -1,13 +1,10 @@
 import 'package:beaver_learning/src/screens/assemblies_list.dart';
-import 'package:beaver_learning/src/screens/assembly_editor.dart';
-import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EditorsScreen extends ConsumerStatefulWidget {

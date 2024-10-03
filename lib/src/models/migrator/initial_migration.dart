@@ -196,7 +196,14 @@ Future<void> initial_migrate_batch(Batch batch, AppDatabase dbInfos) async {
         cardTemplatedJson: Value(previewCardJson),
         isTemplated: const Value(true),
         isAssembly: const Value(true),
-        lastUpdated: last_updated)
+        lastUpdated: last_updated),
+    HTMLContentsCompanion.insert( // Pour assembly preview Editor
+        id: const Value(3),
+        path: const Value("myTestPath"),
+        cardTemplatedJson: Value(completeJsonCardTest),
+        isTemplated: const Value(true),
+        isAssembly: const Value(true),
+        lastUpdated: last_updated),
   ]);
   batch.insertAll(dbInfos.reviseCards, [
     ReviseCardsCompanion.insert(

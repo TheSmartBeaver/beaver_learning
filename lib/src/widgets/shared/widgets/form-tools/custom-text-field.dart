@@ -6,7 +6,7 @@ class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final IconData icon;
   final String label;
-  final int maxLength;
+  final int? maxLength;
   int maxLines;
   void Function(String)? onChanged;
 
@@ -33,7 +33,7 @@ class CustomTextFieldState extends State<CustomTextField> {
     return TextField(
         controller: widget.controller,
         onChanged: widget.onChanged,
-        maxLength: 50,
+        maxLength: widget.maxLength,
         minLines: 1,
         maxLines: widget.maxLines,
         decoration: InputDecoration(

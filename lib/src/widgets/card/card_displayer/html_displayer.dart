@@ -13,7 +13,7 @@ WebViewController _buildController() {
   return WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
     ..setBackgroundColor(const Color(0x00000000))
-    ..clearCache()
+    //..clearCache()
     ..clearLocalStorage()
     ..setNavigationDelegate(
       NavigationDelegate(
@@ -57,7 +57,7 @@ class _HTMLDisplayerState extends State<HTMLDisplayer> {
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
     await writeHtmlToServerDirectory(widget.htmlContentString,"index.html", widget.fileContents);
     
-    await controller.clearCache();
+    //await controller.clearCache();
     await controller.clearLocalStorage();
     await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));
     var test2 = await(await getTemporaryDirectory()).list().toList();

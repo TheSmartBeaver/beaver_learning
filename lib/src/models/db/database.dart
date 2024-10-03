@@ -56,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
 
         //Add a bunch of default items in a batch
         await batch((b) async {
-          //await initial_migrate_batch(b, this);
+          // await initial_migrate_batch(b, this);
         });
       },
       onUpgrade: (migrator, from, to) async {
@@ -98,7 +98,7 @@ LazyDatabase _openConnection() {
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
     var file = File(p.join(dbFolder.path, 'db.sqlite'));
-    deleteFile(file);
+    //deleteFile(file);
     file = File(p.join(dbFolder.path, 'db.sqlite'));
 
     // Also work around limitations on old Android versions

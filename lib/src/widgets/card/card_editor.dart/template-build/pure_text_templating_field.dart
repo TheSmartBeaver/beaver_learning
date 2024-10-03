@@ -37,7 +37,7 @@ class _PureTextTemplatingFieldState extends State<PureTextTemplatingField> {
                   .getPureTextFieldValue(widget.fieldName),
             icon: Icons.abc,
             label: widget.fieldName,
-            maxLength: 999,
+            maxLength: null,
             onChanged: onTextChangeListener)]));
   }
 }

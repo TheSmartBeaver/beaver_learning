@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:beaver_learning/src/dao/card_dao.dart';
+import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/db/assemblyCategoryTable.dart';
@@ -10,9 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TemplateAssemblySaver extends ConsumerStatefulWidget {
-  final Function(int templateId) processTemplateFunction;
+  final Function(int assemblyId) processAssemblyFunction;
 
-  const TemplateAssemblySaver({Key? key, required this.processTemplateFunction})
+  const TemplateAssemblySaver({Key? key, required this.processAssemblyFunction})
       : super(key: key);
 
   @override
@@ -23,7 +24,7 @@ class _TemplateAssemblySaverState extends ConsumerState<TemplateAssemblySaver> {
   TextEditingController _textEditingController = TextEditingController();
   String textValue = '';
   Timer? _debounce;
-  List<AssemblyCategoryData> categoriesReturned = [];
+  List<HTMLContent> assemebliesReturned = [];
   int? selectedCategoryIndex;
 
   @override
@@ -40,52 +41,58 @@ class _TemplateAssemblySaverState extends ConsumerState<TemplateAssemblySaver> {
   @override
   Widget build(BuildContext context) {
     Future<void> init() async {
-      var database = MyDatabaseInstance.getInstance();
-
-      categoriesReturned = await (database.select(database.assemblyCategory)
-            ..where((tbl) => tbl.path.like("%$textValue%"))
-            ..limit(15))
-          .get();
+      HtmlDao htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+      assemebliesReturned = await htmlDao.getUsableAssemblies(textValue);
+      var toto = 0;
     }
 
     return AlertDialog(
-      title: const Text('Template Search'),
+      title: const Text('Assembly Search'),
       content: Column(children: [
-        Container(
-          width: double.maxFinite,
-          child: TextField(
-            controller: _textEditingController,
-            maxLines: null, // Allow unlimited lines
-            keyboardType: TextInputType.multiline,
-            onChanged: (value) {
-              if (_debounce?.isActive ?? false) _debounce?.cancel();
-              _debounce = Timer(const Duration(milliseconds: 500), () {
-                setState(() {
-                  selectedCategoryIndex = null;
-                  textValue = value;
-                });
+        TextField(
+          controller: _textEditingController,
+          maxLines: null, // Allow unlimited lines
+          keyboardType: TextInputType.multiline,
+          onChanged: (value) {
+            if (_debounce?.isActive ?? false) _debounce?.cancel();
+            _debounce = Timer(const Duration(milliseconds: 500), () {
+              setState(() {
+                selectedCategoryIndex = null;
+                textValue = value;
               });
-            },
-            decoration: const InputDecoration(
-              hintText: 'Saisissez la catégorie que vous recherchez',
-            ),
+            });
+          },
+          decoration: const InputDecoration(
+            hintText: 'Saisissez la catégorie que vous recherchez',
           ),
         ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: categoriesReturned.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(categoriesReturned[index].path),
-                onTap: () {
-                  setState(() {
-                    selectedCategoryIndex = index;
-                  });
-                },
-              );
-            },
-          ),
-        ),
+        FutureBuilder(
+            future: init(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else {
+                return Container(
+                    width: 500,
+                    height: 500,
+                    child: SingleChildScrollView(
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: assemebliesReturned.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                title: Text(assemebliesReturned[index].path ??
+                                    "UNKNOWN_PATH"),
+                                onTap: () {
+                                  setState(() {
+                                    selectedCategoryIndex = index;
+                                  });
+                                },
+                                selected: selectedCategoryIndex == index,
+                              );
+                            })));
+              }
+            })
       ]),
       actions: [
         TextButton(
@@ -100,17 +107,22 @@ class _TemplateAssemblySaverState extends ConsumerState<TemplateAssemblySaver> {
             if (selectedCategoryIndex != null) {
               //TODO: Save or update assembly
               final cardDao = CardDao(MyDatabaseInstance.getInstance());
-              cardDao.insertAssembly(
-                  HTMLContent(
-                      id: -1,
-                      recto: "",
-                      verso: "",
-                      isTemplated: true,
-                      cardTemplatedJson: "cardTemplatedJson",
-                      isAssembly: true,
-                      lastUpdated: getUpdateDateNow()),
-                  categoriesReturned[selectedCategoryIndex!].id,
-                  false);
+
+              // cardDao.insertAssembly(
+              //     HTMLContent(
+              //         id: -1,
+              //         recto: "",
+              //         verso: "",
+              //         isTemplated: true,
+              //         cardTemplatedJson: "cardTemplatedJson",
+              //         isAssembly: true,
+              //         lastUpdated: getUpdateDateNow()),
+              //     categoriesReturned[selectedCategoryIndex!].id,
+              //     false);
+
+              widget.processAssemblyFunction(
+                  assemebliesReturned[selectedCategoryIndex!].id);
+
               Navigator.of(context).pop();
             }
           },

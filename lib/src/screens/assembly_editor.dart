@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/dao/card_dao.dart';
+import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/templated_card_provider.dart';
@@ -44,7 +45,7 @@ class AssemblyEditor extends ConsumerStatefulWidget {
           isAssembly: const drift.Value(true),
           lastUpdated: getUpdateDateNow()));
     } else {
-      await updateAssemblyInDb(HTMLContentsCompanion.insert(
+      await updateAssemblyInDb(assemblyToEditId!, HTMLContentsCompanion.insert(
           cardTemplatedJson:
               drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
           lastUpdated: getUpdateDateNow()));
@@ -60,6 +61,13 @@ class AssemblyEditor extends ConsumerStatefulWidget {
 
   @override
   Future<void> showCard(BuildContext context) async {
+    final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+    var content = await htmlDao.getHtmlContents(htmlContentForPreview.id);
+    String recto = content.recto;
+    String verso = content.verso;
+
+    var customHtmlString = getCustomHtml(recto, verso, true);
+    
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => Scaffold(
@@ -75,7 +83,7 @@ class AssemblyEditor extends ConsumerStatefulWidget {
             ],
           ),
           body: HTMLDisplayer(
-            htmlContentString: htmlContentForPreview.cardTemplatedJson,
+            htmlContentString: customHtmlString,
             fileContents: [],
           ),
           drawer: const AppDrawer(),
@@ -105,7 +113,7 @@ class AssemblyEditorState extends ConsumerState<AssemblyEditor> {
     final database = MyDatabaseInstance.getInstance();
     widget.htmlContentForPreview = await (database.select(database.hTMLContents)
           ..where(
-              (tbl) => tbl.path.equals(AppConstante.templatedPreviewNameKey)))
+              (tbl) => tbl.path.equals(AppConstante.templatedPreviewNameKey) & tbl.isAssembly.equals(true)))
         .getSingle();
     var test = 0;
   }
@@ -183,7 +191,7 @@ class AssemblyEditorState extends ConsumerState<AssemblyEditor> {
           IconButton(
             icon: const Icon(Icons.remove_red_eye_outlined),
             onPressed: () async {
-              //editorToRender.showCard(context);
+              await widget.showCard(context);
             },
           ),
           IconButton(

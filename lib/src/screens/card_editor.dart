@@ -1,4 +1,5 @@
 import 'package:beaver_learning/src/dao/card_dao.dart';
+import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
@@ -6,6 +7,7 @@ import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/mnemotechnic_dialog.dart';
+import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_assembly_saver.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_card_editor.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
@@ -75,8 +77,8 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
     List<Widget> getDropDowns2() {
       DropDownItem<int>? dropDownItem;
       try {
-        dropDownItem = widget.groupItems.firstWhere(
-            (element) => element.value == initialCardGroupId);
+        dropDownItem = widget.groupItems
+            .firstWhere((element) => element.value == initialCardGroupId);
       } catch (e) {}
 
       widget.groupDropdown = CustomDropdownMenu(
@@ -121,6 +123,10 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
     CardEditorInterface editorToRender =
         TemplateCardEditor(cardToEditId: widget.cardToEditId);
 
+    Future initEditorWithAssembly(int assemblyId) async {
+        editorToRender.initEditorWithAssembly(assemblyId, context);
+    }
+
     return Scaffold(
       appBar: CustomAppBar(
         title: "Card editor",
@@ -138,14 +144,23 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
               if (groupId != null) {
                 await editorToRender.createOrUpdateCard(groupId);
                 Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (ctx) => EditorsScreen(
-                        initialMenuItem: InternMenuItemEnum.card)),
-              );
+                  MaterialPageRoute(
+                      builder: (ctx) => EditorsScreen(
+                          initialMenuItem: InternMenuItemEnum.card)),
+                );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Please select a group")));
               }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.temple_buddhist),
+            onPressed: () async {
+              showDialog(
+                  context: context,
+                  builder: (context) => TemplateAssemblySaver(
+                      processAssemblyFunction: initEditorWithAssembly));
             },
           )
         ],
@@ -176,10 +191,11 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
             child: const Icon(FontAwesomeIcons.lightbulb)),
         FloatingActionButton(
             onPressed: () {
-              if(widget.cardToEditId != null){
+              if (widget.cardToEditId != null) {
                 showDialog(
                   context: context,
-                  builder: (context) => MnemotechnicDialog(cardId: widget.cardToEditId!),
+                  builder: (context) =>
+                      MnemotechnicDialog(cardId: widget.cardToEditId!),
                 );
               }
             },

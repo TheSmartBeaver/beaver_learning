@@ -44,8 +44,10 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
     HTMLContentRectoVerso result;
 
-    if(htmlContent.isTemplated) {
-      TemplatedRendererManager templatedCardRendererManager = TemplatedRendererManager(htmlContent: htmlContent, contentFiles: contentFiles);
+    if (htmlContent.isTemplated) {
+      TemplatedRendererManager templatedCardRendererManager =
+          TemplatedRendererManager(
+              htmlContent: htmlContent, contentFiles: contentFiles);
       // TODO: Faire la gestion d'erreur pour quand même retourner un résultat ???
       result = await templatedCardRendererManager.renderTemplatedCard();
     } else {
@@ -64,16 +66,19 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
   }
 
   Future<HTMLContent?> getById(int id) async {
-    var entity = await ((select(hTMLContents)..where((t) => t.id.equals(id))).getSingleOrNull());
+    var entity = await ((select(hTMLContents)..where((t) => t.id.equals(id)))
+        .getSingleOrNull());
     return entity;
   }
 
   Future<HTMLContent?> getBySku(String sku) async {
-    var entity = await ((select(hTMLContents)..where((t) => t.sku.equals(sku))).getSingleOrNull());
+    var entity = await ((select(hTMLContents)..where((t) => t.sku.equals(sku)))
+        .getSingleOrNull());
     return entity;
   }
 
-  Future insertOrUpdateBySku(String sku, HTMLContentsCompanion companion) async {
+  Future insertOrUpdateBySku(
+      String sku, HTMLContentsCompanion companion) async {
     var entity = await getBySku(sku);
 
     if (entity == null) {
@@ -84,4 +89,16 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
     }
   }
 
+  Future<List<HTMLContent>> getUsableAssemblies(String? textValue) async {
+    var assembliesRequest = await (select(hTMLContents)
+          ..where((tbl) => tbl.isAssembly.equals(true))
+          ..limit(15));
+    if (textValue?.isNotEmpty ?? false) {
+      assembliesRequest.where((tbl) => tbl.path.like("%$textValue%"));
+    }
+
+    var assemblies = await assembliesRequest.get();
+        
+    return assemblies;
+  }
 }

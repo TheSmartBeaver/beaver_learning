@@ -21,6 +21,7 @@ import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/firebase_auth_provider.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
+import 'package:beaver_learning/src/utils/exception_functions.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:drift/drift.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -47,11 +48,15 @@ class SynchronizeManager {
   }
 
   Future<void> synchronize() async {
-    await _createSkuForEveryElementWithoutOne();
+    try{
+      await _createSkuForEveryElementWithoutOne();
     await _synchronizeElementsCreatedAfterLastServerUpdate();
     await synchronizeElementsTowardsMobileUpdate();
     await _setNewSynchronizationDate();
     showInfoInDialog(context, "Synchronization done");
+    } catch (e) {
+      dealWithExceptionError(context, e);
+    }
   }
 
   Future<void> _createSkuForEveryElementWithoutOne() async {
