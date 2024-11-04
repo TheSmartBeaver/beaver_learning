@@ -5,6 +5,7 @@ import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/screens/assembly_editor.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
+import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:drift/drift.dart' as drift;
@@ -57,7 +58,7 @@ class _AssembliesListState extends ConsumerState<AssembliesList> {
     htmlContentsRequest.where(
         (assembly) => assembly.isAssembly.equals(true));
     htmlContentsRequest.where(
-        (assembly) => assembly.path.isNotValue(AppConstante.templatedPreviewNameKey));
+        (assembly) => generateNoPrivateItemsWhereClauseForHtmlContent(assembly));
 
     assemblies = await htmlContentsRequest.get();
     htmlContents = {};

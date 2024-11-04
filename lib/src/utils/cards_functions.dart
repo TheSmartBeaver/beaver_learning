@@ -1,3 +1,4 @@
+import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
@@ -109,4 +110,11 @@ Future<int> createHtmlTemplateInDb(
   var id =
       await database.into(database.cardTemplate).insert(htmlTemplateCompanion);
   return id;
+}
+
+Expression<bool> generateNoTemplatedPreviewWhereClause($ReviseCardsTable tbl) {
+  return tbl.path.isNotValue(AppConstante.templatedPreviewNameKey);
+}
+Expression<bool> generateNoPrivateItemsWhereClauseForHtmlContent($HTMLContentsTable tbl) {
+  return tbl.path.isNotValue(AppConstante.templatedPreviewNameKey);
 }

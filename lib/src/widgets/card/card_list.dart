@@ -4,6 +4,7 @@ import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
+import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
 import 'package:drift/drift.dart' as drift;
@@ -119,8 +120,7 @@ class _CardListState extends ConsumerState<CardList> {
     }
 
     var cardsRequest = database.select(database.reviseCards);
-    cardsRequest.where((card) =>
-        card.path.isNotValue(AppConstante.templatedPreviewNameKey));
+    cardsRequest.where((card) => generateNoTemplatedPreviewWhereClause(card));
     if (widget.initialGroup != null) {
       cardsRequest
           .where((card) => card.groupId.equals(widget.initialGroup!.id));
