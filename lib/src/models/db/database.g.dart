@@ -1897,6 +1897,11 @@ class $FileContentsTable extends FileContents
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _formatMeta = const VerificationMeta('format');
   @override
   late final GeneratedColumn<String> format = GeneratedColumn<String>(
@@ -1916,7 +1921,7 @@ class $FileContentsTable extends FileContents
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, sku, name, format, content, lastUpdated];
+      [id, sku, name, path, format, content, lastUpdated];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1939,6 +1944,10 @@ class $FileContentsTable extends FileContents
           _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
     }
     if (data.containsKey('format')) {
       context.handle(_formatMeta,
@@ -1975,6 +1984,8 @@ class $FileContentsTable extends FileContents
           .read(DriftSqlType.string, data['${effectivePrefix}sku']),
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path']),
       format: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}format'])!,
       content: attachedDatabase.typeMapping
@@ -1994,6 +2005,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
   final int id;
   final String? sku;
   final String name;
+  final String? path;
   final String format;
   final Uint8List content;
   final DateTime lastUpdated;
@@ -2001,6 +2013,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
       {required this.id,
       this.sku,
       required this.name,
+      this.path,
       required this.format,
       required this.content,
       required this.lastUpdated});
@@ -2012,6 +2025,9 @@ class FileContent extends DataClass implements Insertable<FileContent> {
       map['sku'] = Variable<String>(sku);
     }
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || path != null) {
+      map['path'] = Variable<String>(path);
+    }
     map['format'] = Variable<String>(format);
     map['content'] = Variable<Uint8List>(content);
     map['last_updated'] = Variable<DateTime>(lastUpdated);
@@ -2023,6 +2039,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
       id: Value(id),
       sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
       name: Value(name),
+      path: path == null && nullToAbsent ? const Value.absent() : Value(path),
       format: Value(format),
       content: Value(content),
       lastUpdated: Value(lastUpdated),
@@ -2036,6 +2053,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
       id: serializer.fromJson<int>(json['id']),
       sku: serializer.fromJson<String?>(json['sku']),
       name: serializer.fromJson<String>(json['name']),
+      path: serializer.fromJson<String?>(json['path']),
       format: serializer.fromJson<String>(json['format']),
       content: serializer.fromJson<Uint8List>(json['content']),
       lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
@@ -2048,6 +2066,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
       'id': serializer.toJson<int>(id),
       'sku': serializer.toJson<String?>(sku),
       'name': serializer.toJson<String>(name),
+      'path': serializer.toJson<String?>(path),
       'format': serializer.toJson<String>(format),
       'content': serializer.toJson<Uint8List>(content),
       'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
@@ -2058,6 +2077,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
           {int? id,
           Value<String?> sku = const Value.absent(),
           String? name,
+          Value<String?> path = const Value.absent(),
           String? format,
           Uint8List? content,
           DateTime? lastUpdated}) =>
@@ -2065,6 +2085,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
         id: id ?? this.id,
         sku: sku.present ? sku.value : this.sku,
         name: name ?? this.name,
+        path: path.present ? path.value : this.path,
         format: format ?? this.format,
         content: content ?? this.content,
         lastUpdated: lastUpdated ?? this.lastUpdated,
@@ -2075,6 +2096,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
           ..write('id: $id, ')
           ..write('sku: $sku, ')
           ..write('name: $name, ')
+          ..write('path: $path, ')
           ..write('format: $format, ')
           ..write('content: $content, ')
           ..write('lastUpdated: $lastUpdated')
@@ -2083,8 +2105,8 @@ class FileContent extends DataClass implements Insertable<FileContent> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, sku, name, format, $driftBlobEquality.hash(content), lastUpdated);
+  int get hashCode => Object.hash(id, sku, name, path, format,
+      $driftBlobEquality.hash(content), lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2092,6 +2114,7 @@ class FileContent extends DataClass implements Insertable<FileContent> {
           other.id == this.id &&
           other.sku == this.sku &&
           other.name == this.name &&
+          other.path == this.path &&
           other.format == this.format &&
           $driftBlobEquality.equals(other.content, this.content) &&
           other.lastUpdated == this.lastUpdated);
@@ -2101,6 +2124,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
   final Value<int> id;
   final Value<String?> sku;
   final Value<String> name;
+  final Value<String?> path;
   final Value<String> format;
   final Value<Uint8List> content;
   final Value<DateTime> lastUpdated;
@@ -2108,6 +2132,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
     this.id = const Value.absent(),
     this.sku = const Value.absent(),
     this.name = const Value.absent(),
+    this.path = const Value.absent(),
     this.format = const Value.absent(),
     this.content = const Value.absent(),
     this.lastUpdated = const Value.absent(),
@@ -2116,6 +2141,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
     this.id = const Value.absent(),
     this.sku = const Value.absent(),
     required String name,
+    this.path = const Value.absent(),
     required String format,
     required Uint8List content,
     required DateTime lastUpdated,
@@ -2127,6 +2153,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
     Expression<int>? id,
     Expression<String>? sku,
     Expression<String>? name,
+    Expression<String>? path,
     Expression<String>? format,
     Expression<Uint8List>? content,
     Expression<DateTime>? lastUpdated,
@@ -2135,6 +2162,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
       if (id != null) 'id': id,
       if (sku != null) 'sku': sku,
       if (name != null) 'name': name,
+      if (path != null) 'path': path,
       if (format != null) 'format': format,
       if (content != null) 'content': content,
       if (lastUpdated != null) 'last_updated': lastUpdated,
@@ -2145,6 +2173,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
       {Value<int>? id,
       Value<String?>? sku,
       Value<String>? name,
+      Value<String?>? path,
       Value<String>? format,
       Value<Uint8List>? content,
       Value<DateTime>? lastUpdated}) {
@@ -2152,6 +2181,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
       id: id ?? this.id,
       sku: sku ?? this.sku,
       name: name ?? this.name,
+      path: path ?? this.path,
       format: format ?? this.format,
       content: content ?? this.content,
       lastUpdated: lastUpdated ?? this.lastUpdated,
@@ -2169,6 +2199,9 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
     }
     if (format.present) {
       map['format'] = Variable<String>(format.value);
@@ -2188,6 +2221,7 @@ class FileContentsCompanion extends UpdateCompanion<FileContent> {
           ..write('id: $id, ')
           ..write('sku: $sku, ')
           ..write('name: $name, ')
+          ..write('path: $path, ')
           ..write('format: $format, ')
           ..write('content: $content, ')
           ..write('lastUpdated: $lastUpdated')

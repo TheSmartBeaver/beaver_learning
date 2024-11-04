@@ -1078,6 +1078,7 @@ class FileContentSyncDto {
     this.sku,
     this.isMine,
     this.name,
+    this.path,
     this.format,
     this.content,
     this.lastUpdated,
@@ -1095,6 +1096,8 @@ class FileContentSyncDto {
   final bool? isMine;
   @JsonKey(name: 'Name', defaultValue: 'default')
   final String? name;
+  @JsonKey(name: 'Path', defaultValue: 'default')
+  final String? path;
   @JsonKey(name: 'Format', defaultValue: 'default')
   final String? format;
   @JsonKey(name: 'Content', defaultValue: 'default')
@@ -1113,6 +1116,8 @@ class FileContentSyncDto {
                 const DeepCollectionEquality().equals(other.isMine, isMine)) &&
             (identical(other.name, name) ||
                 const DeepCollectionEquality().equals(other.name, name)) &&
+            (identical(other.path, path) ||
+                const DeepCollectionEquality().equals(other.path, path)) &&
             (identical(other.format, format) ||
                 const DeepCollectionEquality().equals(other.format, format)) &&
             (identical(other.content, content) ||
@@ -1131,6 +1136,7 @@ class FileContentSyncDto {
       const DeepCollectionEquality().hash(sku) ^
       const DeepCollectionEquality().hash(isMine) ^
       const DeepCollectionEquality().hash(name) ^
+      const DeepCollectionEquality().hash(path) ^
       const DeepCollectionEquality().hash(format) ^
       const DeepCollectionEquality().hash(content) ^
       const DeepCollectionEquality().hash(lastUpdated) ^
@@ -1142,6 +1148,7 @@ extension $FileContentSyncDtoExtension on FileContentSyncDto {
       {String? sku,
       bool? isMine,
       String? name,
+      String? path,
       String? format,
       String? content,
       DateTime? lastUpdated}) {
@@ -1149,6 +1156,7 @@ extension $FileContentSyncDtoExtension on FileContentSyncDto {
         sku: sku ?? this.sku,
         isMine: isMine ?? this.isMine,
         name: name ?? this.name,
+        path: path ?? this.path,
         format: format ?? this.format,
         content: content ?? this.content,
         lastUpdated: lastUpdated ?? this.lastUpdated);
@@ -1158,6 +1166,7 @@ extension $FileContentSyncDtoExtension on FileContentSyncDto {
       {Wrapped<String?>? sku,
       Wrapped<bool?>? isMine,
       Wrapped<String?>? name,
+      Wrapped<String?>? path,
       Wrapped<String?>? format,
       Wrapped<String?>? content,
       Wrapped<DateTime?>? lastUpdated}) {
@@ -1165,6 +1174,7 @@ extension $FileContentSyncDtoExtension on FileContentSyncDto {
         sku: (sku != null ? sku.value : this.sku),
         isMine: (isMine != null ? isMine.value : this.isMine),
         name: (name != null ? name.value : this.name),
+        path: (path != null ? path.value : this.path),
         format: (format != null ? format.value : this.format),
         content: (content != null ? content.value : this.content),
         lastUpdated:

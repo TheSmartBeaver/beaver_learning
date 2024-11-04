@@ -3,7 +3,9 @@ import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/images_functions.dart';
+import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/utils/templated_render_manager.dart';
+import 'package:chopper/chopper.dart';
 import 'package:drift/drift.dart';
 
 part 'html_dao.g.dart';
@@ -100,5 +102,32 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
     var assemblies = await assembliesRequest.get();
         
     return assemblies;
+  }
+
+  Future createHtmlContentFileContent(
+      int htmlContentId, int fileId) async {
+
+    await into(hTMLContentFiles).insert(HTMLContentFilesCompanion.insert(
+        htmlContentParentId: htmlContentId, fileId: fileId, lastUpdated: getUpdateDateNow()));
+  }
+
+  Future removeAllFilesLinkedToContent(
+      int htmlContentId) async {
+    // await (delete(hTMLContentFiles)
+    //       ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId)))
+    //     .go();
+  }
+
+  Future<List<FileContent>> getAllFileContentsLinkedToHtmlContent(
+      int htmlContentId) async {
+    var htmlContentFiles = await (select(hTMLContentFiles)
+          ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId)))
+        .get();
+
+    var files = await (select(fileContents)
+          ..where((tbl) => tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
+        .get();
+
+    return files;
   }
 }

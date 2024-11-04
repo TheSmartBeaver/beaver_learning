@@ -618,6 +618,10 @@
             "type": "string",
             "nullable": true
           },
+          "Path": {
+            "type": "string",
+            "nullable": true
+          },
           "Format": {
             "type": "string",
             "nullable": true

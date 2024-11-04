@@ -275,6 +275,7 @@ FileContentSyncDto _$FileContentSyncDtoFromJson(Map<String, dynamic> json) =>
       sku: json['SKU'] as String? ?? 'default',
       isMine: json['isMine'] as bool?,
       name: json['Name'] as String? ?? 'default',
+      path: json['Path'] as String? ?? 'default',
       format: json['Format'] as String? ?? 'default',
       content: json['Content'] as String? ?? 'default',
       lastUpdated: json['LastUpdated'] == null
@@ -287,6 +288,7 @@ Map<String, dynamic> _$FileContentSyncDtoToJson(FileContentSyncDto instance) =>
       'SKU': instance.sku,
       'isMine': instance.isMine,
       'Name': instance.name,
+      'Path': instance.path,
       'Format': instance.format,
       'Content': instance.content,
       'LastUpdated': instance.lastUpdated?.toIso8601String(),

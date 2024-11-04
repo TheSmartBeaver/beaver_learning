@@ -447,6 +447,7 @@ class SynchronizeManager {
               content: Value(base64Decode(dto.content ?? "")),
               format: Value(dto.format ?? ""),
               name: Value(dto.name ?? ""),
+              path: Value(dto.path ?? ""),
               lastUpdated: Value(getUpdateDateNow())));
     }
 

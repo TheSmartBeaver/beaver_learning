@@ -36,4 +36,9 @@ class FileContentDao extends DatabaseAccessor<AppDatabase>
     var entity = await ((select(fileContents)..where((t) => t.sku.equals(sku))).getSingleOrNull());
     return entity;
   }
+
+  Future<int> createFileContent(FileContentsCompanion companion) async {
+    int fileContentId = await into(fileContents).insert(companion);
+    return fileContentId;
+  }
 }

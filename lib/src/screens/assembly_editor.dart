@@ -10,6 +10,7 @@ import 'package:beaver_learning/src/providers/templated_card_provider.dart';
 import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/dialog/file_linker/file_linker_to_html_content_dialog.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
@@ -197,10 +198,22 @@ class AssemblyEditorState extends ConsumerState<AssemblyEditor> {
     //   widget.cardForPreview = cardForPreview;
     // }
 
+    void onFileLink() {}
+
     return Scaffold(
       appBar: CustomAppBar(
         title: "Assembly editor",
         actions: [
+          IconButton(
+            icon: const Icon(Icons.file_copy_rounded),
+            onPressed: () async {
+              showDialog(
+                  context: context,
+                  builder: (context) => FileLinkerToHtmlContentDialog(
+                      htmlContentId: widget.htmlContentForPreview.id,
+                      onLink: onFileLink));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.remove_red_eye_outlined),
             onPressed: () async {
@@ -225,11 +238,11 @@ class AssemblyEditorState extends ConsumerState<AssemblyEditor> {
         Container(
           padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
           child: CustomTextField(
-            controller: widget.pathController..text = assemblyPath,
-            icon: Icons.abc,
-            label: "Assembly Path",
-            maxLength: null,
-            onChanged: onTextChangeListener),
+              controller: widget.pathController..text = assemblyPath,
+              icon: Icons.abc,
+              label: "Assembly Path",
+              maxLength: null,
+              onChanged: onTextChangeListener),
         ),
         Container(
             padding: const EdgeInsets.all(8.0),
