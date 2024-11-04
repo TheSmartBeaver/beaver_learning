@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
+import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/utils/export_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/group/group_list.dart';
@@ -68,7 +69,8 @@ class _GroupDetailState extends State<GroupDetail> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => CardList(initialGroup: widget.group),
+                      builder: (ctx) => EditorsScreen(
+                          initialMenuItem: InternMenuItemEnum.card, initialGroupData: widget.group),
                     ),
                   );
                 },

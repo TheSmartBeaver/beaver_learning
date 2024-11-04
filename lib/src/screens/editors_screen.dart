@@ -1,3 +1,4 @@
+import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/screens/assemblies_list.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
@@ -8,10 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EditorsScreen extends ConsumerStatefulWidget {
-  EditorsScreen({super.key, this.initialMenuItem});
+  EditorsScreen({super.key, this.initialMenuItem, this.initialGroupData});
 
   static const routeName = '/editorsScreen';
   InternMenuItemEnum? initialMenuItem;
+  GroupData? initialGroupData;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
@@ -121,6 +123,7 @@ class EditorsScreenState extends ConsumerState<EditorsScreen> {
     switch (selectedInternMenuItem) {
       case InternMenuItemEnum.card:
         rightEditor = CardList(
+          initialGroup: widget.initialGroupData,
             setActiveEditorScaffoldPropsInEditorsScreen:
                 setActiveEditorScaffoldPropsInEditorsScreen);
       case InternMenuItemEnum.group:
