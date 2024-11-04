@@ -17,6 +17,7 @@ import 'package:beaver_learning/src/widgets/card/card_displayer/html_displayer.d
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_form_builder.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
+import 'package:beaver_learning/src/widgets/shared/widgets/form-tools/custom-text-field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -28,6 +29,7 @@ class AssemblyEditor extends ConsumerStatefulWidget {
   late HTMLContent htmlContentForPreview;
   final int? assemblyToEditId;
   static const routeName = '/assemblyEditorScreen';
+  TextEditingController pathController = TextEditingController();
 
   AssemblyEditor({super.key, this.isEditMode = true, this.assemblyToEditId});
 
@@ -39,16 +41,20 @@ class AssemblyEditor extends ConsumerStatefulWidget {
 
     if (assemblyToEditId == null) {
       await createAssemblyInDb(HTMLContentsCompanion.insert(
+          path: drift.Value(pathController.text),
           cardTemplatedJson:
               drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
           isTemplated: const drift.Value(true),
           isAssembly: const drift.Value(true),
           lastUpdated: getUpdateDateNow()));
     } else {
-      await updateAssemblyInDb(assemblyToEditId!, HTMLContentsCompanion.insert(
-          cardTemplatedJson:
-              drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
-          lastUpdated: getUpdateDateNow()));
+      await updateAssemblyInDb(
+          assemblyToEditId!,
+          HTMLContentsCompanion.insert(
+              path: drift.Value(pathController.text),
+              cardTemplatedJson:
+                  drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
+              lastUpdated: getUpdateDateNow()));
     }
 
     var ahah = 0;
@@ -67,7 +73,7 @@ class AssemblyEditor extends ConsumerStatefulWidget {
     String verso = content.verso;
 
     var customHtmlString = getCustomHtml(recto, verso, true);
-    
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => Scaffold(
@@ -108,12 +114,18 @@ class AssemblyEditorState extends ConsumerState<AssemblyEditor> {
   bool isInitialized = false;
   CardTemplatedBranch cardTemplatedBranchToUpdate = CardTemplatedBranch(null);
   late HTMLCardDisplayer htmlCardDisplayer;
+  String assemblyPath = "";
+
+  void onTextChangeListener(String text) {
+    assemblyPath = text;
+  }
 
   Future getPreviewHtmlContent() async {
     final database = MyDatabaseInstance.getInstance();
     widget.htmlContentForPreview = await (database.select(database.hTMLContents)
-          ..where(
-              (tbl) => tbl.path.equals(AppConstante.templatedPreviewNameKey) & tbl.isAssembly.equals(true)))
+          ..where((tbl) =>
+              tbl.path.equals(AppConstante.templatedPreviewNameKey) &
+              tbl.isAssembly.equals(true)))
         .getSingle();
     var test = 0;
   }
@@ -151,6 +163,7 @@ class AssemblyEditorState extends ConsumerState<AssemblyEditor> {
           ref
               .read(templatedCardProvider.notifier)
               .makeRootCardTemplatedBranchChange();
+          assemblyPath = assemblyToEdit.path ?? "";
         });
       }
 
@@ -208,46 +221,57 @@ class AssemblyEditorState extends ConsumerState<AssemblyEditor> {
         ],
       ),
       body: SingleChildScrollView(
-          child: Container(
-              padding: const EdgeInsets.all(8.0),
-              width: screenWidth,
-              height: screenHeight,
-              decoration: BoxDecoration(
-                //color: Colors.blue,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Stack(children: [
-                FutureBuilder(
-                    future: getPreviewHtmlContent(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      } else {
-                        htmlCardDisplayer = HTMLCardDisplayer(
-                            isPrintAnswer: true,
-                            htmlContentId: widget.htmlContentForPreview.id);
-                        return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: htmlCardDisplayer);
-                      }
-                    }),
-                ClipRect(
-                    child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: 2.0,
-                    sigmaY: 2.0,
-                  ),
-                  child: Container(
-                      alignment: Alignment.center,
-                      child: TemplateFormBuilder(
-                          updateCard: update_card,
-                          cardTemplatedBranchToUpdate:
-                              cardTemplatedBranchToUpdate)),
-                )),
-              ]))),
+          child: Column(children: [
+        Container(
+          padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
+          child: CustomTextField(
+            controller: widget.pathController..text = assemblyPath,
+            icon: Icons.abc,
+            label: "Assembly Path",
+            maxLength: null,
+            onChanged: onTextChangeListener),
+        ),
+        Container(
+            padding: const EdgeInsets.all(8.0),
+            width: screenWidth,
+            height: screenHeight,
+            decoration: BoxDecoration(
+              //color: Colors.blue,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Stack(children: [
+              FutureBuilder(
+                  future: getPreviewHtmlContent(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else {
+                      htmlCardDisplayer = HTMLCardDisplayer(
+                          isPrintAnswer: true,
+                          htmlContentId: widget.htmlContentForPreview.id);
+                      return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: htmlCardDisplayer);
+                    }
+                  }),
+              ClipRect(
+                  child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 2.0,
+                  sigmaY: 2.0,
+                ),
+                child: Container(
+                    alignment: Alignment.center,
+                    child: TemplateFormBuilder(
+                        updateCard: update_card,
+                        cardTemplatedBranchToUpdate:
+                            cardTemplatedBranchToUpdate)),
+              )),
+            ]))
+      ])),
       drawer: const AppDrawer(),
       persistentFooterButtons: [
         FloatingActionButton(
