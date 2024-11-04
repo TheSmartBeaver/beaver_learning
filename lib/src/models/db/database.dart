@@ -56,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
 
         //Add a bunch of default items in a batch
         await batch((b) async {
-          // await initial_migrate_batch(b, this);
+          await initial_migrate_batch(b, this);
         });
       },
       onUpgrade: (migrator, from, to) async {
