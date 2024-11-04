@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/generated_code/flash_mem_pro_api.swagger.dart';
 import 'package:beaver_learning/service-agent/appuser_service_agent.dart';
 import 'package:beaver_learning/src/dao/assembly_category_dao.dart';
@@ -50,7 +51,7 @@ class SynchronizeManager {
   Future<void> synchronize() async {
     try{
       await _createSkuForEveryElementWithoutOne();
-    await _synchronizeElementsCreatedAfterLastServerUpdate();
+    await _synchronizeElementsTowardsServerUpdate();
     await synchronizeElementsTowardsMobileUpdate();
     await _setNewSynchronizationDate();
     showInfoInDialog(context, "Synchronization done");
@@ -86,7 +87,7 @@ class SynchronizeManager {
       //sync htmlContent
 
       for (var dbEntity in await (database.select(database.hTMLContents)
-            ..where((tbl) => tbl.sku.isNull()))
+            ..where((tbl) => tbl.sku.isNull() & generateNoPrivateItemsWhereClauseForHtmlContent(tbl)))
           .get()) {
         entryDto.htmlContents?.add(CreateEntityForSkuDto(frontId: dbEntity.id));
       }
@@ -120,7 +121,7 @@ class SynchronizeManager {
       //sync cards
       for (db.ReviseCard dbEntity
           in await (database.select(database.reviseCards)
-                ..where((tbl) => tbl.sku.isNull()))
+                ..where((tbl) => tbl.sku.isNull() & generateNoTemplatedPreviewWhereClause(tbl)))
               .get()) {
         entryDto.cards?.add(CreateEntityForSkuDto(frontId: dbEntity.id));
       }
@@ -211,7 +212,7 @@ class SynchronizeManager {
     }
   }
 
-  Future<void> _synchronizeElementsCreatedAfterLastServerUpdate() async {
+  Future<void> _synchronizeElementsTowardsServerUpdate() async {
     try {
       DateTime lastUpdated = await _getLastMobileSynchronizationDate();
 
@@ -237,7 +238,7 @@ class SynchronizeManager {
 
       List<db.HTMLContent> htmlContentsToSync =
           await (database.select(database.hTMLContents)
-                ..where((x) => x.lastUpdated.isBiggerThanValue(lastUpdated)))
+                ..where((x) => x.lastUpdated.isBiggerThanValue(lastUpdated) & generateNoPrivateItemsWhereClauseForHtmlContent(x)))
               .get();
 
       var htmlContentsToSyncDto = htmlContentsToSync
@@ -256,7 +257,7 @@ class SynchronizeManager {
 
       //sync fileContents belonging to htmlContent
 
-      Map<String, dynamic>? fileContentLinkedToHtmlContents = {};
+      Map<String, List<String?>>? fileContentLinkedToHtmlContents = {};
 
       for (var e in htmlContentsToSync) {
         List<HTMLContentFile> htmlContentFilesToSync =
@@ -267,8 +268,8 @@ class SynchronizeManager {
         if (htmlContentSKU != null) {
           fileContentLinkedToHtmlContents[htmlContentSKU] = [];
           for (var e in htmlContentFilesToSync) {
-            fileContentLinkedToHtmlContents[htmlContentSKU] =
-                (await FileContentDao(database).getById(e.fileId))?.sku;
+            fileContentLinkedToHtmlContents[htmlContentSKU]?.add(
+                (await FileContentDao(database).getById(e.fileId))?.sku);
           }
         }
       }
@@ -302,7 +303,7 @@ class SynchronizeManager {
 
       //sync assemblies belonging to categories
 
-      Map<String, dynamic>? assemblyCategoryLinkedToAssembly = {};
+      Map<String, List<String?>>? assemblyCategoryLinkedToAssembly = {};
 
       for (var e in assemblyCategoriesToSync) {
         List<db.AssemblyCategoryAssemblyData> assemblyCategoryAssembliesToSync =
@@ -314,8 +315,8 @@ class SynchronizeManager {
         if (assemblyCategorySKU != null) {
           assemblyCategoryLinkedToAssembly[assemblyCategorySKU] = [];
           for (var e in assemblyCategoryAssembliesToSync) {
-            assemblyCategoryLinkedToAssembly[assemblyCategorySKU] =
-                (await HtmlDao(database).getById(e.assemblyId))?.sku;
+            assemblyCategoryLinkedToAssembly[assemblyCategorySKU]?.add(
+                (await HtmlDao(database).getById(e.assemblyId))?.sku);
           }
         }
       }
@@ -343,7 +344,7 @@ class SynchronizeManager {
 
       List<db.ReviseCard> cardsToSync =
           await (database.select(database.reviseCards)
-                ..where((x) => x.lastUpdated.isBiggerThanValue(lastUpdated)))
+                ..where((x) => x.lastUpdated.isBiggerThanValue(lastUpdated) & generateNoTemplatedPreviewWhereClause(x) ))
               .get();
 
       List<CardSyncDto> cardsToSyncDto = [];
@@ -353,7 +354,7 @@ class SynchronizeManager {
             nextRevisionDate: e.nextRevisionDate,
             tags: e.tags,
             nextRevisionDateMultiplicator: e.nextRevisionDateMultiplicator,
-            groupSKU: (await GroupDao(database).getById(e.id))?.sku,
+            groupSKU: (await GroupDao(database).getById(e.groupId))?.sku,
             htmlContentSKU:
                 (await HtmlDao(database).getById(e.htmlContent))?.sku,
             path: e.path,
@@ -524,9 +525,9 @@ class SynchronizeManager {
               sku: Value(dto.sku),
               displayerType: const Value(CardDisplayerType.html),
               groupId: Value(
-                  (await groupDao.getBySku(dto.groupSKU ?? ""))?.id ?? -1),
+                  (await groupDao.getBySku(dto.groupSKU ?? ""))?.id ?? -123),
               htmlContent: Value(
-                  (await htmlDao.getBySku(dto.htmlContentSKU ?? ""))?.id ?? -1),
+                  (await htmlDao.getBySku(dto.htmlContentSKU ?? ""))?.id ?? -132),
               mnemotechnicHint: Value(dto.mnemotechnicHint ?? ""),
               nextRevisionDate: Value(dto.nextRevisionDate),
               nextRevisionDateMultiplicator:
