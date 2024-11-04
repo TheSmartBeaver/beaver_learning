@@ -10,7 +10,7 @@ abstract class ImportInterface {
   Map<String, TopicExport> topicExports = {};
   Map<String, HtmlTemplateExport> htmlTemplateExports = {};
 
-  late String sku;
+  String? sku;
 
   void createCardInCardExportsIfNotExists(String name, bool isTemplated);
 

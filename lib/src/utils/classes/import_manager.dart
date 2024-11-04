@@ -217,7 +217,7 @@ class ImportManager extends ImportInterface {
           var courseDescJson = utf8.decode(bytes);
           var courseDescriptor =
               ExportDescriptor.fromJson(jsonDecode(courseDescJson));
-          sku = courseDescriptor.sku!;
+          sku = courseDescriptor.sku;
         } else if (paths[paths.length - 1] == "topic_desc.json") {
           // On identifie en tant que descripteur d'un topic
           var topicName = extractParentFolder(archEntity.name);
@@ -560,14 +560,17 @@ class ImportManager extends ImportInterface {
     var db = MyDatabaseInstance.getInstance();
 
     //Faire la requête pour voir si le cours existe déjà
-    var matchingCourses = await (db.select(db.courses)
-          ..where((tbl) => tbl.sku.equals(courseExport.sku!)))
+    var matchingCourses = [];
+    if(courseExport.sku != null) {
+      matchingCourses = await (db.select(db.courses)
+          ..where((tbl) => tbl.sku.equalsNullable(courseExport.sku)))
         .get();
+    }
     if (matchingCourses.isNotEmpty) {
       return matchingCourses.first.id;
     } else {
       int courseId = await createCourseInDb(CoursesCompanion.insert(
-          sku: Value(courseExport.sku!),
+          sku: Value(courseExport.sku),
           title: courseExport.name!,
           description: courseExport.learnAbouts!.join("\n"),
           imageUrl: courseExport.imgUrl!,
@@ -679,8 +682,7 @@ class ImportManager extends ImportInterface {
         htmlTemplateExports[cardHtmlTemplate.value.path] = HtmlTemplateExport(
             path: paths[paths.length -
                 1], // ICI on ne prend que le nom de la template, pas le chemin entier
-            template: utf8.decode(cardHtmlTemplate.value.bytes!),
-            sku: sku);
+            template: utf8.decode(cardHtmlTemplate.value.bytes!));
       }
     }
   }

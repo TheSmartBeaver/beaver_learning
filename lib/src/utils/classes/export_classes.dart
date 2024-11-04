@@ -81,10 +81,10 @@ class TopicExport {
 
 class HtmlTemplateExport {
   String path;
-  String sku;
+  String? sku;
   String template;
 
-  HtmlTemplateExport({required this.path, required this.sku, required this.template});
+  HtmlTemplateExport({required this.path, this.sku, required this.template});
 
 }
 
