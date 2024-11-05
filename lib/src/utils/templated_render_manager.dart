@@ -32,6 +32,7 @@ class TemplatedRendererManager {
       return HTMLContentRectoVerso(
           recto: recto, verso: verso, files: contentFiles);
     } catch (e) {
+      print(e);
       throw e;
     }
   }
@@ -93,8 +94,8 @@ class TemplatedRendererManager {
 
         var htmlTemplate = await (db.select(db.cardTemplate)
               ..where((tbl) => tbl.path.equals(key)))
-            .getSingle();
-        htmlTemplates[key] = htmlTemplate.template;
+            .get();
+        htmlTemplates[key] = htmlTemplate.first.template;
       } catch (e) {
         rethrow;
         //errors.add(e);

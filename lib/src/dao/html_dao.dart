@@ -2,10 +2,8 @@ import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
-import 'package:beaver_learning/src/utils/images_functions.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/utils/templated_render_manager.dart';
-import 'package:chopper/chopper.dart';
 import 'package:drift/drift.dart';
 
 part 'html_dao.g.dart';
@@ -106,16 +104,31 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
   Future createHtmlContentFileContent(
       int htmlContentId, int fileId) async {
-
-    await into(hTMLContentFiles).insert(HTMLContentFilesCompanion.insert(
-        htmlContentParentId: htmlContentId, fileId: fileId, lastUpdated: getUpdateDateNow()));
+    var matchingLinks = await (select(hTMLContentFiles)
+          ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId) & tbl.fileId.equals(fileId)))
+        .get();
+    if(matchingLinks.isEmpty){
+      await into(hTMLContentFiles).insert(HTMLContentFilesCompanion.insert(
+          htmlContentParentId: htmlContentId, fileId: fileId, lastUpdated: getUpdateDateNow()));
+    }
   }
 
   Future removeAllFilesLinkedToContent(
       int htmlContentId) async {
-    // await (delete(hTMLContentFiles)
-    //       ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId)))
-    //     .go();
+    await (delete(hTMLContentFiles)
+          ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId)))
+        .go();
+  }
+
+  Future removeAllFilesLinkedToContentAndDeleteFiles(
+      int htmlContentId) async {
+    List<HTMLContentFile> htmlContentFiles = await (select(hTMLContentFiles)
+          ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId)))
+        .get();
+    await removeAllFilesLinkedToContent(htmlContentId);
+    await (delete(fileContents)
+            ..where((tbl) => tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
+          .go();
   }
 
   Future<List<FileContent>> getAllFileContentsLinkedToHtmlContent(

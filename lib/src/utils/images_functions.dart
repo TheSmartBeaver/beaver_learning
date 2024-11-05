@@ -88,3 +88,25 @@ Future<void> cleanDirectory(Directory directory) async {
     await directory.delete(recursive: true);
   }
 }
+
+//Liste tous les fichiers du répertoire
+Future<List<FileSystemEntity>> listFiles(Directory directory) async {
+  List<FileSystemEntity> files = [];
+  await for (FileSystemEntity entity in directory.list()) {
+    files.add(entity);
+  }
+  return files;
+}
+
+//Supprime tous les fichiers du répertoire
+Future<void> deleteFiles(Directory directory) async {
+  try {
+    await for (FileSystemEntity entity in directory.list()) {
+      if (entity is File) {
+        await entity.delete();
+      }
+    }
+  } catch (e) {
+    print(e);
+  }
+}

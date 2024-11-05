@@ -31,20 +31,35 @@ class _LinkedFilesToHtmlContentListViewState extends ConsumerState<LinkedFilesTo
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Center(child: CircularProgressIndicator());
       } else {
-        return Container(
-          child: ListView.builder(
+        return Column(children: [ 
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            onPressed: () async {
+              var database = MyDatabaseInstance.getInstance();
+              HtmlDao htmlDao = HtmlDao(database);
+              htmlDao.removeAllFilesLinkedToContent(widget.htmlContentId);
+              await init();
+              setState(() {
+                
+              });
+            },
+          ),
+          SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          width: MediaQuery.of(context).size.width,
+          child: files.isNotEmpty ? ListView.builder(
             itemCount: files.length,
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(files[index].path ?? ''),
-                subtitle: Text("${files[index]} ${files[index].name} (${files[index].format})"),
+                subtitle: Text("${files[index].id} ${files[index].name} (${files[index].format})"),
                 onTap: () {
                   Navigator.pop(context, files[index].id);
                 },
               );
             },
-          ),
-        );
+          ) : const Center(child: Text('No files linked to this content')),
+        )]);
       }
     });
   }

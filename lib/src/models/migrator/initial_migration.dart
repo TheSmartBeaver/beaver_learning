@@ -173,12 +173,6 @@ Future<void> initial_migrate_batch(Batch batch, AppDatabase dbInfos) async {
         path: emptyTemplate_name,
         // sku: "EMPTY_TEMPLATE",
         template: htmlEmptyTemplate,
-        lastUpdated: last_updated),
-    CardTemplateCompanion.insert(
-        id: const Value(2),
-        path: itemTemplate_name,
-        // sku: "EMPTY_TEMPLATE",
-        template: htmlEmptyTemplate,
         lastUpdated: last_updated)
   ]);
 

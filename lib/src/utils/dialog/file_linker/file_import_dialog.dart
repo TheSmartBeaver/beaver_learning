@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
@@ -36,12 +38,13 @@ class _FileImportDialogState extends State<FileImportDialog> {
 
     if (result != null) {
       PlatformFile file = result.files.first;
+      final pickedFileBytes = File(file.path!).readAsBytesSync();
 
       setState(() {
         _fileName = file.name;
         _fileExtension = file.extension;
         _fileSize = file.size;
-        _fileBytes = file.bytes;
+        _fileBytes = pickedFileBytes;
       });
     }
   }

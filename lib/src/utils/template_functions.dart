@@ -174,6 +174,11 @@ String getCustomHtml(String recto, String verso, bool isPrintAnswer) {
         </style>
       </head>
       <body>
+        <script type="text/javascript">
+          console.log = function(message) {
+            ConsoleLog.postMessage(message);
+          };
+        </script>
         <div class='recto texte'>$recto</div>
         ${isPrintAnswer ? "<div class='verso texte'>$verso</div>" : ""}
         <script>

@@ -30,6 +30,7 @@ class _FileLinkerToHtmlContentDialogState
     extends ConsumerState<FileLinkerToHtmlContentDialog> {
   FileLinkerNavigatorMenuItem currentNavigatorItem =
       FileLinkerNavigatorMenuItem.IMPORT_FILE;
+    List<FileContent> files = [];
 
   @override
   void initState() {
@@ -39,6 +40,12 @@ class _FileLinkerToHtmlContentDialogState
 
   Future<void> init() async {
     var database = MyDatabaseInstance.getInstance();
+    HtmlDao htmlDao = HtmlDao(database);
+    files = await htmlDao.getAllFileContentsLinkedToHtmlContent(widget.htmlContentId);
+    setState(() {
+
+    });
+    
   }
 
   void onLinkNavigItemChange(FileLinkerNavigatorMenuItem menuItem) {
@@ -63,11 +70,12 @@ class _FileLinkerToHtmlContentDialogState
           FileContentsCompanion.insert(
               name: fileToImport.fileName,
               format: fileToImport.fileExtension,
-              content: fileToImport.fileBytes ?? Uint8List.fromList([]),
+              // content: fileToImport.fileBytes ?? Uint8List.fromList([]),
+              content: fileToImport.fileBytes!,
               lastUpdated: getUpdateDateNow()));
       htmlContentDao.createHtmlContentFileContent(
           widget.htmlContentId, createdFileContentId);
-      Navigator.pop(context);
+      // Navigator.pop(context);
     }
 
     return AlertDialog(
@@ -77,7 +85,7 @@ class _FileLinkerToHtmlContentDialogState
             mainAxisSize: MainAxisSize.min,
             children: [
               FileLinkerNavigator(
-                  numberOfFilesLinked: 0,
+                  numberOfFilesLinked: files.length,
                   onLinkNavigItemChange: onLinkNavigItemChange),
               if (currentNavigatorItem ==
                   FileLinkerNavigatorMenuItem.SEARCH_FILES)

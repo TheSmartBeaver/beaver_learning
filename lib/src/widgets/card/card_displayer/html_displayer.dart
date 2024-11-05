@@ -12,6 +12,12 @@ import 'package:webview_flutter/webview_flutter.dart';
 WebViewController _buildController() {
   return WebViewController()
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..addJavaScriptChannel(
+                  'ConsoleLog',
+                  onMessageReceived: (JavaScriptMessage message) {
+                    print(message.message);
+                  },
+                )
     ..setBackgroundColor(const Color(0x00000000))
     //..clearCache()
     ..clearLocalStorage()
@@ -55,10 +61,13 @@ class _HTMLDisplayerState extends State<HTMLDisplayer> {
     final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
-    await writeHtmlToServerDirectory(widget.htmlContentString,"index.html", widget.fileContents);
-    
-    //await controller.clearCache();
     await controller.clearLocalStorage();
+    await controller.clearCache();
+    await deleteFiles(await getTemporaryDirectory());
+    await writeHtmlToServerDirectory(widget.htmlContentString,"index.html", widget.fileContents);
+    //var files = await listFiles(await getTemporaryDirectory());
+    // await deleteFiles(await getTemporaryDirectory());
+    // var files2 = await listFiles(await getTemporaryDirectory());
     await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));
     var test2 = await(await getTemporaryDirectory()).list().toList();
     //await controller.loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));

@@ -111,6 +111,13 @@ class TemplateCardEditor extends ConsumerStatefulWidget
     var htmlContentDao = HtmlDao(MyDatabaseInstance.getInstance());
     HTMLContent? assembly = await htmlContentDao.getById(assemblyId);
 
+    HtmlDao htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+    var files = await htmlDao.getAllFileContentsLinkedToHtmlContent(assemblyId);
+    CardDao cardDao = CardDao(MyDatabaseInstance.getInstance());
+    for (var file in files) {
+      await htmlDao.createHtmlContentFileContent(cardForPreview.htmlContent, file.id);
+    }
+
     Map<String, dynamic> json = jsonDecode(assembly!.cardTemplatedJson);
     widgetState.changeCardTemplatedBranchToUpdate(buildBranch(json));
     

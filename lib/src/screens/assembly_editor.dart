@@ -40,14 +40,23 @@ class AssemblyEditor extends ConsumerStatefulWidget {
           ..where((tbl) => tbl.id.equals(htmlContentForPreview.id)))
         .getSingle();
 
+    Future<void> linkFilesToHtmlContent(int htmlContentId) async {
+      var htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+      var content = await htmlDao.getHtmlContents(htmlContentForPreview.id);
+      for (var file in content.files) {
+        await htmlDao.createHtmlContentFileContent(htmlContentId, file.id);
+      }
+    }
+
     if (assemblyToEditId == null) {
-      await createAssemblyInDb(HTMLContentsCompanion.insert(
+      int assemblyId = await createAssemblyInDb(HTMLContentsCompanion.insert(
           path: drift.Value(pathController.text),
           cardTemplatedJson:
               drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
           isTemplated: const drift.Value(true),
           isAssembly: const drift.Value(true),
           lastUpdated: getUpdateDateNow()));
+      await linkFilesToHtmlContent(assemblyId);
     } else {
       await updateAssemblyInDb(
           assemblyToEditId!,
@@ -56,6 +65,7 @@ class AssemblyEditor extends ConsumerStatefulWidget {
               cardTemplatedJson:
                   drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
               lastUpdated: getUpdateDateNow()));
+      await linkFilesToHtmlContent(assemblyToEditId!);
     }
 
     var ahah = 0;
@@ -91,7 +101,7 @@ class AssemblyEditor extends ConsumerStatefulWidget {
           ),
           body: HTMLDisplayer(
             htmlContentString: customHtmlString,
-            fileContents: [],
+            fileContents: content.files,
           ),
           drawer: const AppDrawer(),
           persistentFooterButtons: [
