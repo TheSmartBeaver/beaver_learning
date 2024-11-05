@@ -278,7 +278,7 @@ class SynchronizeManager {
 
       List<db.CardTemplateData> cardTemplatesToSync =
           await (database.select(database.cardTemplate)
-                ..where((x) => x.lastUpdated.isBiggerThanValue(lastUpdated)))
+                ..where((x) => x.lastUpdated.isBiggerThanValue(lastUpdated) & generateNoHiddenTemplateCardWhereClause(x)))
               .get();
 
       var cardTemplatesToSyncDto = cardTemplatesToSync

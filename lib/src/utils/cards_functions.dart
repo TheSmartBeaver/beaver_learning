@@ -1,6 +1,7 @@
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/dao/html_dao.dart';
+import 'package:beaver_learning/src/models/data/test_data.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
@@ -29,10 +30,11 @@ Future<CardCreatedReturns> createCardInDb(
   return CardCreatedReturns(cardId, contentId);
 }
 
-Future<void> createAssemblyInDb(
+Future<int> createAssemblyInDb(
     HTMLContentsCompanion hTMLContentsCompanion) async {
   var contentId =
       await database.into(database.hTMLContents).insert(hTMLContentsCompanion);
+  return contentId;
 }
 
 Future<void> updateAssemblyInDb(int assemblyId,
@@ -115,6 +117,11 @@ Future<int> createHtmlTemplateInDb(
 Expression<bool> generateNoTemplatedPreviewWhereClause($ReviseCardsTable tbl) {
   return tbl.path.isNotValue(AppConstante.templatedPreviewNameKey);
 }
+
 Expression<bool> generateNoPrivateItemsWhereClauseForHtmlContent($HTMLContentsTable tbl) {
   return tbl.path.isNotValue(AppConstante.templatedPreviewNameKey);
+}
+
+Expression<bool> generateNoHiddenTemplateCardWhereClause($CardTemplateTable tbl) {
+  return tbl.path.isNotValue(emptyTemplate_name);
 }

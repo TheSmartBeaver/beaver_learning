@@ -3,6 +3,7 @@ import 'package:beaver_learning/src/screens/assemblies_list.dart';
 import 'package:beaver_learning/src/screens/groups_screen.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
+import 'package:beaver_learning/src/widgets/card_template/card_template_list.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
@@ -131,7 +132,7 @@ class EditorsScreenState extends ConsumerState<EditorsScreen> {
             setActiveEditorScaffoldPropsInEditorsScreen:
                 setActiveEditorScaffoldPropsInEditorsScreen);
       case InternMenuItemEnum.template:
-        rightEditor = CardList(
+        rightEditor = CardTemplatesList(
             setActiveEditorScaffoldPropsInEditorsScreen:
                 setActiveEditorScaffoldPropsInEditorsScreen);
       case InternMenuItemEnum.assembly:
