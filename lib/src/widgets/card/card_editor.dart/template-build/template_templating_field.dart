@@ -57,7 +57,7 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
   bool rootCardTemplatedBranchChangedMarker = false;
 
   Future buildListOfTemplates(CardTemplatedBranch cardTemplatedBranchToUpdate) async {
-    if (!widget.isCardTemplatedBranchToUpdateNew && cardTemplatedBranchToUpdate.templateName == activeTemplate?.path) {
+    if (!widget.isCardTemplatedBranchToUpdateNew) {
       List<Widget> listOfTemplates = widget
           .cardTemplatedBranchToUpdate
           //.parentCardTemplatedBranch!
@@ -103,7 +103,7 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
   Future buildSingleTemplate(CardTemplatedBranch cardTemplatedBranchToUpdate) async {
     Color bgColor = widget.cardTemplatedBranchToUpdate.getColor();
 
-    if (!widget.isCardTemplatedBranchToUpdateNew && cardTemplatedBranchToUpdate.templateName == activeTemplate?.path) {
+    if (!widget.isCardTemplatedBranchToUpdateNew) {
       activeTemplate = await processTemplateByPath(
           widget.cardTemplatedBranchToUpdate.templateName!);
       List<String?> markersList =
