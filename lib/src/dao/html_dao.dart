@@ -143,4 +143,10 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
     return files;
   }
+
+  Future<List<HTMLContentFile>> getAllExistingHtmlFileContents() async {
+    var htmlContentFiles = await (select(hTMLContentFiles)).get();
+
+    return htmlContentFiles;
+  }
 }

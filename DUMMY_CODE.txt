@@ -1,0 +1,4 @@
+SELECT FC."Name", FC."Format", HC."Path" , FC."SKU", HC."SKU"
+FROM public."FileContentHtmlContent" FCHC
+JOIN public."FileContents" FC ON FCHC."FileContentsSKU" = FC."SKU"
+JOIN public."HtmlContents" HC ON HC."SKU" = FCHC."HtmlContentSKU"

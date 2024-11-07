@@ -46,6 +46,12 @@ class HtmlCardEditor extends StatefulWidget implements CardEditorInterface {
     // TODO: implement initEditorWithAssembly
     throw UnimplementedError();
   }
+  
+  @override
+  Future<void> openFileLinkerForCardContent(BuildContext context) {
+    // TODO: implement openFileLinkerForCardContent
+    throw UnimplementedError();
+  }
 }
 
 class _HtmlCardEditorState extends State<HtmlCardEditor> {

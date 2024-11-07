@@ -32,22 +32,22 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
 
   Future updateMnemotechnicHint(int cardId, String mnemotechnicHint) {
     return (update(reviseCards)..where((t) => t.id.equals(cardId))).write(
-        ReviseCardsCompanion(
-          mnemotechnicHint: Value(mnemotechnicHint),
-        ),
-      );
+      ReviseCardsCompanion(
+        mnemotechnicHint: Value(mnemotechnicHint),
+      ),
+    );
   }
 
   Future updateCardTemplatedJson(int htmlContentId, String cardTemplatedJson) {
-    return (update(hTMLContents)..where((t) => t.id.equals(htmlContentId))).write(
-        HTMLContentsCompanion(
-          cardTemplatedJson: Value(cardTemplatedJson),
-        ),
-      );
+    return (update(hTMLContents)..where((t) => t.id.equals(htmlContentId)))
+        .write(
+      HTMLContentsCompanion(
+        cardTemplatedJson: Value(cardTemplatedJson),
+      ),
+    );
   }
 
   Future<CardTemplateData> getHtmlCardTemplate(int htmlCardTemplateId) async {
-
     CardTemplateData cardTemplateToReturn = await (select(cardTemplate)
           ..where((tbl) => tbl.id.equals(htmlCardTemplateId)))
         .getSingle();
@@ -68,7 +68,6 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   }
 
   Future<ReviseCard> getCardById(int cardId) async {
-
     ReviseCard cardToReturn = await (select(reviseCards)
           ..where((tbl) => tbl.id.equals(cardId)))
         .getSingle();
@@ -76,10 +75,11 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
     return cardToReturn;
   }
 
-  Future<CardTemplateData> getHtmlCardTemplateByPath(String htmlCardTemplatePath) async {
-    try{
+  Future<CardTemplateData> getHtmlCardTemplateByPath(
+      String htmlCardTemplatePath) async {
+    try {
       CardTemplateData cardTemplateToReturn = await (select(cardTemplate)
-          ..where((tbl) => tbl.path.equals(htmlCardTemplatePath)))
+            ..where((tbl) => tbl.path.equals(htmlCardTemplatePath)))
           .getSingle();
 
       return cardTemplateToReturn;
@@ -89,13 +89,14 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
     }
   }
 
-  Future insertAssembly(HTMLContent htmlContent, int assemblyCategoryId, bool bool) async {
-      await into(hTMLContents).insert(htmlContent);
-      await into(hTMLContents).insert(htmlContent);
+  Future insertAssembly(
+      HTMLContent htmlContent, int assemblyCategoryId, bool bool) async {
+    await into(hTMLContents).insert(htmlContent);
+    await into(hTMLContents).insert(htmlContent);
   }
 
   Future updateAssembly(HTMLContent htmlContent, int templateCategoryId) async {
-      await update(hTMLContents).replace(htmlContent);
+    await update(hTMLContents).replace(htmlContent);
   }
 
   Future updateById(int id, ReviseCardsCompanion cardCompanion) {
@@ -104,7 +105,8 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   }
 
   Future<ReviseCard?> getBySku(String sku) async {
-    var entity = await ((select(reviseCards)..where((t) => t.sku.equals(sku))).getSingleOrNull());
+    var entity = await ((select(reviseCards)..where((t) => t.sku.equals(sku)))
+        .getSingleOrNull());
     return entity;
   }
 

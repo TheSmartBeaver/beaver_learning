@@ -5,6 +5,7 @@ import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/screens/editors_screen.dart';
+import 'package:beaver_learning/src/utils/dialog/file_linker/file_linker_to_html_content_dialog.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/mnemotechnic_dialog.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_assembly_saver.dart';
@@ -127,10 +128,18 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
         editorToRender.initEditorWithAssembly(assemblyId, context);
     }
 
+    void onFileLink() {}
+
     return Scaffold(
       appBar: CustomAppBar(
         title: "Card editor",
         actions: [
+          IconButton(
+            icon: const Icon(Icons.file_copy_rounded),
+            onPressed: () async {
+              editorToRender.openFileLinkerForCardContent(context);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.remove_red_eye_outlined),
             onPressed: () async {

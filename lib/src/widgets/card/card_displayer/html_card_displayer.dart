@@ -77,9 +77,11 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
     verso = content.verso;
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
+    await deleteFiles(await getTemporaryDirectory());
     var customHtmlString = getCustomHtml(recto, verso, widget.isPrintAnswer);
     await writeHtmlToServerDirectory(
         customHtmlString, "index.html", content.files);
+    var files = await listFiles(await getTemporaryDirectory());
     //await controller.clearCache();
     await controller.clearLocalStorage();
     await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));

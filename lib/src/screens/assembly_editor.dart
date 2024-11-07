@@ -40,7 +40,8 @@ class AssemblyEditor extends ConsumerStatefulWidget {
           ..where((tbl) => tbl.id.equals(htmlContentForPreview.id)))
         .getSingle();
 
-    Future<void> linkFilesToHtmlContent(int htmlContentId) async {
+    Future<void> linkFilesOfHtmlContentPreviewToHtmlContent(
+        int htmlContentId) async {
       var htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
       var content = await htmlDao.getHtmlContents(htmlContentForPreview.id);
       for (var file in content.files) {
@@ -56,7 +57,7 @@ class AssemblyEditor extends ConsumerStatefulWidget {
           isTemplated: const drift.Value(true),
           isAssembly: const drift.Value(true),
           lastUpdated: getUpdateDateNow()));
-      await linkFilesToHtmlContent(assemblyId);
+      await linkFilesOfHtmlContentPreviewToHtmlContent(assemblyId);
     } else {
       await updateAssemblyInDb(
           assemblyToEditId!,
@@ -65,7 +66,7 @@ class AssemblyEditor extends ConsumerStatefulWidget {
               cardTemplatedJson:
                   drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
               lastUpdated: getUpdateDateNow()));
-      await linkFilesToHtmlContent(assemblyToEditId!);
+      await linkFilesOfHtmlContentPreviewToHtmlContent(assemblyToEditId!);
     }
 
     var ahah = 0;
@@ -156,31 +157,39 @@ class AssemblyEditorState extends ConsumerState<AssemblyEditor> {
   }
 
   Future<void> init() async {
-    await getPreviewHtmlContent();
-    if (!isInitialized) {
-      if (widget.assemblyToEditId != null) {
-        var assemblyToEdit = await (MyDatabaseInstance.getInstance()
-                .select(MyDatabaseInstance.getInstance().hTMLContents)
-              ..where((tbl) => tbl.id.equals(widget.assemblyToEditId!)))
-            .getSingle();
+    try {
+      await getPreviewHtmlContent();
+      if (!isInitialized) {
+        if (widget.assemblyToEditId != null) {
+          HtmlDao htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+          var assemblyToEdit = await htmlDao.getById(widget.assemblyToEditId!);
+          var content = await htmlDao.getHtmlContents(assemblyToEdit!.id);
+          for (var file in content.files) {
+            await htmlDao.createHtmlContentFileContent(
+                widget.htmlContentForPreview.id, file.id);
+          }
 
-        await widget.cardDao.updateCardTemplatedJson(
-            widget.htmlContentForPreview.id, assemblyToEdit.cardTemplatedJson);
+          await widget.cardDao.updateCardTemplatedJson(
+              widget.htmlContentForPreview.id,
+              assemblyToEdit.cardTemplatedJson);
+
+          setState(() {
+            cardTemplatedBranchToUpdate =
+                buildBranch(jsonDecode(assemblyToEdit.cardTemplatedJson));
+            cardTemplatedBranchToUpdate.templateName = "NOT NEW";
+            ref
+                .read(templatedCardProvider.notifier)
+                .makeRootCardTemplatedBranchChange();
+            assemblyPath = assemblyToEdit.path ?? "";
+          });
+        }
 
         setState(() {
-          cardTemplatedBranchToUpdate =
-              buildBranch(jsonDecode(assemblyToEdit.cardTemplatedJson));
-          cardTemplatedBranchToUpdate.templateName = "NOT NEW";
-          ref
-              .read(templatedCardProvider.notifier)
-              .makeRootCardTemplatedBranchChange();
-          assemblyPath = assemblyToEdit.path ?? "";
+          isInitialized = true;
         });
       }
-
-      setState(() {
-        isInitialized = true;
-      });
+    } catch (e) {
+      print(e);
     }
   }
 
