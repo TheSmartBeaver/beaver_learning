@@ -360,7 +360,7 @@ class SynchronizeManager {
       for (var e in cardsToSync) {
         cardsToSyncDto.add(CardSyncDto(
             sku: e.sku,
-            nextRevisionDate: e.nextRevisionDate,
+            nextRevisionDate: e.nextRevisionDate?.toUtc(),
             tags: e.tags,
             nextRevisionDateMultiplicator: e.nextRevisionDateMultiplicator,
             groupSKU: (await GroupDao(database).getById(e.groupId))?.sku,
@@ -477,8 +477,7 @@ class SynchronizeManager {
     }
 
     //sync fileContents belonging to htmlContent
-    for (var dto in resultDto
-            .fileContentLinkedToHtmlContents!.entries) {
+    for (var dto in resultDto.fileContentLinkedToHtmlContents!.entries) {
       HTMLContent? htmlContent = await htmlDao.getBySku(dto.key);
       if (htmlContent != null) {
         for (String fileSKU in dto.value) {
