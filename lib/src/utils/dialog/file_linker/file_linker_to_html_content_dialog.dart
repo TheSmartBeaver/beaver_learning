@@ -54,9 +54,12 @@ class _FileLinkerToHtmlContentDialogState
     });
   }
 
-  void processFileLinkFunction(int fileId) {
-    var database = MyDatabaseInstance.getInstance();
-    widget.onLink!();
+  Future<void> processFileLinkFunction(int fileId) async {
+    //var database = MyDatabaseInstance.getInstance();
+    //widget.onLink!();
+      HtmlDao htmlContentDao = HtmlDao(MyDatabaseInstance.getInstance());
+      htmlContentDao.createHtmlContentFileContent(
+          widget.htmlContentId, fileId);
   }
 
   @override

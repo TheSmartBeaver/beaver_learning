@@ -81,7 +81,7 @@ class _FileLinkerSearchDialogState extends State<FileLinkerSearchDialog> {
                     itemCount: filesReturned.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text(filesReturned[index].name,
+                        title: Text("${filesReturned[index].path}\n${filesReturned[index].name} ${filesReturned[index].format}",
                             style: selectedFileIndex == index
                                 ? const TextStyle(
                                     fontWeight: FontWeight.bold,

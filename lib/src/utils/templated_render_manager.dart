@@ -29,7 +29,7 @@ class TemplatedRendererManager {
       String recto = buildJsonHtmlAssociation(rectoCardTemplatedBranch);
       String verso = buildJsonHtmlAssociation(versoCardTemplatedBranch);
 
-      return HTMLContentRectoVerso(
+      return HTMLContentRectoVerso( htmlContent.id,
           recto: recto, verso: verso, files: contentFiles);
     } catch (e) {
       print(e);

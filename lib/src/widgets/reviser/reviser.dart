@@ -3,6 +3,7 @@ import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/models/enum/answer_dificulty.dart';
 import 'package:beaver_learning/src/providers/revise_provider.dart';
+import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
@@ -29,10 +30,12 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
 
   getReviseCards(WidgetRef ref) async {
     List<ReviseCard> cards;
-    if(widget.groupId == null) {
+    if (widget.groupId == null) {
       cards = await ref.read(reviseProvider.notifier).getAllCardsToRevise();
     } else {
-      cards = await ref.read(reviseProvider.notifier).getAllCardsToReviseInGroup(widget.groupId!);
+      cards = await ref
+          .read(reviseProvider.notifier)
+          .getAllCardsToReviseInGroup(widget.groupId!);
     }
     setState(() {
       initialcards = cards;
@@ -46,7 +49,7 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
   void initState() {
     super.initState();
     if (!widget.isInitialized) {
-        getReviseCards(ref);
+      getReviseCards(ref);
     }
     widget.isInitialized = true;
   }
@@ -86,7 +89,22 @@ class _RevisorDisplayerState extends ConsumerState<RevisorDisplayer> {
     int cardsLeft = (initialcards?.length ?? 0) - counter;
 
     return Scaffold(
-        appBar: AppBar(title: const Text("Revisor")),
+        appBar: AppBar(
+          title: const Text("Revisor"),
+          actions: [
+            if (cardToRevise != null)
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (ctx) =>
+                            CardEditorScreen(cardToEditId: cardToRevise!.id)),
+                  );
+                },
+              )
+          ],
+        ),
         body: Column(
           children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

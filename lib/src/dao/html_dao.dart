@@ -51,7 +51,7 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
       // TODO: Faire la gestion d'erreur pour quand même retourner un résultat ???
       result = await templatedCardRendererManager.renderTemplatedCard();
     } else {
-      result = HTMLContentRectoVerso(
+      result = HTMLContentRectoVerso(htmlContent.id,
           recto: htmlContent.recto,
           verso: htmlContent.verso,
           files: contentFiles);
@@ -91,44 +91,45 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
   Future<List<HTMLContent>> getUsableAssemblies(String? textValue) async {
     var assembliesRequest = await (select(hTMLContents)
-          ..where((tbl) => tbl.isAssembly.equals(true))
-          ..limit(15));
+      ..where((tbl) => tbl.isAssembly.equals(true))
+      ..limit(15));
     if (textValue?.isNotEmpty ?? false) {
       assembliesRequest.where((tbl) => tbl.path.like("%$textValue%"));
     }
 
     var assemblies = await assembliesRequest.get();
-        
+
     return assemblies;
   }
 
-  Future createHtmlContentFileContent(
-      int htmlContentId, int fileId) async {
+  Future createHtmlContentFileContent(int htmlContentId, int fileId) async {
     var matchingLinks = await (select(hTMLContentFiles)
-          ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId) & tbl.fileId.equals(fileId)))
+          ..where((tbl) =>
+              tbl.htmlContentParentId.equals(htmlContentId) &
+              tbl.fileId.equals(fileId)))
         .get();
-    if(matchingLinks.isEmpty){
+    if (matchingLinks.isEmpty) {
       await into(hTMLContentFiles).insert(HTMLContentFilesCompanion.insert(
-          htmlContentParentId: htmlContentId, fileId: fileId, lastUpdated: getUpdateDateNow()));
+          htmlContentParentId: htmlContentId,
+          fileId: fileId,
+          lastUpdated: getUpdateDateNow()));
     }
   }
 
-  Future removeAllFilesLinkedToContent(
-      int htmlContentId) async {
+  Future removeAllFilesLinkedToContent(int htmlContentId) async {
     await (delete(hTMLContentFiles)
           ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId)))
         .go();
   }
 
-  Future removeAllFilesLinkedToContentAndDeleteFiles(
-      int htmlContentId) async {
+  Future removeAllFilesLinkedToContentAndDeleteFiles(int htmlContentId) async {
     List<HTMLContentFile> htmlContentFiles = await (select(hTMLContentFiles)
           ..where((tbl) => tbl.htmlContentParentId.equals(htmlContentId)))
         .get();
     await removeAllFilesLinkedToContent(htmlContentId);
     await (delete(fileContents)
-            ..where((tbl) => tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
-          .go();
+          ..where((tbl) => tbl.id.isIn(htmlContentFiles.map((e) => e.fileId))))
+        .go();
   }
 
   Future<List<FileContent>> getAllFileContentsLinkedToHtmlContent(

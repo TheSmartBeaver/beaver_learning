@@ -15,16 +15,9 @@ var previewCardJson = '''
   ''';
 
 var htmlEmptyTemplate = '''
-  <div>
-      <div>
-        <p>{{field1}}</p>
-      </div>
-      <div>
-        <p>{{field2}}</p>
-      </div>
-      <div>
-        <p>{{field3}}</p>
-      </div>
+  {field1}}
+  {{field2}}
+  {{field3}}
   ''';
 
 var completeJsonCardTest = '''

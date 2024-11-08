@@ -7,11 +7,12 @@ import 'package:json_annotation/json_annotation.dart';
 part 'card_classes.g.dart';
 
 class HTMLContentRectoVerso {
+  final int id;
   final String recto;
   final String verso;
   final List<FileContent> files;
 
-  HTMLContentRectoVerso(
+  HTMLContentRectoVerso(this.id, 
       {required this.files, required this.recto, required this.verso});
 }
 
