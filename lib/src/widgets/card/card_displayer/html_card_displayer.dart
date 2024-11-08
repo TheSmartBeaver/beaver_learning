@@ -75,16 +75,17 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
     var content = await htmlDao.getHtmlContents(widget.htmlContentId);
     recto = content.recto;
     verso = content.verso;
+    String target_file = "index${content.id}.html";
 
     var localServerUrl = await MyLocalServer.getLocalServerUrl();
     await deleteFiles(await getTemporaryDirectory());
     var customHtmlString = getCustomHtml(recto, verso, widget.isPrintAnswer);
     await writeHtmlToServerDirectory(
-        customHtmlString, "index.html", content.files);
+        customHtmlString, target_file, content.files);
     var files = await listFiles(await getTemporaryDirectory());
     //await controller.clearCache();
     await controller.clearLocalStorage();
-    await controller.loadRequest(Uri.parse('$localServerUrl/index.html'));
+    await controller.loadRequest(Uri.parse('$localServerUrl/$target_file'));
     var test2 = await (await getTemporaryDirectory()).list().toList();
     //await controller.loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
     //serverProps.server.close(force: true);
@@ -95,14 +96,20 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
     // controller
     //     .loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
 
-    return FutureBuilder(
-        future: init(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          } else {
-            return WebViewWidget(controller: controller);
-          }
-        });
+    return Column(children: [
+      SizedBox(
+          height: 50,
+          child: Text("HtmlContent ID : " + widget.htmlContentId.toString())),
+      Expanded(
+          child: FutureBuilder(
+              future: init(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else {
+                  return WebViewWidget(controller: controller);
+                }
+              }))
+    ]);
   }
 }

@@ -75,7 +75,9 @@ Future<File> writeHtmlToServerDirectory(String html, String filename, List<FileC
     await writeFileContentToFile(fileContent, directory);
   }
 
-  return htmlFile.writeAsString(html);
+  var fileWritten = await htmlFile.writeAsString(html);
+
+  return fileWritten;
 }
 
 Future<void> writeFileContentToFile(FileContent fileContent, Directory directory) async {
