@@ -1,6 +1,7 @@
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/htmlContentFilesTable.dart';
 import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
+import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/utils/templated_render_manager.dart';
@@ -91,7 +92,7 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
   Future<List<HTMLContent>> getUsableAssemblies(String? textValue) async {
     var assembliesRequest = await (select(hTMLContents)
-      ..where((tbl) => tbl.isAssembly.equals(true))
+      ..where((tbl) => tbl.isAssembly.equals(true) & generateNoPrivateItemsWhereClauseForHtmlContent(tbl))
       ..limit(15));
     if (textValue?.isNotEmpty ?? false) {
       assembliesRequest.where((tbl) => tbl.path.like("%$textValue%"));

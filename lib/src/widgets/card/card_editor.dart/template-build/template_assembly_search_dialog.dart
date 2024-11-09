@@ -10,17 +10,17 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TemplateAssemblySaver extends ConsumerStatefulWidget {
+class TemplateAssemblySearchDialog extends ConsumerStatefulWidget {
   final Function(int assemblyId) processAssemblyFunction;
 
-  const TemplateAssemblySaver({Key? key, required this.processAssemblyFunction})
+  const TemplateAssemblySearchDialog({Key? key, required this.processAssemblyFunction})
       : super(key: key);
 
   @override
-  _TemplateAssemblySaverState createState() => _TemplateAssemblySaverState();
+  _TemplateAssemblySearchDialogState createState() => _TemplateAssemblySearchDialogState();
 }
 
-class _TemplateAssemblySaverState extends ConsumerState<TemplateAssemblySaver> {
+class _TemplateAssemblySearchDialogState extends ConsumerState<TemplateAssemblySearchDialog> {
   TextEditingController _textEditingController = TextEditingController();
   String textValue = '';
   Timer? _debounce;

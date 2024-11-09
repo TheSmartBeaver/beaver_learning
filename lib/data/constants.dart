@@ -6,8 +6,8 @@ class AppConstante {
       ApiUrl = "localhost:7299";
       //ApiUrl = "beaver-tech.com"; //VPS
     } else if (Platform.isAndroid) {
-      ApiUrl = "10.0.2.2:7239";
-      //ApiUrl = "192.168.86.136:7239";
+      //ApiUrl = "10.0.2.2:7239";
+      ApiUrl = "192.168.86.136:7239";
       //ApiUrl = "beaver-tech.com"; //VPS
     }
     //ApiUrl = "62.72.18.73"; //VPS

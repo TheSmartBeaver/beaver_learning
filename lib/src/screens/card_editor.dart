@@ -8,7 +8,7 @@ import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/utils/dialog/file_linker/file_linker_to_html_content_dialog.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/card_editor_interface.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/mnemotechnic_dialog.dart';
-import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_assembly_saver.dart';
+import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_assembly_search_dialog.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/template_card_editor.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
@@ -168,7 +168,7 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
             onPressed: () async {
               showDialog(
                   context: context,
-                  builder: (context) => TemplateAssemblySaver(
+                  builder: (context) => TemplateAssemblySearchDialog(
                       processAssemblyFunction: initEditorWithAssembly));
             },
           )
