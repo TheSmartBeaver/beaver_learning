@@ -47,8 +47,21 @@ Widget buildSection(
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Image? imageWidget;
   Image? imageWidget2;
+  bool isUserLogged = false;
+  bool isInitialized = false;
+
+  Future init() async {
+    isUserLogged = await ref.read(authProvider.notifier).checkIfUserLogged();
+    if (!isInitialized) {
+      setState(() {
+        isInitialized = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    init();
     return Scaffold(
         appBar: AppBar(title: const Text("Settings")),
         body: Center(
@@ -59,13 +72,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             buildSection(
                 "Account infos",
                 [
-                  const Text(
-                      "Pour l'instant tu n'as pas la possibilité d'avoir de compte ^^")
+                  if (isUserLogged)
+                    Text(ref.read(authProvider.notifier).user!.uid),
+                  if (isUserLogged)
+                    Text(ref.read(authProvider.notifier).user!.email ?? "RIEN")
                 ],
                 context),
             ElevatedButton(
                 onPressed: () async {
-                  SynchronizeManager syncManager = SynchronizeManager(context, ref);
+                  SynchronizeManager syncManagerBase =
+                      SynchronizeManager(context, ref);
+                  SynchronizeManager syncManager = await syncManagerBase.init();
                   await syncManager.synchronize();
                 },
                 style: const ButtonStyle(
@@ -80,7 +97,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     backgroundColor: MaterialStatePropertyAll(Colors.purple)),
                 child: const Text("Import Deck",
                     style: TextStyle(color: Colors.black))),
-            if (ref.read(authProvider.notifier).checkIfUserLogged())
+            if (isUserLogged)
               ElevatedButton(
                 child: const Text("Logout"),
                 onPressed: () {

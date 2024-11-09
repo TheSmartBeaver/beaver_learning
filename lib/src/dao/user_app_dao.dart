@@ -28,7 +28,7 @@ class UserAppDao extends DatabaseAccessor<AppDatabase> with _$UserAppDaoMixin {
     return entity;
   }
 
-  isUserAlreadyRegistered(String fbId) async {
+  Future<bool> isUserAlreadyRegistered(String fbId) async {
     var user = await (select(userApp)..where((t) => t.fbId.equals(fbId))).getSingleOrNull();
     return user != null;
   }

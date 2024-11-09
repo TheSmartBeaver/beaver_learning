@@ -189,8 +189,16 @@ class FirebaseAuthMethods extends StateNotifier<Object> {
     }
   }
 
-  bool checkIfUserLogged() {
-    return _auth.currentUser != null;
+  Future<bool> checkIfUserLogged() async {
+    // return _auth.currentUser != null;
+    bool loggedBothSide = await checkIfUserLoggedBothSide();
+    return loggedBothSide;
+  }
+
+  Future<bool> checkIfUserLoggedBothSide() async {
+    bool isFbLogged = _auth.currentUser != null;
+    bool isServerLogged = await UserAppDao(MyDatabaseInstance.getInstance()).isUserAlreadyRegistered(_auth.currentUser!.uid);
+    return isFbLogged && isServerLogged;
   }
 
   initAdditionalTreatment(BuildContext context) async {

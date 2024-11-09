@@ -33,6 +33,18 @@ class MyLearningApp extends ConsumerStatefulWidget {
 }
 
 class _MyLearningAppState extends ConsumerState<MyLearningApp> {
+  bool isUserLogged = false;
+  bool isInitialized = false;
+
+  Future init() async {
+    isUserLogged = await ref.read(authProvider.notifier).checkIfUserLogged();
+    if (!isInitialized) {
+      setState(() {
+        isInitialized = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Glue the SettingsController to the MaterialApp.
@@ -82,11 +94,14 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
           // Define a function to handle named routes in order to support
           // Flutter web url navigation and deep linking.
           onGenerateRoute: (RouteSettings routeSettings) {
+            final args = routeSettings.arguments as Map<String, dynamic>?;
+            if(args?['isFromLogging'] != null){
+              isInitialized = false;
+            }
+            init();
             return MaterialPageRoute<void>(
               settings: routeSettings,
               builder: (BuildContext context) {
-                var isUserLogged =
-                    ref.read(authProvider.notifier).checkIfUserLogged();
                 if (isUserLogged) {
                   switch (routeSettings.name) {
                     case CardEditorScreen.routeName:

@@ -15,7 +15,7 @@ var previewCardJson = '''
   ''';
 
 var htmlEmptyTemplate = '''
-  {field1}}
+  {{field1}}
   {{field2}}
   {{field3}}
   ''';

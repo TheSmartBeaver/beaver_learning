@@ -35,8 +35,10 @@ class SynchronizeManager {
   final BuildContext context;
   final WidgetRef ref;
 
-  SynchronizeManager(this.context, this.ref) {
-    if (ref.read(authProvider.notifier).checkIfUserLogged()) {
+  SynchronizeManager(this.context, this.ref);
+
+  Future<SynchronizeManager> init() async {
+    if (await ref.read(authProvider.notifier).checkIfUserLogged()) {
       User? currentUser = ref.read(authProvider.notifier).user;
       if (currentUser != null) {
         this.currentUser = currentUser;
@@ -46,6 +48,7 @@ class SynchronizeManager {
     } else {
       throw Exception("User not logged");
     }
+    return this;
   }
 
   Future<void> synchronize() async {

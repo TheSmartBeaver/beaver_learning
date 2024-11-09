@@ -12,7 +12,6 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:image_picker/image_picker.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-
   static const String routeName = '/LoginScreen';
 
   LoginScreen({super.key}) {
@@ -96,7 +95,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   //context.read<FirebaseAuthMethods>().signInWithGoogle(context);
                   ref.read(authProvider.notifier).signInWithGoogle(context, () {
                     //widget.screenUtils.changeScreen(ScreenEnum.matchings);
-                    Navigator.pushNamed(context, CoursesScreen.routeName);
+                    Navigator.pushNamed(context, CoursesScreen.routeName,
+                        arguments: {'isFromLogging': true});
                     //showSnackBar(context, "appel");
                     fetchAuthent(true);
                   });
