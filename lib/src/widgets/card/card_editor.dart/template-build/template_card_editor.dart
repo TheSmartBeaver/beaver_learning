@@ -59,7 +59,7 @@ class TemplateCardEditor extends ConsumerStatefulWidget
           HTMLContentsCompanion.insert(
               cardTemplatedJson:
                   drift.Value(cardForPreviewHtmlContent.cardTemplatedJson),
-              isTemplated: const drift.Value(false),
+              isTemplated: const drift.Value(true),
               isAssembly: const drift.Value(false),
               lastUpdated: getUpdateDateNow()));
       await linkFilesOfHtmlContentPreviewToHtmlContent(cardCreatedReturns.cardId);
