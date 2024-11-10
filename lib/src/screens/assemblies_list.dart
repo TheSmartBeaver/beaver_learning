@@ -1,4 +1,5 @@
 import 'package:beaver_learning/data/constants.dart';
+import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
@@ -100,6 +101,46 @@ class _AssembliesListState extends ConsumerState<AssembliesList> {
     }
   }
 
+  void onAssemblyLongPressDown(
+      int assemblyId, BuildContext context, Offset position) {
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          position.dx, position.dy, position.dx, position.dy),
+      items: [
+        const PopupMenuItem<int>(
+          value: 0,
+          child: Text('Modify'),
+        ),
+        const PopupMenuItem<int>(
+          value: 1,
+          child: Text('Remove'),
+        ),
+      ],
+    ).then((value) async {
+      if (value == 0) {
+        // Logique pour modifier
+        onAssemblyClick(assemblyId);
+      } else if (value == 1) {
+        // Logique pour supprimer
+        HtmlDao htmlDao =
+            HtmlDao(MyDatabaseInstance.getInstance());
+        await htmlDao.deleteById(assemblyId);
+        setState(() {
+          assemblies.removeWhere((element) => element.id == assemblyId);
+        });
+      }
+    });
+  }
+
+  void onAssemblyClick(int assemblyId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (ctx) =>
+              AssemblyEditor(assemblyToEditId: assemblyId)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -155,6 +196,20 @@ class _AssembliesListState extends ConsumerState<AssembliesList> {
                                     htmlContents[assemblies[index].id]
                                             ?.cardTemplatedJson ??
                                         '')),
+                                GestureDetector(
+                                onLongPressDown: (details) {
+                                  onAssemblyLongPressDown(
+                                      assemblies[index].id,
+                                      context,
+                                      details.globalPosition);
+                                },
+                                onTap: () {
+                                  onAssemblyClick(assemblies[index].id);
+                                },
+                                child: const Icon(
+                                  Icons.list,
+                                  size: 50,
+                                )),
                               ],
                             ),
                           ));

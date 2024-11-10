@@ -1,3 +1,5 @@
+import 'package:beaver_learning/src/dao/html_dao.dart';
+import 'package:beaver_learning/src/exception/item_not_found_exception.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/cardTemplateTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
@@ -15,6 +17,13 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
 
   Future updateCard(ReviseCard card) => update(reviseCards).replace(card);
   Future deleteCard(ReviseCard card) => delete(reviseCards).delete(card);
+
+  Future deleteById(int id) async {
+    var cardToDelete = await getCardById(id);
+    HtmlDao htmlDao = HtmlDao(db);
+    await htmlDao.deleteById(cardToDelete.htmlContent);
+    await ((delete(reviseCards)..where((t) => t.id.equals(id)))).go();
+  }
 
   Future updateNextRevision(
       int cardId, double newCoeff, DateTime nextRevisionDate) {
@@ -78,12 +87,17 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   Future<CardTemplateData> getHtmlCardTemplateByPath(
       String htmlCardTemplatePath) async {
     try {
-      CardTemplateData cardTemplateToReturn = await (select(cardTemplate)
+      CardTemplateData? cardTemplateToReturn = await (select(cardTemplate)
             ..where((tbl) => tbl.path.equals(htmlCardTemplatePath)))
-          .getSingle();
+          .getSingleOrNull();
+
+      if(cardTemplateToReturn == null) {
+        throw ItemNotFoundException("No card template found for path $htmlCardTemplatePath");
+      }
 
       return cardTemplateToReturn;
-    } catch (e) {
+    } 
+    catch (e) {
       print(e);
       rethrow;
     }

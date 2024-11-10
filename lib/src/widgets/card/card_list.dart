@@ -1,13 +1,11 @@
-import 'package:beaver_learning/data/constants.dart';
+import 'package:beaver_learning/src/dao/card_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
-import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
-import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -138,6 +136,43 @@ class _CardListState extends ConsumerState<CardList> {
     //TODO: Pourquoi refait t'on cette appel quand on est dans écran création carte
   }
 
+  void onCardLongPressDown(int cardId, BuildContext context, Offset position) {
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          position.dx, position.dy, position.dx, position.dy),
+      items: [
+        const PopupMenuItem<int>(
+          value: 0,
+          child: Text('Modify'),
+        ),
+        const PopupMenuItem<int>(
+          value: 1,
+          child: Text('Remove'),
+        ),
+      ],
+    ).then((value) async {
+      if (value == 0) {
+        // Logique pour modifier
+        onCardClick(cardId);
+      } else if (value == 1) {
+        // Logique pour supprimer
+        CardDao cardDao = CardDao(MyDatabaseInstance.getInstance());
+        await cardDao.deleteById(cardId);
+        setState(() {
+          cards.removeWhere((element) => element.id == cardId);
+        });
+      }
+    });
+  }
+
+  void onCardClick(int cardId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (ctx) => CardEditorScreen(cardToEditId: cardId)),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -201,31 +236,35 @@ class _CardListState extends ConsumerState<CardList> {
                     restorationId: 'sampleItemListView',
                     itemCount: cards.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (ctx) => CardEditorScreen(
-                                      cardToEditId: cards[index].id)),
-                            );
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            margin: const EdgeInsets.all(2),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                packInBox(Text(
-                                    "cardId : ${cards[index].id} isAssembly : ${htmlContents[cards[index].id]?.isAssembly}")),
-                                packInBox(Text(htmlContents[cards[index].id]
-                                        ?.cardTemplatedJson ??
-                                    '')),
-                              ],
-                            ),
-                          ));
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        margin: const EdgeInsets.all(2),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            packInBox(Text(
+                                "cardId : ${cards[index].id} isAssembly : ${htmlContents[cards[index].id]?.isAssembly}")),
+                            packInBox(Text(htmlContents[cards[index].id]
+                                    ?.cardTemplatedJson ??
+                                '')),
+                            GestureDetector(
+                                onLongPressDown: (details) {
+                                  onCardLongPressDown(cards[index].id, context,
+                                      details.globalPosition);
+                                },
+                                onTap: () {
+                                  onCardClick(cards[index].id);
+                                },
+                                child: const Icon(
+                                  Icons.list,
+                                  size: 50,
+                                ))
+                          ],
+                        ),
+                      );
                     },
                   ),
                 );

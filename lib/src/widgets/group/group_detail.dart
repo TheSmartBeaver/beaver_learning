@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:beaver_learning/data/constants.dart';
+import 'package:beaver_learning/src/dao/group_dao.dart';
+import 'package:beaver_learning/src/exception/child_found_exception.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/screens/editors_screen.dart';
+import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
 import 'package:beaver_learning/src/utils/export_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_list.dart';
 import 'package:beaver_learning/src/widgets/group/group_list.dart';
@@ -103,7 +106,25 @@ class _GroupDetailState extends State<GroupDetail> {
                             label: "Child groups",
                             body: GroupList(groups: groups)));
                   }
-                })
+                }),
+                ElevatedButton(
+                onPressed: () async {
+                  try{
+                    final groupdao = GroupDao(MyDatabaseInstance.getInstance());
+                    await groupdao.deleteById(widget.group.id);
+                    Navigator.pop(context);
+                  } catch (e) {
+                    if(e is ChildFoundException){
+                      showInfoInDialog(context, e.message);
+                    }
+                    print(e);
+                    rethrow;
+                  }
+                },
+                style: const ButtonStyle(
+                    backgroundColor: MaterialStatePropertyAll(Colors.red)),
+                child: const Text("DeleteGroup",
+                    style: TextStyle(color: Colors.black)))
           ],
         ),
         drawer: const AppDrawer());

@@ -1,9 +1,11 @@
 import 'package:beaver_learning/data/constants.dart';
 import 'package:beaver_learning/src/dao/card_dao.dart';
+import 'package:beaver_learning/src/exception/item_not_found_exception.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/templated_card_provider.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
 import 'package:beaver_learning/src/utils/section_functions.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_editor.dart/template-build/field_type_selector.dart';
@@ -28,7 +30,6 @@ class TemplateTemplatingField extends ConsumerStatefulWidget {
       required this.isListOfTemplates,
       required this.updateCard,
       required this.cardTemplatedBranchInteracter}) {
-        
     var result = cardTemplatedBranchInteracter.getCardTemplatedBranchChild(
         fieldPathPiece, isListOfTemplates);
     cardTemplatedBranchToUpdate = result.child;
@@ -50,13 +51,15 @@ List<String?> getEveryMarkersInHtmlTemplate(String htmlTemplate) {
   return markersList;
 }
 
-class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingField> {
+class _TemplateTemplatingFieldState
+    extends ConsumerState<TemplateTemplatingField> {
   CardTemplateData? activeTemplate;
   Widget widgetReturned = const CircularProgressIndicator();
   bool isInitialized = false;
   bool rootCardTemplatedBranchChangedMarker = false;
 
-  Future buildListOfTemplates(CardTemplatedBranch cardTemplatedBranchToUpdate) async {
+  Future buildListOfTemplates(
+      CardTemplatedBranch cardTemplatedBranchToUpdate) async {
     if (!widget.isCardTemplatedBranchToUpdateNew) {
       List<Widget> listOfTemplates = widget
           .cardTemplatedBranchToUpdate
@@ -100,11 +103,12 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
     }
   }
 
-  Future buildSingleTemplate(CardTemplatedBranch cardTemplatedBranchToUpdate) async {
+  Future buildSingleTemplate(BuildContext context,
+      CardTemplatedBranch cardTemplatedBranchToUpdate) async {
     Color bgColor = widget.cardTemplatedBranchToUpdate.getColor();
 
     if (!widget.isCardTemplatedBranchToUpdateNew) {
-      activeTemplate = await processTemplateByPath(
+      activeTemplate = await processTemplateByPath(context,
           widget.cardTemplatedBranchToUpdate.templateName!);
       List<String?> markersList =
           getEveryMarkersInHtmlTemplate(activeTemplate!.template);
@@ -166,21 +170,39 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
     });
   }
 
-  Future<CardTemplateData> processTemplateByPath(String templatePath) async {
-    CardTemplateData htmlTemplate =
-        await widget.cardDao.getHtmlCardTemplateByPath(templatePath);
-    return htmlTemplate;
+  Future<CardTemplateData> processTemplateByPath(
+      BuildContext context, String templatePath) async {
+    try {
+      CardTemplateData htmlTemplate =
+          await widget.cardDao.getHtmlCardTemplateByPath(templatePath);
+      return htmlTemplate;
+    } catch (e) {
+      if (e is ItemNotFoundException) {
+        showInfoInDialog(context, "${e.message}\n");
+        rethrow;
+      } else {
+        print(e);
+        rethrow;
+      }
+    }
   }
 
-  Future<void> init() async {
-    if (!isInitialized || ref.watch(templatedCardProvider.notifier).hasRootCardTemplatedBranchChanged(rootCardTemplatedBranchChangedMarker)) {
+  Future<void> init(BuildContext context) async {
+    if (!isInitialized ||
+        ref
+            .watch(templatedCardProvider.notifier)
+            .hasRootCardTemplatedBranchChanged(
+                rootCardTemplatedBranchChangedMarker)) {
       if (widget.isListOfTemplates) {
         await buildListOfTemplates(widget.cardTemplatedBranchToUpdate);
       } else {
-        await buildSingleTemplate(widget.cardTemplatedBranchToUpdate);
+        await buildSingleTemplate(context, widget.cardTemplatedBranchToUpdate);
       }
       setState(() {
-        rootCardTemplatedBranchChangedMarker = ref.read(templatedCardProvider.notifier).state.rootCardTemplatedBranchChangedMarker;
+        rootCardTemplatedBranchChangedMarker = ref
+            .read(templatedCardProvider.notifier)
+            .state
+            .rootCardTemplatedBranchChangedMarker;
         isInitialized = true;
       });
     }
@@ -188,10 +210,16 @@ class _TemplateTemplatingFieldState extends ConsumerState<TemplateTemplatingFiel
 
   @override
   Widget build(BuildContext context) {
+    ref
+        .watch(templatedCardProvider.notifier)
+        .state
+        .rootCardTemplatedBranchChangedMarker;
+    init(context);
 
-    ref.watch(templatedCardProvider.notifier).state.rootCardTemplatedBranchChangedMarker;
-    init();
-
-    return buildSection(widget.fieldPathPiece.pathPieceName, [Text("Widget : (TTF ${widget.fieldPathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),widgetReturned]);
+    return buildSection(widget.fieldPathPiece.pathPieceName, [
+      Text(
+          "Widget : (TTF ${widget.fieldPathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),
+      widgetReturned
+    ]);
   }
 }

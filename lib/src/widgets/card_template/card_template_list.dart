@@ -1,3 +1,4 @@
+import 'package:beaver_learning/src/dao/card_template_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
@@ -85,6 +86,46 @@ class _CardTemplatesListState extends ConsumerState<CardTemplatesList> {
     }
   }
 
+  void onCardTemplateLongPressDown(
+      int cardTemplateId, BuildContext context, Offset position) {
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          position.dx, position.dy, position.dx, position.dy),
+      items: [
+        const PopupMenuItem<int>(
+          value: 0,
+          child: Text('Modify'),
+        ),
+        const PopupMenuItem<int>(
+          value: 1,
+          child: Text('Remove'),
+        ),
+      ],
+    ).then((value) async {
+      if (value == 0) {
+        // Logique pour modifier
+        onCardTemplateClick(cardTemplateId);
+      } else if (value == 1) {
+        // Logique pour supprimer
+        CardTemplateDao cardTemplateDao =
+            CardTemplateDao(MyDatabaseInstance.getInstance());
+        await cardTemplateDao.deleteById(cardTemplateId);
+        setState(() {
+          cardTemplates.removeWhere((element) => element.id == cardTemplateId);
+        });
+      }
+    });
+  }
+
+  void onCardTemplateClick(int cardTemplateId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (ctx) =>
+              CardTemplateEditor(cardTemplateToEditId: cardTemplateId)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -118,29 +159,34 @@ class _CardTemplatesListState extends ConsumerState<CardTemplatesList> {
                     restorationId: 'sampleItemListView',
                     itemCount: cardTemplates.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (ctx) => CardTemplateEditor(
-                                      cardTemplateToEditId: cardTemplates[index].id)),
-                            );
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            margin: const EdgeInsets.all(2),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                packInBox(Text(
-                                    "cardId : ${cardTemplates[index].id} \npath : ${cardTemplates[index].path} \nSKU : ${cardTemplates[index].sku}")),
-                                packInBox(Text("Click to see")),
-                              ],
-                            ),
-                          ));
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        margin: const EdgeInsets.all(2),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            packInBox(Text(
+                                "cardId : ${cardTemplates[index].id} \npath : ${cardTemplates[index].path} \nSKU : ${cardTemplates[index].sku}")),
+                            GestureDetector(
+                                onLongPressDown: (details) {
+                                  onCardTemplateLongPressDown(
+                                      cardTemplates[index].id,
+                                      context,
+                                      details.globalPosition);
+                                },
+                                onTap: () {
+                                  onCardTemplateClick(cardTemplates[index].id);
+                                },
+                                child: const Icon(
+                                  Icons.list,
+                                  size: 50,
+                                )),
+                          ],
+                        ),
+                      );
                     },
                   ),
                 );

@@ -151,4 +151,8 @@ class HtmlDao extends DatabaseAccessor<AppDatabase> with _$HtmlDaoMixin {
 
     return htmlContentFiles;
   }
+
+  Future deleteById(int id) async {
+    await ((delete(hTMLContents)..where((t) => t.id.equals(id)))).go();
+  }
 }
