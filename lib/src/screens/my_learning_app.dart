@@ -2,6 +2,7 @@ import 'package:beaver_learning/src/providers/firebase_auth_provider.dart';
 import 'package:beaver_learning/src/screens/assemblies_list.dart';
 import 'package:beaver_learning/src/screens/assembly_editor.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
+import 'package:beaver_learning/src/screens/card_template_html_editor.dart';
 import 'package:beaver_learning/src/screens/course_creator.dart';
 import 'package:beaver_learning/src/screens/courses.dart';
 import 'package:beaver_learning/src/screens/editors_screen.dart';
@@ -128,6 +129,8 @@ class _MyLearningAppState extends ConsumerState<MyLearningApp> {
                       return const CoursesScreen();
                     case CourseCreatorScreen.routeName:
                       return CourseCreatorScreen();
+                    case CardTemplateEditor.routeName:
+                      return CardTemplateEditor();
                     default:
                       return const CoursesScreen();
                   }

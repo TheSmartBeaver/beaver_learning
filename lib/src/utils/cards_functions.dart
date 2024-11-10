@@ -108,10 +108,18 @@ Future<int> createCourseInDb(CoursesCompanion courseCompanion) async {
 }
 
 Future<int> createHtmlTemplateInDb(
-    CardTemplateCompanion htmlTemplateCompanion) async {
+    CardTemplateCompanion cardTemplateCompanion) async {
   var id =
-      await database.into(database.cardTemplate).insert(htmlTemplateCompanion);
+      await database.into(database.cardTemplate).insert(cardTemplateCompanion);
   return id;
+}
+
+Future<void> updateCardTemplateInDb(int cardTemplateId,
+    CardTemplateCompanion cardTemplateCompanion) async {
+
+  await (database.update(database.cardTemplate)
+        ..where((t) => t.id.equals(cardTemplateId)))
+      .write(cardTemplateCompanion);
 }
 
 Expression<bool> generateNoTemplatedPreviewWhereClause($ReviseCardsTable tbl) {

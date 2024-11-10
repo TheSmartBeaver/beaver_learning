@@ -2,6 +2,7 @@ import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/providers/app_database_provider.dart';
 import 'package:beaver_learning/src/screens/card_editor.dart';
+import 'package:beaver_learning/src/screens/card_template_html_editor.dart';
 import 'package:beaver_learning/src/screens/interfaces/editors_state.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/CustomDropdown.dart';
@@ -67,7 +68,7 @@ class _CardTemplatesListState extends ConsumerState<CardTemplatesList> {
     var floatingActionButton = [
       FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, CardEditorScreen.routeName);
+          Navigator.pushNamed(context, CardTemplateEditor.routeName);
         },
         foregroundColor: Colors.white,
         backgroundColor: Colors.red,
@@ -121,8 +122,8 @@ class _CardTemplatesListState extends ConsumerState<CardTemplatesList> {
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                  builder: (ctx) => CardEditorScreen(
-                                      cardToEditId: cardTemplates[index].id)),
+                                  builder: (ctx) => CardTemplateEditor(
+                                      cardTemplateToEditId: cardTemplates[index].id)),
                             );
                           },
                           child: Container(

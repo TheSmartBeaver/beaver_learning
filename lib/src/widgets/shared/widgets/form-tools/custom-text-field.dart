@@ -7,7 +7,8 @@ class CustomTextField extends StatefulWidget {
   final IconData icon;
   final String label;
   final int? maxLength;
-  int maxLines;
+  int? maxLines;
+  int? minLines;
   void Function(String)? onChanged;
 
   CustomTextField(
@@ -16,6 +17,7 @@ class CustomTextField extends StatefulWidget {
       required this.icon,
       required this.label,
       required this.maxLength,
+      this.minLines = 1,
       this.maxLines = 1,
       this.onChanged});
   
@@ -34,7 +36,7 @@ class CustomTextFieldState extends State<CustomTextField> {
         controller: widget.controller,
         onChanged: widget.onChanged,
         maxLength: widget.maxLength,
-        minLines: 1,
+        minLines: widget.minLines,
         maxLines: widget.maxLines,
         decoration: InputDecoration(
           labelText: widget.label,

@@ -21,6 +21,11 @@ class CardTemplateDao extends DatabaseAccessor<AppDatabase> with _$CardTemplateD
     return entity;
   }
 
+  Future<CardTemplateData?> getById(int id) async {
+    var entity = await ((select(cardTemplate)..where((t) => t.id.equals(id))).getSingleOrNull());
+    return entity;
+  }
+
   Future insertOrUpdateBySku(String sku, CardTemplateCompanion companion) async {
     var entity = await getBySku(sku);
 

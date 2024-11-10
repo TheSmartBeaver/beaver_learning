@@ -98,7 +98,7 @@ LazyDatabase _openConnection() {
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
     var file = File(p.join(dbFolder.path, 'db.sqlite'));
-    deleteFile(file);
+    //deleteFile(file);
     file = File(p.join(dbFolder.path, 'db.sqlite'));
 
     // Also work around limitations on old Android versions
