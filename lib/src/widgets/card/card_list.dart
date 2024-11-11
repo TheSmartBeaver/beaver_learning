@@ -118,10 +118,6 @@ class _CardListState extends ConsumerState<CardList> {
     }
 
     var cardsRequest = database.select(database.reviseCards);
-    if(wordController.text.isNotEmpty){
-      CardDao cardDao = CardDao(MyDatabaseInstance.getInstance());
-      //cardsRequest = cardDao.generateWordWhereClauseRequestForCard(wordController.text);
-    }
     cardsRequest.where((card) => generateNoTemplatedPreviewWhereClause(card));
     if (widget.initialGroup != null) {
       cardsRequest
@@ -130,9 +126,13 @@ class _CardListState extends ConsumerState<CardList> {
     try {
       print(cardsRequest);
       cards = await cardsRequest.get();
+      if (wordController.text.isNotEmpty) {
+        CardDao cardDao = CardDao(MyDatabaseInstance.getInstance());
+        cards = await cardDao.removeCardsWithoutProperWordWhereClause(cards, wordController.text);
+      }
       print(cardsRequest);
     } catch (e) {
-      var toto = 0;
+      print(e);
     }
     htmlContents = {};
     for (var card in cards) {
@@ -212,9 +212,7 @@ class _CardListState extends ConsumerState<CardList> {
   }
 
   void onWordsChange(String value) {
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
