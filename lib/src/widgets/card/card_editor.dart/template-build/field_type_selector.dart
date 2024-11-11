@@ -87,8 +87,8 @@ class _FieldTypeSelectorState extends State<FieldTypeSelector> {
     return Container(
         padding: const EdgeInsets.all(4),
         child: Column(children: [
-          Text(
-              "Widget : (TTF ${widget.pathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),
+          // Text(
+          //     "Widget : (TTF ${widget.pathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),
           if (fieldWidget != null) fieldWidget
         ]));
   }

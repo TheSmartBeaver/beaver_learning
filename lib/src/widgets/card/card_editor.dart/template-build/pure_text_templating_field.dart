@@ -30,7 +30,7 @@ class _PureTextTemplatingFieldState extends State<PureTextTemplatingField> {
   Widget build(BuildContext context) {
     return Container(
         child: Column( children: [
-        Text("Widget : (TTF ${widget.fieldName}) Hashcode : ${widget.cardTemplatedBranchInteracter.cardTemplatedBranch.hashCode}"),
+        //Text("Widget : (TTF ${widget.fieldName}) Hashcode : ${widget.cardTemplatedBranchInteracter.cardTemplatedBranch.hashCode}"),
         CustomTextField(
             controller: widget.controller
               ..text = widget.cardTemplatedBranchInteracter
