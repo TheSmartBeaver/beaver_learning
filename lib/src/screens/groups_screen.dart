@@ -87,7 +87,6 @@ class _GroupScreenState extends ConsumerState<GroupsList> {
         Container(
             margin: const EdgeInsets.all(4),
             child: const TextField(
-              obscureText: true,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Words',

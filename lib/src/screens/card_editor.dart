@@ -125,7 +125,7 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
         TemplateCardEditor(cardToEditId: widget.cardToEditId);
 
     Future initEditorWithAssembly(int assemblyId) async {
-        editorToRender.initEditorWithAssembly(assemblyId, context);
+      editorToRender.initEditorWithAssembly(assemblyId, context);
     }
 
     void onFileLink() {}
@@ -175,8 +175,12 @@ class _CardEditorScreenState extends ConsumerState<CardEditorScreen> {
         ],
       ),
       body: SingleChildScrollView(
-          child:
-              Column(children: [getDropDowns(ref, context), editorToRender])),
+          child: Column(children: [
+        getDropDowns(ref, context),
+        if (widget.cardToEditId != null)
+          Text("cardId : ${widget.cardToEditId.toString()}"),
+        editorToRender
+      ])),
       drawer: const AppDrawer(),
       persistentFooterButtons: [
         FloatingActionButton(
