@@ -61,6 +61,10 @@ class _AssembliesListState extends ConsumerState<AssembliesList> {
     htmlContentsRequest.where(
         (assembly) => generateNoPrivateItemsWhereClauseForHtmlContent(assembly));
 
+    if(wordController.text.isNotEmpty){
+      htmlContentsRequest.where((assembly) => generateWordWhereClauseForHtmlContent(assembly, wordController.text));
+    }
+
     assemblies = await htmlContentsRequest.get();
     htmlContents = {};
     for (var assembly in assemblies) {
@@ -75,6 +79,12 @@ class _AssembliesListState extends ConsumerState<AssembliesList> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _afterBuild();
+    });
+  }
+
+  void onWordsChange(String value) {
+    setState(() {
+      
     });
   }
 
@@ -149,8 +159,8 @@ class _AssembliesListState extends ConsumerState<AssembliesList> {
           Container(
             margin: const EdgeInsets.all(4),
             child: TextField(
-              obscureText: true,
               controller: wordController,
+              onChanged: onWordsChange,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -191,7 +201,7 @@ class _AssembliesListState extends ConsumerState<AssembliesList> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 packInBox(Text(
-                                    "cardId : ${assemblies[index].id} isAssembly : ${htmlContents[assemblies[index].id]?.isAssembly}")),
+                                    "id : ${assemblies[index].id}\npath : ${htmlContents[assemblies[index].id]?.path}")),
                                 packInBox(Text(
                                     htmlContents[assemblies[index].id]
                                             ?.cardTemplatedJson ??

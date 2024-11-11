@@ -52,8 +52,9 @@ class _CardTemplatesListState extends ConsumerState<CardTemplatesList> {
     }
 
     var cardTemplatesRequest = database.select(database.cardTemplate);
-    //cardTemplatesRequest.where((card) => generateNoTemplatedPreviewWhereClause(card));
-
+    if(wordController.text.isNotEmpty){
+      cardTemplatesRequest.where((cardTemplate) => generateWordWhereClauseForCardTemplate(cardTemplate, wordController.text));
+    }
     cardTemplates = await cardTemplatesRequest.get();
   }
 
@@ -126,6 +127,12 @@ class _CardTemplatesListState extends ConsumerState<CardTemplatesList> {
     );
   }
 
+  void onWordsChange(String value) {
+    setState(() {
+      
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -135,8 +142,8 @@ class _CardTemplatesListState extends ConsumerState<CardTemplatesList> {
           Container(
             margin: const EdgeInsets.all(4),
             child: TextField(
-              obscureText: true,
               controller: wordController,
+              onChanged: onWordsChange,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),

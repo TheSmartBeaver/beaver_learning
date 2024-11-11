@@ -133,3 +133,11 @@ Expression<bool> generateNoPrivateItemsWhereClauseForHtmlContent($HTMLContentsTa
 Expression<bool> generateNoHiddenTemplateCardWhereClause($CardTemplateTable tbl) {
   return tbl.path.isNotValue(emptyTemplate_name);
 }
+
+Expression<bool> generateWordWhereClauseForHtmlContent($HTMLContentsTable tbl, String word) {
+  return tbl.cardTemplatedJson.like('%$word%') | tbl.path.like('%$word%') ;
+}
+
+Expression<bool> generateWordWhereClauseForCardTemplate($CardTemplateTable tbl, String word) {
+  return tbl.template.like('%$word%') | tbl.path.like('%$word%') ;
+}
