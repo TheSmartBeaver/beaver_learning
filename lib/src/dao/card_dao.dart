@@ -3,13 +3,14 @@ import 'package:beaver_learning/src/exception/item_not_found_exception.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/cardTemplateTable.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/models/db/image_table.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:drift/drift.dart';
 
 part 'card_dao.g.dart';
 
-@DriftAccessor(tables: [ReviseCards, CardTemplate])
+@DriftAccessor(tables: [ReviseCards, CardTemplate, HTMLContents])
 class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   final AppDatabase db;
 
@@ -91,13 +92,13 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
             ..where((tbl) => tbl.path.equals(htmlCardTemplatePath)))
           .getSingleOrNull();
 
-      if(cardTemplateToReturn == null) {
-        throw ItemNotFoundException("No card template found for path $htmlCardTemplatePath");
+      if (cardTemplateToReturn == null) {
+        throw ItemNotFoundException(
+            "No card template found for path $htmlCardTemplatePath");
       }
 
       return cardTemplateToReturn;
-    } 
-    catch (e) {
+    } catch (e) {
       print(e);
       rethrow;
     }
@@ -133,5 +134,16 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
       return await (update(reviseCards)..where((t) => t.sku.equals(sku)))
           .write(companion);
     }
+  }
+
+  SimpleSelectStatement<$ReviseCardsTable, ReviseCard>
+      generateWordWhereClauseRequestForCard(String word) {
+    return select(reviseCards)
+      ..join([
+        innerJoin(
+            hTMLContents, hTMLContents.id.equalsExp(reviseCards.htmlContent))
+      ]);
+      // ..where((tbl) =>
+      //     hTMLContents.cardTemplatedJson.like('%$word%') | (hTMLContents.path.like('%$word%')));
   }
 }
