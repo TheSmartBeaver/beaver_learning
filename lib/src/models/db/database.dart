@@ -16,6 +16,7 @@ import 'package:beaver_learning/src/models/db/topicTable.dart';
 import 'package:beaver_learning/src/models/db/user_app.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/models/migrator/initial_migration.dart';
+import 'package:beaver_learning/src/utils/drift_logging_functions.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -43,7 +44,7 @@ part 'database.g.dart';
 ])
 
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase() : super(LoggingExecutor.wrap(_openConnection()));
 
   @override
   int get schemaVersion => 4;
@@ -98,7 +99,7 @@ LazyDatabase _openConnection() {
     // for your app.
     final dbFolder = await getApplicationDocumentsDirectory();
     var file = File(p.join(dbFolder.path, 'db.sqlite'));
-    deleteFile(file);
+    //deleteFile(file);
     file = File(p.join(dbFolder.path, 'db.sqlite'));
 
     // Also work around limitations on old Android versions
