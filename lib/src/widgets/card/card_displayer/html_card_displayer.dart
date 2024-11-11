@@ -97,9 +97,6 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
     //     .loadHtmlString(_getCustomHtml(recto, verso, widget.isPrintAnswer));
 
     return Column(children: [
-      SizedBox(
-          height: 50,
-          child: Text("HtmlContent ID : " + widget.htmlContentId.toString())),
       Expanded(
           child: FutureBuilder(
               future: init(),

@@ -11,6 +11,7 @@ import 'package:beaver_learning/src/providers/templated_card_provider.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
 import 'package:beaver_learning/src/utils/dialog/file_linker/file_linker_to_html_content_dialog.dart';
+import 'package:beaver_learning/src/utils/html_functions.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
@@ -34,15 +35,16 @@ class TemplateCardEditor extends ConsumerStatefulWidget
   TemplateCardEditor({super.key, this.isEditMode = true, this.cardToEditId});
 
   Future<void> linkFilesOfHtmlContentPreviewToHtmlContent(
-        int cardToEditId) async {
-      var htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
-      var cardDao = CardDao(MyDatabaseInstance.getInstance());
-      var content = await htmlDao.getHtmlContents(cardForPreview.htmlContent);
-      var htmlContentOfCardId = (await cardDao.getCardById(cardToEditId)).htmlContent;
-      for (var file in content.files) {
-        await htmlDao.createHtmlContentFileContent(htmlContentOfCardId, file.id);
-      }
+      int cardToEditId) async {
+    var htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+    var cardDao = CardDao(MyDatabaseInstance.getInstance());
+    var content = await htmlDao.getHtmlContents(cardForPreview.htmlContent);
+    var htmlContentOfCardId =
+        (await cardDao.getCardById(cardToEditId)).htmlContent;
+    for (var file in content.files) {
+      await htmlDao.createHtmlContentFileContent(htmlContentOfCardId, file.id);
     }
+  }
 
   @override
   Future<void> createOrUpdateCard(int groupId) async {
@@ -62,7 +64,8 @@ class TemplateCardEditor extends ConsumerStatefulWidget
               isTemplated: const drift.Value(true),
               isAssembly: const drift.Value(false),
               lastUpdated: getUpdateDateNow()));
-      await linkFilesOfHtmlContentPreviewToHtmlContent(cardCreatedReturns.cardId);
+      await linkFilesOfHtmlContentPreviewToHtmlContent(
+          cardCreatedReturns.cardId);
     } else {
       await updateCardInDb(
           cardToEditId!,
@@ -87,6 +90,10 @@ class TemplateCardEditor extends ConsumerStatefulWidget
 
   @override
   Future<void> showCard(BuildContext context) async {
+    final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+    var content = await htmlDao.getHtmlContents(cardForPreview.htmlContent);
+    var customHtmlString = getCustomHtml(content.recto, content.verso, true);
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => Scaffold(
@@ -97,6 +104,12 @@ class TemplateCardEditor extends ConsumerStatefulWidget
                 icon: const Icon(Icons.arrow_circle_left_sharp),
                 onPressed: () async {
                   Navigator.of(ctx).pop();
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.html_outlined),
+                onPressed: () async {
+                  printHtmlCode(context, customHtmlString);
                 },
               )
             ],

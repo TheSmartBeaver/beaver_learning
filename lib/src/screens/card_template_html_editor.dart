@@ -7,8 +7,8 @@ import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/screens/editors_screen.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/html_functions.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
-import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
 import 'package:beaver_learning/src/widgets/shared/app_bar.dart';
 import 'package:beaver_learning/src/widgets/shared/app_drawer.dart';
 import 'package:beaver_learning/src/widgets/shared/widgets/form-tools/custom-text-field.dart';
@@ -47,35 +47,13 @@ class CardTemplateEditor extends ConsumerStatefulWidget {
   }
 
   Future<void> showCardTemplate(BuildContext context) async {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (ctx) => Scaffold(
-          appBar: CustomAppBar(
-            title: "Card Template Editor",
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.arrow_circle_left_sharp),
-                onPressed: () async {
-                  Navigator.of(ctx).pop();
-                },
-              )
-            ],
-          ),
-          body: Center(
-            child: Text(htmlTextController.text),
-          ),
-          drawer: const AppDrawer(),
-          persistentFooterButtons: [],
-        ),
-      ),
-    );
+    printHtmlCode(context, htmlTextController.text);
   }
 }
 
 class CardTemplateEditorState extends ConsumerState<CardTemplateEditor> {
   bool isInitialized = false;
   CardTemplatedBranch cardTemplatedBranchToUpdate = CardTemplatedBranch(null);
-  late HTMLCardDisplayer htmlCardDisplayer;
 
   void onTextChangeListener(String text) {
     widget.pathController.text = text;
