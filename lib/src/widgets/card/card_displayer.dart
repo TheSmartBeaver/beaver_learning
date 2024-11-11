@@ -8,7 +8,10 @@
 
 import 'dart:math';
 
+import 'package:beaver_learning/src/dao/group_dao.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/databaseInstance.dart';
+import 'package:beaver_learning/src/models/db/groupTable.dart';
 import 'package:beaver_learning/src/models/enum/answer_dificulty.dart';
 import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/widgets/card/card_displayer/html_card_displayer.dart';
@@ -47,6 +50,8 @@ class NextRevisionInfo {
 class _CardDisplayerState extends State<CardDisplayer> {
   bool isPrintAnswer = false;
   double revisorButtonHeight = 46.0;
+  bool isInitialised = false;
+  String groupOfCard = "";
 
   Widget getCorrectDisplayer(CardDisplayerType cardDisplayerType) {
     switch (cardDisplayerType) {
@@ -62,8 +67,20 @@ class _CardDisplayerState extends State<CardDisplayer> {
         isPrintAnswer: isPrintAnswer, htmlContentId: widget.cardToRevise.htmlContent);
   }
 
+  Future<void> init() async {
+    if (!isInitialised) {
+      isInitialised = true;
+      GroupDao groupDao = GroupDao(MyDatabaseInstance.getInstance());
+      var group = await groupDao.getById(widget.cardToRevise.groupId);
+      setState(() {
+        groupOfCard = group?.title ?? "";
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    init();
     NextRevisionInfo calculateNextRevision(AnswerDifficulty answerDifficulty) {
       var diffMult =
           (1 + log(difficultyMultiplicator[answerDifficulty]!)).abs();
@@ -77,6 +94,7 @@ class _CardDisplayerState extends State<CardDisplayer> {
 
     return Column(
       children: [
+        Text("CardId : ${widget.cardToRevise.id} HtmlContentId : ${widget.cardToRevise.htmlContent} \nGroup : ${groupOfCard}"),
         Expanded(
           child: getCorrectDisplayer(widget.cardToRevise.displayerType),
         ),
