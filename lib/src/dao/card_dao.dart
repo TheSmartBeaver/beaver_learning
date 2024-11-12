@@ -2,14 +2,16 @@ import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/exception/item_not_found_exception.dart';
 import 'package:beaver_learning/src/models/db/cardTable.dart';
 import 'package:beaver_learning/src/models/db/cardTemplateTable.dart';
+import 'package:beaver_learning/src/models/db/custom_db_type/card_joined_html_content.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
+import 'package:beaver_learning/src/models/db/htmlContentTable.dart';
 import 'package:beaver_learning/src/models/db/image_table.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
 import 'package:drift/drift.dart';
 
 part 'card_dao.g.dart';
 
-@DriftAccessor(tables: [ReviseCards, CardTemplate])
+@DriftAccessor(tables: [ReviseCards, CardTemplate, HTMLContents])
 class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
   final AppDatabase db;
 
@@ -91,13 +93,13 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
             ..where((tbl) => tbl.path.equals(htmlCardTemplatePath)))
           .getSingleOrNull();
 
-      if(cardTemplateToReturn == null) {
-        throw ItemNotFoundException("No card template found for path $htmlCardTemplatePath");
+      if (cardTemplateToReturn == null) {
+        throw ItemNotFoundException(
+            "No card template found for path $htmlCardTemplatePath");
       }
 
       return cardTemplateToReturn;
-    } 
-    catch (e) {
+    } catch (e) {
       print(e);
       rethrow;
     }
@@ -134,4 +136,42 @@ class CardDao extends DatabaseAccessor<AppDatabase> with _$CardDaoMixin {
           .write(companion);
     }
   }
+
+  SimpleSelectStatement<$ReviseCardsTable, ReviseCard>
+      generateWordWhereClauseRequestForCard(String word) {
+    return select(reviseCards)
+      ..join([
+        innerJoin(
+            hTMLContents, hTMLContents.id.equalsExp(reviseCards.htmlContent))
+      ]);
+
+      
+      // ..where((tbl) =>
+      //     hTMLContents.cardTemplatedJson.like('%$word%') | (hTMLContents.path.like('%$word%')));
+  }
+
+  Future<List<ReviseCard>> removeCardsWithoutProperWordWhereClause(List<ReviseCard> reviseCards, String word) async {
+    List<ReviseCardJoinHtmlContentResult> joinResult = await customJoinRequest(word);
+    var finalResult = [...reviseCards];
+    List<int> validIds = joinResult.map<int>((e) => e.getReviseCardId(e.data)).toList();
+    for (var card in reviseCards) {
+      if (!validIds.contains(card.id)) {
+        finalResult.remove(card);
+      }
+    }
+    return finalResult;
+  }
+
+  Future<List<ReviseCardJoinHtmlContentResult>> customJoinRequest(String word) async {
+    // h_t_m_l_contents
+    // revise_cards
+    final query = '''SELECT RC.* FROM revise_cards RC
+    JOIN h_t_m_l_contents HC ON RC.html_content = HC.id
+    WHERE HC.card_templated_json LIKE '%$word%'
+    ''';
+    // List<QueryRow> results = await customSelect(query, variables: [Variable.withString('some_value')]).get();
+    List<QueryRow> results = await customSelect(query, variables: []).get();
+    final result = results.map((row) => ReviseCardJoinHtmlContentResult(data: row.data)).toList();
+    return result;
+  } 
 }

@@ -123,8 +123,17 @@ class _CardListState extends ConsumerState<CardList> {
       cardsRequest
           .where((card) => card.groupId.equals(widget.initialGroup!.id));
     }
-
-    cards = await cardsRequest.get();
+    try {
+      print(cardsRequest);
+      cards = await cardsRequest.get();
+      if (wordController.text.isNotEmpty) {
+        CardDao cardDao = CardDao(MyDatabaseInstance.getInstance());
+        cards = await cardDao.removeCardsWithoutProperWordWhereClause(cards, wordController.text);
+      }
+      print(cardsRequest);
+    } catch (e) {
+      print(e);
+    }
     htmlContents = {};
     for (var card in cards) {
       htmlContents[card.id] = await (database.select(database.hTMLContents)
@@ -202,6 +211,10 @@ class _CardListState extends ConsumerState<CardList> {
     }
   }
 
+  void onWordsChange(String value) {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -212,7 +225,7 @@ class _CardListState extends ConsumerState<CardList> {
           Container(
             margin: const EdgeInsets.all(4),
             child: TextField(
-              obscureText: true,
+              onChanged: onWordsChange,
               controller: wordController,
               decoration: InputDecoration(
                 border: OutlineInputBorder(
