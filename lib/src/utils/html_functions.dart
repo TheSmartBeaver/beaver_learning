@@ -21,7 +21,7 @@ void printHtmlCode(BuildContext context, String htmlCode) {
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(htmlCode),
+              child: SelectableText(htmlCode),
             ),
           ),
         ),
