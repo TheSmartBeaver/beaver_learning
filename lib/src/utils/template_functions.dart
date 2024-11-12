@@ -129,7 +129,7 @@ Future<HTMLContentWithFileContents> getHtmlContentAndFileContentByHtmlContentId(
   return HTMLContentWithFileContents(
       htmlContent: htmlContent, files: contentFiles);
 }
-
+// CSP à retravailler : <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self';">
 String getCustomHtml(String recto, String verso, bool isPrintAnswer) {
   return '''
       <!DOCTYPE html>
