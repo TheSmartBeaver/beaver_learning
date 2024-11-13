@@ -214,6 +214,7 @@ class CardTemplatedBranchInteracter {
     } else {
       cardTemplatedBranch.jsonObjectFields.remove(fieldName);
     }
+    updateCard();
   }
 
   CardTemplatedBranchInteracterData getCardTemplatedBranchChild(

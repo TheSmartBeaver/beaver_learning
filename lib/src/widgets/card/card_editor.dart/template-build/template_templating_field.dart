@@ -107,41 +107,45 @@ class _TemplateTemplatingFieldState
       CardTemplatedBranch cardTemplatedBranchToUpdate) async {
     Color bgColor = widget.cardTemplatedBranchToUpdate.getColor();
 
-    if (!widget.isCardTemplatedBranchToUpdateNew) {
-      activeTemplate = await processTemplateByPath(context,
-          widget.cardTemplatedBranchToUpdate.templateName!);
-      List<String?> markersList =
-          getEveryMarkersInHtmlTemplate(activeTemplate!.template);
+    void buildWidgetWithTemplate(String templatePath) {
+      List<String?> markersList = getEveryMarkersInHtmlTemplate(templatePath);
 
       widgetReturned = Container(
           color: bgColor,
           alignment: Alignment.center,
           child: Column(children: [
             Text("Template: ${activeTemplate!.path}"),
+            IconButton(
+              icon: const Icon(Icons.remove_circle),
+              onPressed: () async {
+                widget.cardTemplatedBranchInteracter
+                    .removeTemplateTemplatingField(
+                        widget.fieldPathPiece.pathPieceName, false);
+                setState(() {
+                  ref
+                      .read(templatedCardProvider.notifier)
+                      .makeRootCardTemplatedBranchChange();
+                });
+                activeTemplate = null;
+                widget.isCardTemplatedBranchToUpdateNew = true;
+              },
+            ),
             ...markersList.map((e) => FieldTypeSelector(
                 pathPiece: PathPiece(e ?? "UNKNOWN"),
                 updateCard: widget.updateCard,
                 cardTemplatedBranchToUpdate:
                     widget.cardTemplatedBranchToUpdate))
           ]));
-      ;
+    }
+
+    if (!widget.isCardTemplatedBranchToUpdateNew) {
+      activeTemplate = await processTemplateByPath(
+          context, widget.cardTemplatedBranchToUpdate.templateName!);
+      buildWidgetWithTemplate(activeTemplate!.template);
     } else {
       if (activeTemplate != null) {
         cardTemplatedBranchToUpdate.templateName = activeTemplate!.path;
-        List<String?> markersList =
-            getEveryMarkersInHtmlTemplate(activeTemplate!.template);
-
-        widgetReturned = Container(
-            color: bgColor,
-            alignment: Alignment.center,
-            child: Column(children: [
-              Text("Template: ${activeTemplate!.path}"),
-              ...markersList.map((e) => FieldTypeSelector(
-                  pathPiece: PathPiece(e ?? "UNKNOWN"),
-                  updateCard: widget.updateCard,
-                  cardTemplatedBranchToUpdate:
-                      widget.cardTemplatedBranchToUpdate))
-            ]));
+        buildWidgetWithTemplate(activeTemplate!.template);
       } else {
         widgetReturned = GestureDetector(
             onTap: () {
