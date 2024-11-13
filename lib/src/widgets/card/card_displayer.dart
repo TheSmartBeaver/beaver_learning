@@ -22,12 +22,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'card_editor.dart/mnemotechnic_dialog.dart';
 
 class CardDisplayer extends StatefulWidget {
-  const CardDisplayer(
+  CardDisplayer(
       {super.key, required this.cardToRevise, required this.goNextCard});
 
   final ReviseCard cardToRevise;
   final void Function(ReviseCard card, NextRevisionInfo? nextRevisionInfo)
       goNextCard;
+  bool isInitialised = false;
 
   @override
   State<CardDisplayer> createState() => _CardDisplayerState();
@@ -50,7 +51,7 @@ class NextRevisionInfo {
 class _CardDisplayerState extends State<CardDisplayer> {
   bool isPrintAnswer = false;
   double revisorButtonHeight = 46.0;
-  bool isInitialised = false;
+  
   String groupOfCard = "";
 
   Widget getCorrectDisplayer(CardDisplayerType cardDisplayerType) {
@@ -68,8 +69,8 @@ class _CardDisplayerState extends State<CardDisplayer> {
   }
 
   Future<void> init() async {
-    if (!isInitialised) {
-      isInitialised = true;
+    if (!widget.isInitialised) {
+      widget.isInitialised = true;
       GroupDao groupDao = GroupDao(MyDatabaseInstance.getInstance());
       var group = await groupDao.getById(widget.cardToRevise.groupId);
       setState(() {

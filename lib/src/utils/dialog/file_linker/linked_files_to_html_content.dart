@@ -51,8 +51,8 @@ class _LinkedFilesToHtmlContentListViewState extends ConsumerState<LinkedFilesTo
             itemCount: files.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(files[index].path ?? ''),
-                subtitle: Text("${files[index].id} ${files[index].name} (${files[index].format})"),
+                title: SelectableText(files[index].path ?? ''),
+                subtitle: SelectableText("${files[index].id} ${files[index].name} (${files[index].format})"),
                 onTap: () {
                   Navigator.pop(context, files[index].id);
                 },
