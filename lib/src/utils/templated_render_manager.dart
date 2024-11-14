@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:beaver_learning/data/constants.dart';
+import 'package:beaver_learning/src/models/data/test_data.dart';
 import 'package:beaver_learning/src/models/db/database.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
@@ -29,23 +30,26 @@ class TemplatedRendererManager {
       String recto = buildJsonHtmlAssociation(rectoCardTemplatedBranch);
       String verso = buildJsonHtmlAssociation(versoCardTemplatedBranch);
 
-      return HTMLContentRectoVerso( htmlContent.id,
+      return HTMLContentRectoVerso(htmlContent.id,
           recto: recto, verso: verso, files: contentFiles);
     } catch (e) {
       print(e);
-      throw e;
+      rethrow;
     }
   }
 
   Future<HTMLContentCourseSupport> renderTemplatedHtmlSupport() async {
     try {
-      TemplatedCourseSupportJsonFields templatedCourseSupportJsonFields = _getTemplatedCourseSupportJsonFields();
+      TemplatedCourseSupportJsonFields templatedCourseSupportJsonFields =
+          _getTemplatedCourseSupportJsonFields();
 
-      CardTemplatedBranch templatedCourseTemplatedBranch =
-          _buildTree(AppConstante.htmlSupportFieldName, templatedCourseSupportJsonFields.support);
+      CardTemplatedBranch templatedCourseTemplatedBranch = _buildTree(
+          AppConstante.htmlSupportFieldName,
+          templatedCourseSupportJsonFields.support);
       await fillHtmlTemplateDictionary();
 
-      String htmlSupport = buildJsonHtmlAssociation(templatedCourseTemplatedBranch);
+      String htmlSupport =
+          buildJsonHtmlAssociation(templatedCourseTemplatedBranch);
 
       return HTMLContentCourseSupport(
           htmlSupport: htmlSupport, files: contentFiles);
@@ -55,21 +59,30 @@ class TemplatedRendererManager {
   }
 
   TemplatedCardJsonFields _getRectoVersoJsonFields() {
-    TemplatedCardJsonFields rectoVersoJsonFields = TemplatedCardJsonFields.fromJson(
-        jsonDecode(htmlContent.cardTemplatedJson));
-    if (rectoVersoJsonFields.verso.isEmpty) {
+    Map<String, dynamic> jsonInMap = jsonDecode(htmlContent.cardTemplatedJson);
+    if (!jsonInMap.containsKey(AppConstante.rectoFieldName)) {
       //TODO : Rajouter le path de la card
-      errors.add(Exception("Verso is empty"));
-    }
-    if (rectoVersoJsonFields.recto.isEmpty) {
+      jsonInMap[AppConstante.rectoFieldName] = {
+        AppConstante.templateFieldName: emptyTemplate_name
+      };
       errors.add(Exception("Recto is empty"));
     }
+    if (!jsonInMap.containsKey(AppConstante.versoFieldName)) {
+      jsonInMap[AppConstante.versoFieldName] = {
+        AppConstante.templateFieldName: emptyTemplate_name
+      };
+      errors.add(Exception("Verso is empty"));
+    }
+    TemplatedCardJsonFields rectoVersoJsonFields =
+        TemplatedCardJsonFields.fromJson(jsonInMap);
+
     return rectoVersoJsonFields;
   }
 
   TemplatedCourseSupportJsonFields _getTemplatedCourseSupportJsonFields() {
-    TemplatedCourseSupportJsonFields rectoVersoJsonFields = TemplatedCourseSupportJsonFields.fromJson(
-        jsonDecode(htmlContent.cardTemplatedJson));
+    TemplatedCourseSupportJsonFields rectoVersoJsonFields =
+        TemplatedCourseSupportJsonFields.fromJson(
+            jsonDecode(htmlContent.cardTemplatedJson));
     if (rectoVersoJsonFields.support.isEmpty) {
       //TODO : Rajouter le path de la card
       errors.add(Exception("TemplatedCourseSupport is empty"));
@@ -78,7 +91,8 @@ class TemplatedRendererManager {
   }
 
   CardTemplatedBranch _buildTree(String side, Map<String, dynamic> cardFace) {
-    CardTemplatedBranch tree = buildBranch(cardFace, errors: errors, htmlTemplates: htmlTemplates);
+    CardTemplatedBranch tree =
+        buildBranch(cardFace, errors: errors, htmlTemplates: htmlTemplates);
     return tree;
   }
 
