@@ -10,6 +10,7 @@ import 'package:beaver_learning/src/models/enum/card_displayer_type.dart';
 import 'package:beaver_learning/src/providers/templated_card_provider.dart';
 import 'package:beaver_learning/src/utils/cards_functions.dart';
 import 'package:beaver_learning/src/utils/classes/card_classes.dart';
+import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
 import 'package:beaver_learning/src/utils/dialog/file_linker/file_linker_to_html_content_dialog.dart';
 import 'package:beaver_learning/src/utils/html_functions.dart';
 import 'package:beaver_learning/src/utils/synchronize_functions.dart';
@@ -90,7 +91,8 @@ class TemplateCardEditor extends ConsumerStatefulWidget
 
   @override
   Future<void> showCard(BuildContext context) async {
-    final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+    try{
+      final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
     var content = await htmlDao.getHtmlContents(cardForPreview.htmlContent);
     var customHtmlString = getCustomHtml(content.recto, content.verso, true);
 
@@ -130,6 +132,10 @@ class TemplateCardEditor extends ConsumerStatefulWidget
         ),
       ),
     );
+    } catch(e) {
+      print(e);
+      DialogStatic.showInfoInDialog(context, e.toString());
+    }
   }
 
   @override

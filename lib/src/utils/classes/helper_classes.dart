@@ -10,22 +10,30 @@ String? findKeyByValue<T>(Map<String, T> map, T reference) {
   return null; // Retourne null si aucune correspondance n'est trouvée
 }
 
-void showInfoInDialog(BuildContext context, String info) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text("Info !"),
-      content: Text(info),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Okay'),
-        ),
-      ],
-    ),
-  );
+class DialogStatic {
+  static String previous_info_message = "";
+
+  static void showInfoInDialog(BuildContext context, String info) {
+    if (previous_info_message == info) {
+      // return;
+    }
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Info !"),
+        content: Text(info),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Okay'),
+          ),
+        ],
+      ),
+    );
+    previous_info_message = info;
+  }
 }
 
 void showSnackBar(BuildContext context, String text) {

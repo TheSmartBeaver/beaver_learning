@@ -1,5 +1,6 @@
 import 'package:beaver_learning/src/dao/html_dao.dart';
 import 'package:beaver_learning/src/models/db/databaseInstance.dart';
+import 'package:beaver_learning/src/utils/classes/helper_classes.dart';
 import 'package:beaver_learning/src/utils/images_functions.dart';
 import 'package:beaver_learning/src/utils/template_functions.dart';
 import 'package:flutter/material.dart';
@@ -107,24 +108,29 @@ class _HTMLCardDisplayerState extends State<HTMLCardDisplayer> {
   }
 
   Future<void> init() async {
-    final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
-    var content = await htmlDao.getHtmlContents(widget.htmlContentId);
-    recto = content.recto;
-    verso = content.verso;
-    String target_file = "index${content.id}.html";
+    try {
+      final htmlDao = HtmlDao(MyDatabaseInstance.getInstance());
+      var content = await htmlDao.getHtmlContents(widget.htmlContentId);
+      recto = content.recto;
+      verso = content.verso;
+      String target_file = "index${content.id}.html";
 
-    var localServerUrl = await MyLocalServer.getLocalServerUrl();
-    await deleteFiles(await getTemporaryDirectory());
-    var customHtmlString = getCustomHtml(recto, verso, widget.isPrintAnswer);
-    await writeHtmlToServerDirectory(
-        customHtmlString, target_file, content.files);
-    var files = await listFiles(await getTemporaryDirectory());
-    //await controller.clearCache();
-    //await controller.clearLocalStorage();
-    //await controller.loadRequest(Uri.parse('$localServerUrl/$target_file'));
-    //webViewController.clearCache();
-    initialUrl = '$localServerUrl/$target_file';
-    var test2 = await (await getTemporaryDirectory()).list().toList();
+      var localServerUrl = await MyLocalServer.getLocalServerUrl();
+      await deleteFiles(await getTemporaryDirectory());
+      var customHtmlString = getCustomHtml(recto, verso, widget.isPrintAnswer);
+      await writeHtmlToServerDirectory(
+          customHtmlString, target_file, content.files);
+      var files = await listFiles(await getTemporaryDirectory());
+      //await controller.clearCache();
+      //await controller.clearLocalStorage();
+      //await controller.loadRequest(Uri.parse('$localServerUrl/$target_file'));
+      //webViewController.clearCache();
+      initialUrl = '$localServerUrl/$target_file';
+      var test2 = await (await getTemporaryDirectory()).list().toList();
+    } catch (e) {
+      print(e);
+      DialogStatic.showInfoInDialog(context, e.toString());
+    }
   }
 
   @override

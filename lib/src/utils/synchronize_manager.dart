@@ -57,7 +57,7 @@ class SynchronizeManager {
       await _synchronizeElementsTowardsServerUpdate();
       await synchronizeElementsTowardsMobileUpdate();
       await _setNewSynchronizationDate();
-      showInfoInDialog(context, "Synchronization done");
+      DialogStatic.showInfoInDialog(context, "Synchronization done");
     } catch (e) {
       dealWithExceptionError(context, e);
     }

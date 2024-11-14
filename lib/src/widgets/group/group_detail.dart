@@ -115,7 +115,7 @@ class _GroupDetailState extends State<GroupDetail> {
                     Navigator.pop(context);
                   } catch (e) {
                     if(e is ChildFoundException){
-                      showInfoInDialog(context, e.message);
+                      DialogStatic.showInfoInDialog(context, e.message);
                     }
                     print(e);
                     rethrow;
