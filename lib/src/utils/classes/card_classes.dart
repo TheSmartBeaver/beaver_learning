@@ -12,7 +12,7 @@ class HTMLContentRectoVerso {
   final String verso;
   final List<FileContent> files;
 
-  HTMLContentRectoVerso(this.id, 
+  HTMLContentRectoVerso(this.id,
       {required this.files, required this.recto, required this.verso});
 }
 
@@ -82,13 +82,37 @@ class CardTemplatedBranch {
   }
 
   void removeFieldWithMatchingPathPiece(PathPiece pathPiece) {
-    if (pathPiece.index != null) {
-      jsonObjectsListFields[pathPiece.pathPieceName]
-          ?.removeAt(pathPiece.index!);
-    } else {
-      jsonObjectsListFields.remove(pathPiece.pathPieceName);
+    // if (pathPiece.index != null) {
+    //   jsonObjectsListFields[pathPiece.pathPieceName]
+    //       ?.removeAt(pathPiece.index!);
+    // } else {
+    //   jsonObjectsListFields.remove(pathPiece.pathPieceName);
+    //   jsonObjectFields.remove(pathPiece.pathPieceName);
+    //   pureTextFields.remove(pathPiece.pathPieceName);
+    // }
+
+    // On vide tous les enfants de la liste de templates de leur substances
+
+    if (pathPiece.index == null) {
+      // cas où le champ est un jsonObject
+      jsonObjectFields[pathPiece.pathPieceName]?.eraseEverythingInside();
       jsonObjectFields.remove(pathPiece.pathPieceName);
-      pureTextFields.remove(pathPiece.pathPieceName);
+
+      // cas où le champ est un jsonListObject
+      if (jsonObjectsListFields[pathPiece.pathPieceName] != null) {
+        for (var i = 0;
+            i < jsonObjectsListFields[pathPiece.pathPieceName]!.length;
+            i++) {
+          jsonObjectsListFields[pathPiece.pathPieceName]?[i]
+              .removeFieldWithMatchingPathPiece(pathPiece);
+        }
+        jsonObjectsListFields.remove(pathPiece.pathPieceName); 
+      }
+    } else {
+      // cas où le champ est enfant d'un jsonListObject
+      parentCardTemplatedBranch?.jsonObjectsListFields[pathPiece.pathPieceName]!
+          .removeAt(pathPiece.index!);
+      
     }
   }
 
@@ -161,9 +185,18 @@ class CardTemplatedBranch {
           .putIfAbsent(pathPiece.pathPieceName, () => child);
     } else {
       parentBranch.jsonObjectsListFields[pathPiece.pathPieceName]
-          ?[pathPiece.index!] = child;
+          ?.insert(pathPiece.index!, child);
     }
     return child;
+  }
+
+  CardTemplatedBranch eraseEverythingInside() {
+    jsonObjectFields = {};
+    jsonObjectsListFields = {};
+    pureTextFields = {};
+    templateName = null;
+
+    return this;
   }
 }
 
@@ -208,12 +241,40 @@ class CardTemplatedBranchInteracter {
     cardTemplatedBranch.pureTextFields.remove(fieldName);
   }
 
-  void removeTemplateTemplatingField(String fieldName, bool isListOfTemplates) {
+  void removeTemplateTemplatingField(
+      PathPiece pathPiece, bool isListOfTemplates) {
+    cardTemplatedBranch.removeFieldWithMatchingPathPiece(pathPiece);
     if (isListOfTemplates) {
-      cardTemplatedBranch.jsonObjectsListFields.remove(fieldName);
+      // On vide tous les enfants de la liste de templates de leur substances
+      // for (var i = 0;
+      //     i <
+      //         cardTemplatedBranch
+      //             .jsonObjectsListFields[pathPiece.pathPieceName]!.length;
+      //     i++) {
+      //   cardTemplatedBranch.jsonObjectsListFields[pathPiece.pathPieceName]?[i]
+      //       .removeFieldWithMatchingPathPiece(pathPiece);
+      // }
+      // cardTemplatedBranch.jsonObjectsListFields.remove(pathPiece.pathPieceName);
     } else {
-      cardTemplatedBranch.jsonObjectFields.remove(fieldName);
+      if (pathPiece.index == null) {
+        // cardTemplatedBranch.jsonObjectFields[pathPiece.pathPieceName]
+        //     ?.eraseEverythingInside();
+        // cardTemplatedBranch.jsonObjectFields.remove(pathPiece.pathPieceName);
+      } else {
+        // cardTemplatedBranch.parentCardTemplatedBranch!
+        //     .jsonObjectsListFields[pathPiece.pathPieceName]!
+        //     .removeAt(pathPiece.index!);
+      }
     }
+    updateCard();
+  }
+
+  void addTemplateListTemplatingField(String fieldName) {
+    cardTemplatedBranch.jsonObjectsListFields.putIfAbsent(fieldName, () => []);
+    int indexToTake =
+        cardTemplatedBranch.jsonObjectsListFields[fieldName]!.length;
+    CardTemplatedBranch.createChild(
+        cardTemplatedBranch, PathPiece(fieldName, index: indexToTake));
     updateCard();
   }
 

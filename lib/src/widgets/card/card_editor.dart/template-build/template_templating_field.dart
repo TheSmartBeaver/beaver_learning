@@ -79,28 +79,55 @@ class _TemplateTemplatingFieldState
 
       Widget addTemplateButton = GestureDetector(
           onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => TemplateSearchDialog(
-                  processTemplateFunction: processTemplate),
-            );
+            widget.cardTemplatedBranchInteracter.addTemplateListTemplatingField(
+                widget.fieldPathPiece.pathPieceName);
+            setState(() {
+              ref
+                  .read(templatedCardProvider.notifier)
+                  .makeRootCardTemplatedBranchChange();
+            });
           },
           child: Container(
               height: widget.buttonHeight,
               color: Colors.lightBlue,
               alignment: Alignment.center,
-              child: const Text("Add Template")));
+              child: const Icon(Icons.add_box_rounded)));
+
+      Widget removeTemplateButton = GestureDetector(
+          onTap: () {
+            removeTemplatingField(isCardTemplatedBranchToUpdateNew: false);
+          },
+          child: Container(
+              height: widget.buttonHeight,
+              color: Colors.purple,
+              alignment: Alignment.center,
+              child: const Icon(Icons.remove_circle_outline)));
 
       widgetReturned = Container(
           color: Colors.red,
           alignment: Alignment.center,
           child: Column(children: [
-            addTemplateButton,
+            removeTemplateButton,
             ...listOfTemplates,
+            addTemplateButton
           ]));
     } else {
       widgetReturned = const Text("CASE TO IMPLEMENT");
     }
+  }
+
+  void removeTemplatingField({isCardTemplatedBranchToUpdateNew = false}) {
+    widget.cardTemplatedBranchInteracter
+        .removeTemplateTemplatingField(widget.fieldPathPiece, false);
+    setState(() {
+      ref
+          .read(templatedCardProvider.notifier)
+          .makeRootCardTemplatedBranchChange();
+      activeTemplate = null;
+      widget.isCardTemplatedBranchToUpdateNew =
+          isCardTemplatedBranchToUpdateNew;
+    });
+    // widget.updateCard();
   }
 
   Future buildSingleTemplate(BuildContext context,
@@ -118,16 +145,7 @@ class _TemplateTemplatingFieldState
             IconButton(
               icon: const Icon(Icons.remove_circle),
               onPressed: () async {
-                widget.cardTemplatedBranchInteracter
-                    .removeTemplateTemplatingField(
-                        widget.fieldPathPiece.pathPieceName, false);
-                setState(() {
-                  ref
-                      .read(templatedCardProvider.notifier)
-                      .makeRootCardTemplatedBranchChange();
-                });
-                activeTemplate = null;
-                widget.isCardTemplatedBranchToUpdateNew = true;
+                removeTemplatingField(isCardTemplatedBranchToUpdateNew: true);
               },
             ),
             ...markersList.map((e) => FieldTypeSelector(
@@ -182,7 +200,7 @@ class _TemplateTemplatingFieldState
       return htmlTemplate;
     } catch (e) {
       if (e is ItemNotFoundException) {
-        showInfoInDialog(context, "${e.message}\n");
+        DialogStatic.showInfoInDialog(context, "${e.message}\n");
         rethrow;
       } else {
         print(e);
@@ -220,10 +238,12 @@ class _TemplateTemplatingFieldState
         .rootCardTemplatedBranchChangedMarker;
     init(context);
 
-    return buildSection(widget.fieldPathPiece.pathPieceName, [
-      // Text(
-      //     "Widget : (TTF ${widget.fieldPathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),
-      widgetReturned
-    ]);
+    return buildSection(
+        "${widget.fieldPathPiece.pathPieceName} / ${widget.fieldPathPiece.index ?? ""}",
+        [
+          // Text(
+          //     "Widget : (TTF ${widget.fieldPathPiece.pathPieceName}) Hashcode : ${widget.cardTemplatedBranchToUpdate.hashCode}"),
+          widgetReturned
+        ]);
   }
 }
