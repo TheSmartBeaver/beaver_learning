@@ -47,7 +47,7 @@ class CardTemplateEditor extends ConsumerStatefulWidget {
   }
 
   Future<void> showCardTemplate(BuildContext context) async {
-    printHtmlCode(context, htmlTextController.text);
+    printHtml(context, htmlTextController.text);
   }
 }
 
@@ -94,12 +94,18 @@ class CardTemplateEditorState extends ConsumerState<CardTemplateEditor> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: "Assembly editor",
+        title: "Card template editor",
         actions: [
           IconButton(
             icon: const Icon(Icons.remove_red_eye_outlined),
             onPressed: () async {
               await widget.showCardTemplate(context);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.html_outlined),
+            onPressed: () async {
+              printHtmlCode(context, widget.htmlTextController.text);
             },
           ),
           IconButton(
