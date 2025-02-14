@@ -134,7 +134,7 @@ class TemplateCardEditor extends ConsumerStatefulWidget
     );
     } catch(e) {
       print(e);
-      DialogStatic.showInfoInDialog(context, e.toString());
+      showSnackBar(context, "Error: ${e.toString()}");
     }
   }
 

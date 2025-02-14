@@ -32,8 +32,10 @@ class _GroupScreenState extends ConsumerState<GroupsList> {
   init() async {
     final database = MyDatabaseInstance.getInstance();
     groups = await (database.select(database.group)
-          ..where((group) => group.parentId.isNull()))
+          // ..where((group) => group.parentId.isNull())
+          )
         .get();
+        var test = 0; 
   }
 
   @override
